@@ -54,8 +54,4 @@ router.get(
   inventoryController.getProjectInventory
 );
 
-
-
-
-
 module.exports = router;

@@ -1,19 +1,9 @@
 const Waitlist = require('../models/Waitlist');
 const { Resend } = require('resend');
-const nodemailer = require('nodemailer');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || process.env.gmail_user || 'nitinmohapatra26@gmail.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'nitinmohapatra26@gmail.com';
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    auth: {
-        user: process.env.gmail_user,
-        pass: process.env.gmail_pass
-    }
-});
 
 // Email to the person who registered
 const sendUserConfirmationEmail = async (ownerName, companyName, email, phone) => {
@@ -60,36 +50,15 @@ const sendUserConfirmationEmail = async (ownerName, companyName, email, phone) =
     </html>
     `;
     try {
-        let sent = false;
-        if (process.env.RESEND_API_KEY) {
-            try {
-                const response = await resend.emails.send({
-                    from: 'OdraOps <noreply@odraops.com>',
-                    to: email,
-                    subject: "You’re officially on the ODRAOPS list.",
-                    html,
-                });
-                if (response?.data?.id) {
-                    console.log('Resend user confirmation email sent:', response.data.id);
-                    sent = true;
-                    return response;
-                } else if (response?.error) {
-                    console.warn('Resend returned error, falling back to Nodemailer:', response.error);
-                }
-            } catch (rErr) {
-                console.warn('Resend throw, falling back to Nodemailer:', rErr.message);
-            }
-        }
-        if (!sent) {
-            const info = await transporter.sendMail({
-                from: `"ODRA OPS" <${process.env.gmail_user}>`,
-                to: email,
-                subject: "You’re officially on the ODRAOPS list.",
-                html,
-            });
-            console.log('Nodemailer user confirmation email sent:', info.messageId);
-            return info;
-        }
+        const { data, error } = await resend.emails.send({
+            from: 'OdraOps <noreply@odraops.com>',
+            to: email,
+            subject: "You�re officially on the ODRAOPS list.",
+            html,
+        });
+        if (error) throw error;
+        console.log('Resend user confirmation email sent:', data.id);
+        return data;
     } catch (err) {
         console.error('Error sending user email:', err);
     }
@@ -136,36 +105,15 @@ const sendAdminNotificationEmail = async (ownerName, companyName, email, phone) 
     </html>
     `;
     try {
-        let sent = false;
-        if (process.env.RESEND_API_KEY) {
-            try {
-                const response = await resend.emails.send({
-                    from: 'OdraOps <noreply@odraops.com>',
-                    to: ADMIN_EMAIL,
-                    subject: `New Waitlist Application: ${companyName} (${ownerName})`,
-                    html,
-                });
-                if (response?.data?.id) {
-                    console.log('Resend admin notification email sent:', response.data.id);
-                    sent = true;
-                    return response;
-                } else if (response?.error) {
-                    console.warn('Resend admin returned error, falling back to Nodemailer:', response.error);
-                }
-            } catch (rErr) {
-                console.warn('Resend admin throw, falling back to Nodemailer:', rErr.message);
-            }
-        }
-        if (!sent) {
-            const info = await transporter.sendMail({
-                from: `"ODRA OPS Alerts" <${process.env.gmail_user}>`,
-                to: ADMIN_EMAIL,
-                subject: `New Waitlist Application: ${companyName} (${ownerName})`,
-                html,
-            });
-            console.log('Nodemailer admin notification email sent:', info.messageId);
-            return info;
-        }
+        const { data, error } = await resend.emails.send({
+            from: 'OdraOps <noreply@odraops.com>',
+            to: ADMIN_EMAIL,
+            subject: `New Waitlist Application: ${companyName} (${ownerName})`,
+            html,
+        });
+        if (error) throw error;
+        console.log('Resend admin notification email sent:', data.id);
+        return data;
     } catch (err) {
         console.error('Error sending admin notification email:', err);
     }
