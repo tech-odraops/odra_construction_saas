@@ -5,7 +5,6 @@ const Worker = require('../models/Worker');
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const express = require("express");
-const nodemailer = require("nodemailer");
 const env = require("dotenv").config();
 const Subscription = require("../models/Subscription");
 const ChatMessage = require("../models/chatMessage")
@@ -15,34 +14,6 @@ const Attendance = require("../models/Attendance");
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 const mongoose = require("mongoose");
-
-// const transporter = nodemailer.createTransport({
-//     host: "smtp.gmail.com",   // ✅ correct hostname
-//     port: 465,                // ✅ secure port
-//     secure: true,
-//     auth: {
-//         user: process.env.gmail_user,
-//         pass: process.env.gmail_pass
-//     }
-// });
-
-// const sendEmail = async (from, to, subject, msg, html = "") => {
-//     try {
-//         const info = await transporter.sendMail({
-//             from: `PBM Team <${from}>`,
-//             to,
-//             subject,
-//             text: msg,
-//             html,
-//         });
-//         console.log("Email sent:", info.messageId);
-//         return true;
-//     } catch (err) {
-//         console.error("Error while sending mail:", err);
-//         return false;
-//     }
-// };
-
 
 
 const sendEmail = async (to, subject, html, replyToEmail) => {
