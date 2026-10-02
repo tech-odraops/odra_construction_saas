@@ -27,12 +27,14 @@ const { sendToUser } = require("./services/notification.service");
 const User = require("./models/user");
 const waitlistRoute = require('./routes/waitlistRoute');
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://odraopssaass.netlify.app",
-    "https://odraops.com",
-    "https://www.odraops.com"
-];
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
+    ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+    : [
+        "http://localhost:5173",
+        "https://odraopssaass.netlify.app",
+        "https://odraops.com",
+        "https://www.odraops.com"
+    ];
 
 // creating http server and mounting socket.io to it
 const httpServer = http.createServer(app);
@@ -179,7 +181,10 @@ app.use(cors({
 }))
 app.use(express.json())
 
-
+// Health checkup for the server
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
 
 // requiring singup and signin
 app.use('/auth', signup);
