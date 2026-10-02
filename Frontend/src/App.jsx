@@ -1,6 +1,6 @@
 
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -109,9 +109,27 @@ function NotificationHandler() {
   return null;
 }
 
+function RouteBackground() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const isDashboardRoute =
+      pathname.startsWith("/contractor/") ||
+      pathname === "/contractor" ||
+      pathname === "/engineer/home" ||
+      pathname.startsWith("/site-engineer/");
+
+    document.body.classList.toggle("has-dashboard-background", isDashboardRoute);
+    return () => document.body.classList.remove("has-dashboard-background");
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <RouteBackground />
       {/* Handles notification click events and foreground messages */}
       <NotificationHandler />
 
