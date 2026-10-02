@@ -53,7 +53,7 @@ const sendUserConfirmationEmail = async (ownerName, companyName, email, phone) =
         const { data, error } = await resend.emails.send({
             from: 'OdraOps <noreply@odraops.com>',
             to: email,
-            subject: "You’re officially on the ODRAOPS list.",
+            subject: "Youï¿½re officially on the ODRAOPS list.",
             html,
         });
         if (error) throw error;
