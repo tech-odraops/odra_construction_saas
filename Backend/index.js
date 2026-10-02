@@ -181,7 +181,10 @@ app.use(cors({
 }))
 app.use(express.json())
 
-
+// Health checkup for the server
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
 
 // requiring singup and signin
 app.use('/auth', signup);
