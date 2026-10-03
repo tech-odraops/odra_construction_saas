@@ -2,6 +2,10 @@ html,body{
   height: 100%;
   width: 100%;
   background-color: #fff;
+}
+
+/* Keep the construction backdrop limited to contractor and site engineer routes. */
+body.has-dashboard-background {
   background-image: url("./assets/background%20image.png");
   background-repeat: no-repeat;
   background-position: center top;
@@ -9,8 +13,7 @@ html,body{
   background-attachment: fixed;
 }
 
-/* Keep the shared construction backdrop visible on every routed page. */
-body::after {
+body.has-dashboard-background::after {
   content: "";
   position: fixed;
   inset: 0;

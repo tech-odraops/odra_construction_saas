@@ -72,9 +72,7 @@ export default function Navbar() {
 
   const menuItems = [
     { label: t("navbar.home"), path: "/home" },
-    { label: t("navbar.contact"), path: "/Contact-Us" },
     { label: t("navbar.pricing"), path: "/pricing" },
-    { label: t("navbar.waitlist"), path: "/waitlist" },
   ];
 
   return (

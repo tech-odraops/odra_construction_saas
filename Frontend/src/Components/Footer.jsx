@@ -82,14 +82,6 @@ export default function Footer() {
                 Login
               </Typography>
 
-              <Typography
-                component={Link}
-                variant="body1"
-                to="/contact-us"
-                sx={{ textDecoration: "none", color: "white" }}
-              >
-                Contact
-              </Typography>
             </div>
           </div>
 
