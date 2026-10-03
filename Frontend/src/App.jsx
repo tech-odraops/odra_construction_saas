@@ -11,7 +11,6 @@ import { onForegroundMessage, resolveNotificationUrl } from "./services/notifica
 const Home = lazy(() => import("./Screen/Home"));
 const Signup = lazy(() => import("./Screen/Signup"));
 const Login = lazy(() => import("./Screen/Login"));
-const Contact = lazy(() => import("./Screen/Contact"));
 
 const Contractor = lazy(() => import("./Screen/Contractor/Contractor"));
 const Project = lazy(() => import("./Screen/Contractor/Project"));
@@ -34,7 +33,6 @@ const InventoryUsage = lazy(() => import("./Screen/SiteEngineer/InventoryUsage")
 
 const Services = lazy(() => import("./Screen/Services"));
 const Pricing = lazy(() => import("./Screen/Pricing"));
-const Waitlist = lazy(() => import("./Screen/Waitlist"));
 
 const AdminDashboard = lazy(() =>
   import("./Screen/Admin/admin dashboard/Dashboard")
@@ -149,7 +147,6 @@ function App() {
       <ErrorBoundary>
         <Suspense fallback={<FullScreenLoader />}>
           <Routes>
-            <Route path='/Contact-Us' element={<Contact />} />
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
             <Route path="/Signup" element={<Signup />} />
@@ -170,7 +167,6 @@ function App() {
             <Route path="/site-engineer/projects/:id/inventory" element={<InventoryUsage />} />
             {/* common pages routes */}
             <Route path="/services" element={<Services />} />
-            <Route path="/waitlist" element={<Waitlist />} />
 
             {/* Attendance Route */}
             <Route path="/contractor/projects/:id/attendance" element={<ContractorAttendance />} />

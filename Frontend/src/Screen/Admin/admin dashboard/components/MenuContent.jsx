@@ -6,11 +6,9 @@ import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 
 const mainListItems = [
   { id: 'home', text: 'Home', icon: <HomeRoundedIcon /> },
-  { id: 'waitlist', text: 'Waitlist', icon: <FormatListBulletedRoundedIcon /> },
   { id: 'admins', text: 'Add Admins', icon: <PeopleRoundedIcon /> },
 ];
 
