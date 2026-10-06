@@ -6,7 +6,6 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const express = require("express");
 const env = require("dotenv").config();
-const Subscription = require("../models/Subscription");
 const ChatMessage = require("../models/chatMessage")
 const InventoryItem = require("../models/inventoryItem");
 const InventoryUsage = require("../models/InventoryUsage");
@@ -50,34 +49,6 @@ exports.createProject = async (req, res) => {
         if (!contractor) {
             return res.status(404).json({ success: false, error: "Contractor not found" });
         }
-
-        // check for suscription plan
-        const subscription = await Subscription.findOne({ organizationId });
-        if (!subscription) {
-            return res.status(403).json({
-                success: false,
-                error: "Subscription not found for organization"
-            });
-        }
-        // if it is a free plan
-        if (subscription.plan === "free") {
-            const existingProjectCount = contractor.totalProjects;
-
-            if (existingProjectCount >= 1) {
-                return res.status(402).json({
-                    success: false,
-                    error: "Free plan allows only 1 project. Please upgrade to Business plan."
-                });
-            }
-        }
-        // if business plan but expired
-        if (subscription.plan === "business" && subscription.status != "active") {
-            return res.status(402).json({
-                success: false,
-                error: "Subscription expired. Please renew your Business plan."
-            });
-        }
-
 
         // 🔎 Find site engineer by email
         let stEng = await User.findOne({
@@ -173,7 +144,6 @@ exports.createProject = async (req, res) => {
             organizationId
         });
 
-        contractor.totalProjects += 1;
         await contractor.save();
 
         // Push project reference
