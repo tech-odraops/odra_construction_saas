@@ -72,7 +72,6 @@ export default function Navbar() {
 
   const menuItems = [
     { label: t("navbar.home"), path: "/home" },
-    { label: t("navbar.pricing"), path: "/pricing" },
   ];
 
   return (

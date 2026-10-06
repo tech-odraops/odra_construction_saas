@@ -11,14 +11,11 @@ import {
   CircularProgress,
   Divider
 } from "@mui/material";
-import { canAccess } from "../utils/subscription";
 
 export default function WageModal({ open, onClose, projectId }) {
 
     useEffect(() => {
-      if (!canAccess("chat")) {
-        return; 
-      }
+
     }, []);
 
   const [data, setData] = useState(null);

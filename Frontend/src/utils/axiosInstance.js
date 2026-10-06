@@ -26,7 +26,6 @@ axiosInstance.interceptors.response.use(
             localStorage.removeItem("User_id");
             localStorage.removeItem("IsLogin");
             localStorage.removeItem("name");
-            localStorage.removeItem("subscription");
             localStorage.removeItem("organizationId");
             const role = localStorage.getItem("role");
             localStorage.removeItem("role");

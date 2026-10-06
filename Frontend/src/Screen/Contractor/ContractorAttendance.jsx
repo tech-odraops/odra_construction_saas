@@ -13,7 +13,6 @@ import {io} from "socket.io-client"
 import ContractorNavbar from "../../Components/ContractorNavbar";
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
-import { canAccess } from "../../utils/subscription";
 import { useNavigate } from "react-router-dom";
 
 export default function ContractorAttendance() {
@@ -27,10 +26,7 @@ export default function ContractorAttendance() {
     const navigate = useNavigate();
 
     useEffect(() => {
-      if (!canAccess("attendance")) {
-        toast.error("Upgrade to Business Plan to unlock Attendance.");
-        navigate("/contractor/home");
-      }
+
     }, []);
 
     // fetch attendance
@@ -73,7 +69,7 @@ export default function ContractorAttendance() {
     return (
         <>
           <ContractorNavbar />
-      
+
           <Box
             sx={{
               minHeight: "100vh",
@@ -91,7 +87,7 @@ export default function ContractorAttendance() {
                   {t("attendance.attendance_overview_desc")}
                 </Typography>
               </Box>
-      
+
               {/* DATE SELECT */}
               <Paper
                 elevation={0}
@@ -105,7 +101,7 @@ export default function ContractorAttendance() {
                 <Typography variant="h6" fontWeight={600} gutterBottom>
                   {t("attendance.select_date")}
                 </Typography>
-      
+
                 <TextField
                   type="date"
                   onChange={(e) => setDate(e.target.value)}
@@ -120,14 +116,14 @@ export default function ContractorAttendance() {
                   }}
                 />
               </Paper>
-      
+
               {/* ATTENDANCE LIST */}
               {loading && (
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
                   <CircularProgress />
                 </Box>
               )}
-      
+
               {!loading && attendance && attendance.records && (
                 <Paper
                   elevation={0}
@@ -140,13 +136,13 @@ export default function ContractorAttendance() {
                   <Typography variant="h6" fontWeight={600} gutterBottom>
                     {t("attendance.worker_attendance")}
                   </Typography>
-      
+
                   {attendance.records.length === 0 && (
                     <Typography variant="body2">
                       {t("attendance.no_records_found")}
                     </Typography>
                   )}
-      
+
                   <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 2 }}>
                     {attendance.records.map((rec) => (
                       <Box
@@ -163,7 +159,7 @@ export default function ContractorAttendance() {
                         <Typography fontWeight={500}>
                           {rec.workerId.name}
                         </Typography>
-      
+
                         <Typography
                           sx={{
                             fontWeight: 600,
@@ -184,9 +180,9 @@ export default function ContractorAttendance() {
               )}
             </Box>
           </Box>
-      
+
           <Footer />
         </>
       );
-      
+
 }

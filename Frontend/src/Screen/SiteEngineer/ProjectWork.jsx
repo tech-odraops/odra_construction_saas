@@ -17,7 +17,6 @@ import ChatModal from '../../Components/ChatModal';
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import LockIcon from "@mui/icons-material/Lock";
-import { canAccess } from "../../utils/subscription";
 import { Button,TextField } from "@mui/material";
 import AddMiscExpenseModal from "../../Components/AddMiscExpenseModal";
 import Dialog from '@mui/material/Dialog';
@@ -67,7 +66,7 @@ export default function ProjectWork() {
     // Check if socket is initialized before using it
     if (!socketRef.current || !id) return;
 
-    // join the room 
+    // join the room
     socketRef.current.emit("join", { projectId: id })
 
     const handler = (data) => {
@@ -264,7 +263,7 @@ export default function ProjectWork() {
             </Typography>
 
 
-            {!canAccess("reports") ? (
+            {false ? (
               <Box
                 sx={{
                   textAlign: "center",
@@ -278,14 +277,12 @@ export default function ProjectWork() {
                   variant="h6"
                   sx={{ fontWeight: 600, color: "#ff9800" }}
                 >
-                  🔒 Upgrade to Premium
                 </Typography>
 
                 <Typography
                   variant="body2"
                   sx={{ mt: 1 }}
                 >
-                  Unlock Reports feature by upgrading your plan.
                 </Typography>
               </Box>
 
@@ -379,7 +376,7 @@ export default function ProjectWork() {
                     to={`/site-engineer/projects/${id}/report`}
                     variant="contained"
                     sx={{
-                      opacity: canAccess("reports") ? 1 : 0.6,
+                      opacity: 1,
                       display: "flex",
                       alignItems: "center",
                       gap: "6px",
@@ -391,16 +388,13 @@ export default function ProjectWork() {
                       },
                     }}
                     onClick={() => {
-                      if (!canAccess("reports")) {
-                        toast.error("Upgrade to Business Plan to unlock Report Submission.");
-                        return;
-                      }
+
 
                     }}
                   >
                     {t("project.submit_report_btn")}
 
-                    {!canAccess("reports") && (
+                    {false && (
                       <LockIcon
                         fontSize="small"
                         sx={{ fontSize: 16, color: "#ff9800" }}
@@ -414,7 +408,7 @@ export default function ProjectWork() {
                     to={`/site-engineer/projects/${id}/attendance`}
                     variant="outlined"
                     style={{
-                      opacity: canAccess("attendance") ? 1 : 0.6,
+                      opacity: 1,
                       display: "flex",
                       alignItems: "center",
                       gap: "6px",
@@ -427,22 +421,19 @@ export default function ProjectWork() {
                       },
                     }}
                     onClick={() => {
-                      if (!canAccess("attendance")) {
-                        toast.error("Upgrade to Business Plan to unlock Attendance.");
-                        return;
-                      }
+
                     }}
                   >
                     {t("project.mark_attendance")}
 
-                    {!canAccess("attendance") && (
+                    {false && (
                       <LockIcon
                         fontSize="small"
                         sx={{ fontSize: 16, color: "#ff9800" }}
                       />
                     )}
                   </Button>
-                  
+
                   {/* Log inventory Usages */}
                   <Button
                     component={Link}
@@ -464,7 +455,7 @@ export default function ProjectWork() {
                     sx={{
                       color: "black",
                       borderColor: "primary.main",
-                      fontWeight: 600 
+                      fontWeight: 600
                     }}
                   >
                     ADD INVENTORY
@@ -475,14 +466,11 @@ export default function ProjectWork() {
                     // className="btn btn-sm btn-warning"
                     variant="outlined"
                     onClick={() => {
-                      if (!canAccess("MiscModal")) {
-                        toast.error("Upgrade to Business Plan to unlock Misc Items Feature.");
-                        return;
-                      }
+
                       setOpenMiscModal(true)
                     }}
                     sx={{
-                      opacity: canAccess("MiscModal") ? 1 : 0.6,
+                      opacity: 1,
                       display: "flex",
                       alignItems: "center",
                       gap: "6px",
@@ -492,7 +480,7 @@ export default function ProjectWork() {
                     }}
                   >
                     Add Misc Expense
-                    {!canAccess("attendance") && (
+                    {false && (
                       <LockIcon
                         fontSize="small"
                         sx={{ fontSize: 16, color: "#ff9800" }}
@@ -500,7 +488,7 @@ export default function ProjectWork() {
                     )}
                   </Button>
 
-                  
+
                 </>
               ) : (
                 <Typography color="error">
@@ -508,7 +496,7 @@ export default function ProjectWork() {
                 </Typography>
               )}
 
-              {!canAccess("chat") ? (
+              {false ? (
                 <Button
 
                   style={{
@@ -517,9 +505,7 @@ export default function ProjectWork() {
                     alignItems: "center",
                     gap: "6px"
                   }}
-                  onClick={() =>
-                    toast.error("Upgrade to Business Plan to unlock Chat.")
-                  }
+                  onClick={() => {}}
                 >
                   CHAT
                   <LockIcon
