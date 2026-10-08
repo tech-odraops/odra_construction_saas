@@ -8,8 +8,7 @@
     "add_project": "Add New Project",
     "all_projects": "All Projects",
     "workers": "Workers",
-    "add_worker": "Add Worker",
-    "pricing": "Pricing"
+    "add_worker": "Add Worker"
   },
   "auth": {
     "welcome_back": "Welcome Back",

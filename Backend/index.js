@@ -16,8 +16,6 @@ const workerRoutes = require('./routes/workerRoutes');
 const ChatMessage = require("./models/chatMessage");
 const Project = require("./models/project")
 const inventoryRoute = require('./routes/inventoryRoutes');
-const Subscription = require("./models/Subscription");
-const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const tokenValidation = require('./routes/tokenValiditiCheaker');
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
@@ -69,15 +67,7 @@ io.on('connection', (socket) => {
                     // ✅ Check project ONCE
                     const project = await Project.findById(projectId).select("status");
 
-                    // ✅ Check subscription ONCE
-                    const subscription = await Subscription.findOne({ organizationId }).select("plan status");
-
-                    const canChat =
-                        project &&
-                        project.status !== "Completed" &&
-                        subscription &&
-                        subscription.plan === "business" &&
-                        subscription.status === "active";
+                    const canChat = project && project.status !== "Completed";
 
                     // ✅ Store in socket (VERY IMPORTANT)
                     socket.data.chatAccess = canChat;
@@ -111,9 +101,7 @@ io.on('connection', (socket) => {
             console.log("Can Access = ", socket.data.chatAccess)
 
             if (!socket.data.chatAccess) {
-                socket.emit("subscription:error", {
-                    message: "Chat not allowed"
-                });
+                socket.emit("chat:error", { message: "Chat not allowed" });
                 return;
             }
 
@@ -207,9 +195,6 @@ app.use('/inventory', inventoryRoute);
 // using admin routes
 app.use("/admin", adminRoutes);
 app.use("/admin", adminDashboardRoutes);
-
-// using subcrtiption routes
-app.use("/subscription", subscriptionRoutes);
 
 // requiring tokenValidatorChecker
 app.use('/token', tokenValidation);

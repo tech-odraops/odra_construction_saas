@@ -10,7 +10,6 @@ import ChatModal from '../../Components/ChatModal';
 import axiosInstance from '../../utils/axiosInstance';
 import { useTranslation } from "react-i18next";
 import LockIcon from "@mui/icons-material/Lock";
-import { canAccess } from "../../utils/subscription";
 import MiscExpenseModal from "../../Components/MiscExpenseModal";
 import EditIcon from "@mui/icons-material/Edit";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
@@ -308,15 +307,12 @@ export default function ProjectDetails() {
               startIcon={<VisibilityOutlinedIcon />}
               variant="contained"
               onClick={() => {
-                if (!canAccess("attendance")) {
-                  toast.error("Upgrade to Business Plan to unlock Attendance.");
-                  return;
-                }
+
                 navigate(`/contractor/projects/${id}/attendance`);
               }}
               sx={{
                 position: "relative",
-                opacity: canAccess("attendance") ? 1 : 0.6,
+                opacity: 1,
                 backgroundColor: "primary.main",
                 color: "#000",
                 fontWeight: 600,
@@ -327,7 +323,7 @@ export default function ProjectDetails() {
             >
               {t("project.view_attendance")}
 
-              {!canAccess("attendance") && (
+              {false && (
                 <LockIcon
                   fontSize="small"
                   sx={{
@@ -344,15 +340,12 @@ export default function ProjectDetails() {
               startIcon={<Groups2OutlinedIcon />}
               variant="outlined"
               onClick={() => {
-                if (!canAccess("workerWage")) {
-                  toast.error("Upgrade to Business Plan to unlock Attendance.");
-                  return;
-                }
+
                 setOpenWageModal(true)
               }}
               sx={{
                 position: "relative",
-                opacity: canAccess("workerWage") ? 1 : 0.6,
+                opacity: 1,
                 color: "#F97316",
                 borderColor: "#F97316",
                 backgroundColor: "#fff",
@@ -365,7 +358,7 @@ export default function ProjectDetails() {
               }}
             >
               View Worker Wages
-              {!canAccess("workerWage") && (
+              {false && (
                 <LockIcon
                   fontSize="small"
                   sx={{
@@ -385,15 +378,12 @@ export default function ProjectDetails() {
                   variant="contained"
                   color="secondary"
                   onClick={() => {
-                    if (!canAccess("assignWorkers")) {
-                      toast.error("Upgrade to Business Plan to unlock Worker Assignment.");
-                      return;
-                    }
+
                     navigate(`/contractor/projects/${id}/assign-workers`);
                   }}
                   sx={{
                     position: "relative",
-                    opacity: canAccess("assignWorkers") ? 1 : 0.6,
+                    opacity: 1,
                     backgroundColor: "primary.main",
                     color: "#000",
                     fontWeight: 600,
@@ -405,7 +395,7 @@ export default function ProjectDetails() {
                 >
                   {t("project.assign_workers")}
 
-                  {!canAccess("assignWorkers") && (
+                  {false && (
                     <LockIcon
                       fontSize="small"
                       sx={{
@@ -445,15 +435,12 @@ export default function ProjectDetails() {
               variant="contained"
               color="warning"
               onClick={() => {
-                if (!canAccess("MiscModal")) {
-                  toast.error("Upgrade to Business Plan to unlock Misc Item Feature.");
-                  return;
-                }
+
                 setOpenMiscModal(true)
               }}
               sx={{
                 position: "relative",
-                opacity: canAccess("MiscModal") ? 1 : 0.6,
+                opacity: 1,
                 color: "primary.main",
                 borderColor: "primary.main",
                 fontWeight: 600,
@@ -464,7 +451,7 @@ export default function ProjectDetails() {
               }}
             >
               View Misc Expenses
-              {!canAccess("MiscModal") && (
+              {false && (
                 <LockIcon
                   fontSize="small"
                   sx={{
@@ -483,7 +470,7 @@ export default function ProjectDetails() {
             )}
 
             <Box sx={{ position: "relative" }}>
-              {!canAccess("chat") ? (
+              {false ? (
                 <Button
                   className="overview-chat-button"
                   variant="outlined"
@@ -491,9 +478,7 @@ export default function ProjectDetails() {
                     opacity: 0.6,
                     position: "relative"
                   }}
-                  onClick={() =>
-                    toast.error("Upgrade to Business Plan to unlock Chat.")
-                  }
+                  onClick={() => {}}
                 >
                   Chat
                   <LockIcon
@@ -514,7 +499,7 @@ export default function ProjectDetails() {
 
         {/* REPORTS SECTION */}
 
-        {!canAccess("reports") ? (
+        {false ? (
 
           <Box
             className="project-reports-locked"
@@ -535,7 +520,7 @@ export default function ProjectDetails() {
               variant="body2"
               sx={{ mt: 1 }}
             >
-              Upgrade to Business Plan to unlock Reports feature.
+
             </Typography>
 
           </Box>
@@ -592,7 +577,7 @@ export default function ProjectDetails() {
                     endIcon={<OpenInNewIcon />}
                     sx={{
                       mt: 2,
-                      opacity: canAccess("reports") ? 1 : 0.6,
+                      opacity: 1,
                       position: "relative",
                       backgroundColor: "primary.main",
                       color: "#000",
@@ -603,16 +588,13 @@ export default function ProjectDetails() {
 
                     }}
                     onClick={() => {
-                      if (!canAccess("reports")) {
-                        toast.error("Upgrade to Business Plan to unlock Reports.");
-                        return;
-                      }
+
                       navigate(`/contractor/view-report/${report._id}`);
                     }}
                   >
                     {t("project.view_report")}
 
-                    {!canAccess("reports") && (
+                    {false && (
                       <LockIcon
                         fontSize="small"
                         sx={{

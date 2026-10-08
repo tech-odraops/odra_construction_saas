@@ -6,7 +6,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { canAccess } from "../utils/subscription";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -20,13 +19,9 @@ export default function ProjectChat({ projectId, onMessageSent }) {
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
 
-    // checking access and making the connection 
+    // checking access and making the connection
     useEffect(() => {
-        if (!canAccess("chat")) {
-            toast.error("Upgrade to Business Plan to unlock Chat.");
-            navigate("/site-engineer/projects");
-            return;
-        }
+
     }, []);
 
     // 🔐 get current user id from JWT
@@ -62,7 +57,7 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                 setMessages(prev => [...newChats, ...prev]);
             }
 
-            
+
             // setMessages(res.data.chats);
             if (newChats.length < 20) {
                 setHasMore(false);

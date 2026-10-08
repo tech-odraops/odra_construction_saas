@@ -32,7 +32,6 @@ const Attendance = lazy(() => import("./Screen/SiteEngineer/Attendance"));
 const InventoryUsage = lazy(() => import("./Screen/SiteEngineer/InventoryUsage"));
 
 const Services = lazy(() => import("./Screen/Services"));
-const Pricing = lazy(() => import("./Screen/Pricing"));
 
 const AdminDashboard = lazy(() =>
   import("./Screen/Admin/admin dashboard/Dashboard")
@@ -173,7 +172,6 @@ function App() {
             <Route path="/contractor/workers" element={<ContractorWorkers />} />
             <Route path="/contractor/add-worker" element={<AddWorker />} />
             <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
-            <Route path="/pricing" element={<Pricing />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<SignInSide />} />
