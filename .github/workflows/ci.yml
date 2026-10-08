@@ -60,8 +60,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
       - name: Run tests
         run: npm test --if-present
 
       - name: Build frontend
         run: npm run build
+        
