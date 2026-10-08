@@ -12,6 +12,7 @@ Backend/serviceAccountKey.json
 Frontend/node_modules/
 Frontend/.env
 Frontend/dist
+Frontend/storybook-static/
 
 
 
