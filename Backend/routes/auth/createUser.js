@@ -6,7 +6,6 @@ const user = require('../../models/user');
 const User = require('../../models/user');
 const env = require('dotenv').config();
 const Organization = require("../../models/Organization");
-const Subscription = require("../../models/Subscription");
 
 // signup
 const signup = express.Router()
@@ -48,18 +47,11 @@ signup.post('/signUp', [
                 ownerId: newUser._id
              });
 
-            // Step 3: Create default FREE subscription
-            await Subscription.create({
-                organizationId: organization._id,
-                plan: "free",
-                status: "active"
-            });
-
-            // Step 4: Link user to organization
+            // Step 3: Link user to organization
             newUser.organizationId = organization._id;
             await newUser.save();
 
-            // Step 5: Generate JWT including organizationId
+            // Step 4: Generate JWT including organizationId
             if (newUser) {
                 const token = jwt.sign({
                     User_id: newUser._id,

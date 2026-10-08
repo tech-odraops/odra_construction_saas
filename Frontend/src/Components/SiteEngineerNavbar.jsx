@@ -33,7 +33,6 @@ export default function SiteEngineerNavbar() {
     localStorage.removeItem("IsLogin");
     localStorage.removeItem("User_id");
     localStorage.removeItem("name");
-    localStorage.removeItem("subscription");
     localStorage.removeItem("organizationId");
     localStorage.removeItem("role");
     navigate("/home");

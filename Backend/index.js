@@ -16,8 +16,6 @@ const workerRoutes = require('./routes/workerRoutes');
 const ChatMessage = require("./models/chatMessage");
 const Project = require("./models/project")
 const inventoryRoute = require('./routes/inventoryRoutes');
-const Subscription = require("./models/Subscription");
-const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const tokenValidation = require('./routes/tokenValiditiCheaker');
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
@@ -27,12 +25,14 @@ const { sendToUser } = require("./services/notification.service");
 const User = require("./models/user");
 const waitlistRoute = require('./routes/waitlistRoute');
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://odraopssaass.netlify.app",
-    "https://odraops.com",
-    "https://www.odraops.com"
-];
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
+    ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+    : [
+        "http://localhost:5173",
+        "https://odraopssaass.netlify.app",
+        "https://odraops.com",
+        "https://www.odraops.com"
+    ];
 
 // creating http server and mounting socket.io to it
 const httpServer = http.createServer(app);
@@ -67,15 +67,7 @@ io.on('connection', (socket) => {
                     // ✅ Check project ONCE
                     const project = await Project.findById(projectId).select("status");
 
-                    // ✅ Check subscription ONCE
-                    const subscription = await Subscription.findOne({ organizationId }).select("plan status");
-
-                    const canChat =
-                        project &&
-                        project.status !== "Completed" &&
-                        subscription &&
-                        subscription.plan === "business" &&
-                        subscription.status === "active";
+                    const canChat = project && project.status !== "Completed";
 
                     // ✅ Store in socket (VERY IMPORTANT)
                     socket.data.chatAccess = canChat;
@@ -109,9 +101,7 @@ io.on('connection', (socket) => {
             console.log("Can Access = ", socket.data.chatAccess)
 
             if (!socket.data.chatAccess) {
-                socket.emit("subscription:error", {
-                    message: "Chat not allowed"
-                });
+                socket.emit("chat:error", { message: "Chat not allowed" });
                 return;
             }
 
@@ -179,7 +169,10 @@ app.use(cors({
 }))
 app.use(express.json())
 
-
+// Health checkup for the server
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
 
 // requiring singup and signin
 app.use('/auth', signup);
@@ -202,9 +195,6 @@ app.use('/inventory', inventoryRoute);
 // using admin routes
 app.use("/admin", adminRoutes);
 app.use("/admin", adminDashboardRoutes);
-
-// using subcrtiption routes
-app.use("/subscription", subscriptionRoutes);
 
 // requiring tokenValidatorChecker
 app.use('/token', tokenValidation);

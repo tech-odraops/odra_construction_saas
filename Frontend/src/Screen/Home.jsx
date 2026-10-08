@@ -62,7 +62,7 @@ export default function Home() {
           <Box className="home-bottom-cta">
             <Typography component="h2">READY TO STREAMLINE YOUR <span>CONSTRUCTION WORKFLOW?</span></Typography>
             <Typography>Start managing attendance, projects, labour and inventory more efficiently today.</Typography>
-            <Button component={Link} to="/pricing" variant="contained" className="home-cta">View Pricing</Button>
+            <Button component={Link} to="/signup" variant="contained" className="home-cta">Get Started</Button>
           </Box>
         </Container>
       </main>

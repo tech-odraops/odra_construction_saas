@@ -17,7 +17,6 @@ import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurned
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
-import { canAccess } from "../../utils/subscription";
 import { io } from "socket.io-client";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -38,11 +37,7 @@ export default function Attendance() {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    if (!canAccess("attendance")) {
-      toast.error("Upgrade to Business Plan to unlock Attendance.");
-      navigate("/site-engineer/projects");
-      return ;
-    }
+
     socketRef.current = io(import.meta.env.VITE_API_URL, {
       transports: ["websocket"]
     })
@@ -59,7 +54,7 @@ export default function Attendance() {
     // Check if socket is initialized before using it
     if (!socketRef.current || !projectId) return;
 
-    // join the room 
+    // join the room
     socketRef.current.emit("join", { projectId: projectId });
 
     socketRef.current.on("project:deleted", (data) => {
@@ -153,7 +148,7 @@ export default function Attendance() {
   return (
     <>
       <SiteEngineerNavbar />
-  
+
       <Box
         sx={{
           position: "relative",

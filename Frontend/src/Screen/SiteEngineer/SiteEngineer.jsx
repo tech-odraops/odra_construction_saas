@@ -10,8 +10,6 @@ import heroImg from "../../assets/pic.png";
 import { Button } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import UpgradeBanner from "../../Components/UpgradeBanner";
-import { getSubscription } from "../../utils/subscription";
 import { Typography } from "@mui/material";
 import Caroucell from "../../Components/Caroucell";
 
@@ -70,7 +68,6 @@ export default function SiteEngineer() {
       {/* <ToastContainer position="top-right" autoClose={4000} /> */}
       <SiteEngineerNavbar />
 
-      {/* {getSubscription().plan === "free" && <UpgradeBanner />}   */}
       {/* HERO SECTION */}
       <section
         style={{

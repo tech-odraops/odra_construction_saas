@@ -11,7 +11,7 @@ export default function GoogleLoginButton() {
   const login = useGoogleLogin({
     flow: "auth-code", // requests authorization code (not access token)
     scope: "openid profile email", // basic user info
-    
+
     onSuccess: async ({ code }) => {
       try {
         // Send the code to your backend for verification & token exchange
@@ -24,7 +24,7 @@ export default function GoogleLoginButton() {
           localStorage.setItem("User_id",res.data.User_id);
           localStorage.setItem("IsLogin", true);
           localStorage.setItem("name",res.data.name);
-          
+
           // generate token
           const fcmToken = await getFCMToken();
           if (fcmToken) {
@@ -34,10 +34,6 @@ export default function GoogleLoginButton() {
           }
 
           toast.success("Logged in with Google successfully!");
-
-          // check for subscription
-        const subRes = await axiosInstance.get("/subscription/me");
-        localStorage.setItem("subscription", JSON.stringify(subRes.data));
 
           navigate(res.data.redirect);
         }else{
@@ -69,7 +65,7 @@ export default function GoogleLoginButton() {
         display: "flex",
         alignItems: "center",
         gap: "10px",
-        
+
       }}
     >
       <img

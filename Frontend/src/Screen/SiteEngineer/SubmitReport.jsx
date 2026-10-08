@@ -8,7 +8,6 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
 import { useTranslation } from "react-i18next";
-import { canAccess } from "../../utils/subscription";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
@@ -28,13 +27,9 @@ export default function SubmitReport() {
     issuesFound: "",
   });
 
-  // checking for access and setting io connection 
+  // checking for access and setting io connection
   useEffect(() => {
-    if (!canAccess("reports")) {
-      toast.error("Upgrade to Business Plan to unlock Report Submission.");
-      navigate("/site-engineer/projects");
-      return;
-    }
+
     socketRef.current = io(import.meta.env.VITE_API_URL, {
       transports: ["websocket"]
     })
@@ -53,7 +48,7 @@ export default function SubmitReport() {
     // Check if socket is initialized before using it
     if (!socketRef.current || !id) return;
 
-    // join the room 
+    // join the room
     socketRef.current.emit("join", { projectId: id });
 
     socketRef.current.on("project:deleted", (data) => {
@@ -90,7 +85,7 @@ export default function SubmitReport() {
       });
 
       streamRef.current = stream;
-      
+
       const mediaRecorder = new MediaRecorder(streamRef.current);
 
       mediaRecorderRef.current = mediaRecorder;

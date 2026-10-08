@@ -8,7 +8,6 @@ import AppNavbar from './components/AppNavbar';
 import Header from './components/Header';
 import MainGrid from './components/MainGrid';
 import SideMenu from './components/SideMenu';
-import WaitlistManagement from './components/WaitlistManagement';
 
 export default function Dashboard(props) {
   const [selectedTab, setSelectedTab] = useState('home');
@@ -40,7 +39,6 @@ export default function Dashboard(props) {
         >
           <Header selectedTab={selectedTab} />
           {selectedTab === 'home' && <MainGrid />}
-          {selectedTab === 'waitlist' && <WaitlistManagement />}
           {selectedTab === 'admins' && (
             <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' }, mt: 2 }}>
               <Paper variant="outlined" sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>

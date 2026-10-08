@@ -11,7 +11,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import { useTranslation } from "react-i18next";
-import { canAccess } from "../../utils/subscription";
 import FullScreenLoader from "../../Components/FullScreenLoader";
 
 export default function ViewReport() {
@@ -27,10 +26,7 @@ export default function ViewReport() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!canAccess("reports")) {
-      toast.error("Upgrade to Business Plan to unlock Reports.");
-      navigate("/contractor/home");
-    }
+
   }, []);
 
   useEffect(() => {

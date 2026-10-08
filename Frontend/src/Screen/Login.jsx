@@ -52,10 +52,6 @@ export default function Login() {
         localStorage.setItem("IsLogin", true);
         localStorage.setItem("name", response.data.name);
 
-        // set the subscription in local storage
-        const subRes = await axiosInstance.get("/subscription/me");
-        localStorage.setItem("subscription", JSON.stringify(subRes.data));
-
         toast.success("Logged in successfully!");
 
         // generating fcm token
@@ -138,7 +134,7 @@ export default function Login() {
               </div>
             </Box>
 
-            
+
             {/* Password */}
             <Box mb={3}>
               <label className="form-label fw-semibold">{t("auth.password")}</label>

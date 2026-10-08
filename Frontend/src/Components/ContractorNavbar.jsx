@@ -3,9 +3,6 @@ import { useNavigate } from "react-router-dom";
 import Divider from "@mui/material/Divider";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
-import LockIcon from "@mui/icons-material/Lock";
-import { toast } from "react-toastify";
-import { canAccess } from "../utils/subscription";
 import SocialBar from "./SocialBar";
 
 import {
@@ -40,7 +37,6 @@ export default function ContractorNavbar() {
     localStorage.removeItem("IsLogin");
     localStorage.removeItem("User_id");
     localStorage.removeItem("name");
-    localStorage.removeItem("subscription");
     localStorage.removeItem("organizationId");
     localStorage.removeItem("role");
     navigate("/home");
@@ -79,20 +75,10 @@ export default function ContractorNavbar() {
 
             {/* Desktop Menu */}
             <Box className="contractor-desktop-menu" sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
-              {menuItems.map((item) => {
-                const isAddWorker = item.path === "/contractor/add-worker" || item.path === "/contractor/workers";
-                const allowed = !isAddWorker || canAccess("addWorker") || canAccess("viewWorkers");
-
-                return (
+              {menuItems.map((item) => (
                   <Typography
                     key={item.label}
-                    onClick={() => {
-                      if (!allowed) {
-                        toast.error("Upgrade to Business Plan to unlock this feature.");
-                        return;
-                      }
-                      navigate(item.path);
-                    }}
+                    onClick={() => navigate(item.path)}
                     sx={{
                       color: "#26323d",
                       textDecoration: "none",
@@ -100,20 +86,12 @@ export default function ContractorNavbar() {
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
-                      opacity: allowed ? 1 : 0.6,
                     }}
                   >
                     <item.icon sx={{ mr: 1, fontSize: 18, color: "#F97316" }} />{item.label}
 
-                    {!allowed && (
-                      <LockIcon
-                        fontSize="small"
-                        sx={{ ml: 1, fontSize: 16, color: "#ff9800" }}
-                      />
-                    )}
                   </Typography>
-                );
-              })}
+              ))}
             </Box>
 
             {/* Avatar */}
@@ -207,26 +185,10 @@ export default function ContractorNavbar() {
 
             {/* MENU ITEMS */}
             <List>
-              {menuItems.map((item) => {
-                const isAddWorker =
-                  item.path === "/contractor/add-worker" ||
-                  item.path === "/contractor/workers";
-
-                const allowed =
-                  !isAddWorker ||
-                  canAccess("addWorker") ||
-                  canAccess("viewWorkers");
-
-                return (
+              {menuItems.map((item) => (
                   <ListItem
                     key={item.label}
                     onClick={() => {
-                      if (!allowed) {
-                        toast.error(
-                          "Upgrade to Business Plan to unlock this feature."
-                        );
-                        return;
-                      }
                       navigate(item.path);
                       setOpenDrawer(false);
                     }}
@@ -234,7 +196,6 @@ export default function ContractorNavbar() {
                       borderRadius: 2,
                       mb: 1,
                       cursor: "pointer",
-                      opacity: allowed ? 1 : 0.6,
                       "&:hover": {
                         backgroundColor: "action.hover",
                       },
@@ -249,15 +210,8 @@ export default function ContractorNavbar() {
                       }}
                     />
 
-                    {!allowed && (
-                      <LockIcon
-                        fontSize="small"
-                        sx={{ fontSize: 16, color: "#ff9800" }}
-                      />
-                    )}
                   </ListItem>
-                );
-              })}
+              ))}
             </List>
           </Box>
 
