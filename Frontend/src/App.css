@@ -3,7 +3,7 @@ html, body {
   width: 100%;
   min-height: 100%;
   overflow-x: hidden;
-  overflow-y: auto; 
+  overflow-y: auto;
   /* testign */
 }
 
@@ -21,8 +21,6 @@ main,
 .project-overview-page,
 .add-worker-main,
 .project-overview-main,
-.contact-page main,
-.pricing-page main,
 .home-page main {
   overflow: visible !important;
 }
@@ -459,442 +457,6 @@ main,
   color: #F97316;
   font-weight: 700;
   text-decoration: none;
-}
-
-/* Contact page */
-.contact-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  color: #101214;
-}
-
-.contact-page main {
-  flex: 1;
-  overflow: visible;
-}
-
-.contact-main {
-  position: relative;
-  min-height: clamp(620px, calc(100vh - 46px), 760px);
-  overflow: hidden;
-  background-color: #fff;
-  background-image: var(--contact-art);
-  background-size: cover;
-  background-position: center 63%;
-}
-
-.contact-main::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.75) 35%, rgba(255,255,255,0.3) 65%, rgba(255,255,255,0.05) 100%);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.contact-layout {
-  position: relative;
-  z-index: 1;
-  width: min(100% - 64px, 1120px);
-  min-height: inherit;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(350px, .85fr);
-  align-items: center;
-  gap: clamp(28px, 5vw, 66px);
-  padding: 28px 0;
-}
-
-.contact-copy {
-  max-width: 520px;
-}
-
-.contact-kicker.MuiTypography-root {
-  margin: 0 0 3px;
-  color: #F97316;
-  font-size: clamp(2.1rem, 3.4vw, 2.65rem);
-  font-weight: 700;
-  line-height: 1.05;
-  font-style: italic;
-}
-
-.contact-title.MuiTypography-root {
-  margin: 0 0 10px;
-  color: #101214;
-  font-size: clamp(1.75rem, 3vw, 2.1rem);
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-.contact-description.MuiTypography-root {
-  max-width: 470px;
-  margin-bottom: 30px;
-  color: #4a4e52;
-  font-size: .90rem;
-  line-height: 1.55;
-  font-weight: 400;
-}
-
-.contact-description strong {
-  color: #17191c;
-  font-weight: 750;
-}
-
-.contact-details {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.contact-detail {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.contact-detail-icon {
-  width: 54px;
-  height: 54px;
-  flex: 0 0 54px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
-  color: #F97316;
-  background: rgba(249, 115, 22, .08);
-}
-
-.contact-detail-icon svg {
-  font-size: 27px;
-}
-
-.contact-detail h2.MuiTypography-root {
-  margin: 0 0 2px;
-  color: #212427;
-  font-size: .98rem;
-  font-weight: 750;
-}
-
-.contact-detail p.MuiTypography-root {
-  color: #707579;
-  font-size: .85rem;
-}
-
-.contact-card-wrap {
-  display: flex;
-  justify-content: center;
-}
-
-.contact-card {
-  width: 100%;
-  max-width: 390px;
-  padding: 23px 24px 18px;
-  border: 1px solid #e7e9eb;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, .97);
-  box-shadow: 0 2px 14px rgba(20, 25, 30, .09);
-}
-
-.contact-card-title.MuiTypography-root {
-  margin-bottom: 7px;
-  color: #202326;
-  font-size: 1.12rem;
-  font-weight: 750;
-}
-
-.contact-title-rule {
-  display: block;
-  width: 34px;
-  height: 3px;
-  margin-bottom: 19px;
-  background: #F97316;
-}
-
-.contact-card form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.contact-name-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.contact-card .form-control,
-.contact-card .form-select {
-  min-height: 39px;
-  border-color: #dce0e3;
-  border-radius: 5px;
-  color: #24282b;
-  font-size: .76rem;
-  box-shadow: none;
-}
-
-.contact-card .form-control:focus,
-.contact-card .form-select:focus {
-  border-color: #F97316;
-}
-
-.contact-card .form-control::placeholder {
-  color: #72777b;
-  opacity: 1;
-}
-
-.contact-card .contact-message {
-  min-height: 108px;
-  resize: vertical;
-}
-
-.contact-submit {
-  min-height: 39px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border: 0;
-  border-radius: 5px;
-  color: #fff;
-  background: #F97316;
-  font-size: .81rem;
-  font-weight: 700;
-}
-
-.contact-submit:hover {
-  background: #e9650e;
-}
-
-.contact-submit svg {
-  font-size: 17px;
-}
-
-/* Pricing page follows the same clean, construction-led orange theme */
-.pricing-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #fff;
-  color: #101214;
-}
-
-.pricing-page main {
-  flex: 1;
-  overflow: visible;
-}
-
-.pricing-main {
-  min-height: calc(100vh - 46px);
-  padding: 42px 24px 38px;
-  background-color: #fff;
-  background-image: var(--pricing-art);
-  background-size: cover;
-  background-position: center 58%;
-}
-
-.pricing-content {
-  width: min(100%, 1320px);
-  margin: 0 auto;
-}
-
-.pricing-title.MuiTypography-root {
-  margin: 0 0 1px;
-  color: #101214;
-  font-size: clamp(2rem, 3.6vw, 2.55rem);
-  font-weight: 850;
-  line-height: 1.1;
-}
-
-.pricing-title span {
-  color: #F97316;
-}
-
-.pricing-subtitle.MuiTypography-root {
-  margin-bottom: 23px;
-  color: #303438;
-  font-size: .9rem;
-}
-
-.pricing-content>.container {
-  width: 100%;
-  max-width: 835px;
-  padding: 0;
-}
-
-.pricing-content>.container>.row {
-  align-items: stretch;
-}
-
-.pricing-content>.container>.row>div {
-  align-self: stretch;
-}
-
-.pricing-page .MuiCard-root {
-  border: 1px solid #e4e7e9;
-  border-radius: 7px !important;
-  background: rgba(255, 255, 255, .98);
-  box-shadow: 0 4px 18px rgba(18, 27, 34, .08);
-}
-
-.pricing-page .row>div:nth-child(2) .MuiCard-root {
-  border: 2px solid #F97316 !important;
-}
-
-.pricing-page .MuiCard-root {
-  min-height: 430px;
-  height: 100%;
-  transition: box-shadow .2s ease;
-}
-
-.pricing-page .MuiCard-root:hover {
-  box-shadow: 0 12px 28px rgba(18, 27, 34, .12);
-}
-
-.pricing-page .MuiCardContent-root {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 20px !important;
-}
-
-.pricing-page .pricing-features {
-  flex: 1;
-  margin-bottom: 22px !important;
-}
-
-.pricing-page .pricing-features .MuiTypography-root {
-  margin-bottom: 7px;
-  color: #17191c;
-  font-size: .76rem;
-  line-height: 1.05;
-}
-
-.pricing-page .pricing-features .MuiTypography-colorTextSecondary {
-  color: #17191c;
-}
-
-.pricing-page .pricing-features .pricing-feature {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.pricing-feature-mark {
-  width: 11px;
-  height: 11px;
-  flex: 0 0 11px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  color: #fff;
-}
-
-.pricing-feature-mark.is-included {
-  background: #F97316;
-}
-
-.pricing-feature-mark.is-excluded {
-  background: #E3483F;
-}
-
-.pricing-feature-mark svg {
-  width: 8px;
-  height: 8px;
-}
-
-.pricing-special-feature-icon {
-  width: 11px;
-  height: 12px;
-  flex: 0 0 11px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #F97316;
-}
-
-.pricing-special-feature-icon svg {
-  width: 11px;
-  height: 11px;
-}
-
-.pricing-page .MuiCard-root .MuiTypography-colorPrimary {
-  color: #F97316;
-}
-
-.pricing-page .MuiCard-root h3.MuiTypography-root {
-  color: #F97316;
-}
-
-.pricing-page .MuiCard-root h5.MuiTypography-root {
-  color: #202326;
-  font-size: 1rem;
-}
-
-
-
-.pricing-page .MuiCard-root .MuiButton-contained {
-  background-color: #F97316;
-  box-shadow: none;
-}
-
-.pricing-page .MuiCard-root .MuiButton-contained:hover {
-  background-color: #e9650e;
-  box-shadow: none;
-}
-
-.pricing-page .MuiCard-root .MuiButton-outlined {
-  color: #F97316;
-  border-color: #F97316;
-}
-
-.pricing-page .MuiCard-root .MuiButton-outlined:hover {
-  color: #fff;
-  background-color: #F97316;
-  border-color: #F97316;
-}
-
-.pricing-page .MuiCard-root .MuiButton-root {
-  min-height: 40px;
-  padding: 8px 12px;
-  border-radius: 5px;
-  text-transform: uppercase;
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .02em;
-}
-
-.pricing-page .MuiCard-root .MuiButton-contained:disabled {
-  color: #fff;
-  background-color: #F97316;
-  opacity: 1;
-}
-
-.pricing-page .pricing-popular {
-  padding: 4px 9px !important;
-  border-radius: 4px !important;
-  font-size: 9px !important;
-}
-
-.pricing-page .MuiToolbar-root {
-  padding-left: 20px;
-  padding-right: 22px;
-}
-
-.pricing-page .MuiToolbar-root a[href="/Login"] {
-  display: none;
-}
-
-@media (max-width: 600px) {
-  .pricing-main {
-    padding: 36px 14px 44px;
-  }
-
-  .pricing-subtitle.MuiTypography-root {
-    margin-bottom: 28px;
-    font-size: .9rem;
-  }
 }
 
 @media (max-width: 900px) {
@@ -1865,7 +1427,7 @@ main,
 }
 
 .project-locked-note.MuiTypography-root::before {
-  content: "🔒";
+  content: "ðŸ”’";
   color: #F97316;
 }
 
@@ -1991,7 +1553,7 @@ main,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  content: "✓";
+  content: "âœ“";
   border-radius: 50%;
   color: #fff;
   background: #f3a900;
@@ -2011,7 +1573,7 @@ main,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  content: "×";
+  content: "Ã—";
   border-radius: 50%;
   color: #fff;
   background: #e64b50;
@@ -3146,3 +2708,4 @@ main,
     grid-template-columns: 1fr;
   }
 }
+

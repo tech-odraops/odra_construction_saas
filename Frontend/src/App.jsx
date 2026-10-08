@@ -1,6 +1,6 @@
 
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,7 +11,6 @@ import { onForegroundMessage, resolveNotificationUrl } from "./services/notifica
 const Home = lazy(() => import("./Screen/Home"));
 const Signup = lazy(() => import("./Screen/Signup"));
 const Login = lazy(() => import("./Screen/Login"));
-const Contact = lazy(() => import("./Screen/Contact"));
 
 const Contractor = lazy(() => import("./Screen/Contractor/Contractor"));
 const Project = lazy(() => import("./Screen/Contractor/Project"));
@@ -33,8 +32,6 @@ const Attendance = lazy(() => import("./Screen/SiteEngineer/Attendance"));
 const InventoryUsage = lazy(() => import("./Screen/SiteEngineer/InventoryUsage"));
 
 const Services = lazy(() => import("./Screen/Services"));
-const Pricing = lazy(() => import("./Screen/Pricing"));
-const Waitlist = lazy(() => import("./Screen/Waitlist"));
 
 const AdminDashboard = lazy(() =>
   import("./Screen/Admin/admin dashboard/Dashboard")
@@ -109,9 +106,27 @@ function NotificationHandler() {
   return null;
 }
 
+function RouteBackground() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const isDashboardRoute =
+      pathname.startsWith("/contractor/") ||
+      pathname === "/contractor" ||
+      pathname === "/engineer/home" ||
+      pathname.startsWith("/site-engineer/");
+
+    document.body.classList.toggle("has-dashboard-background", isDashboardRoute);
+    return () => document.body.classList.remove("has-dashboard-background");
+  }, [pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <RouteBackground />
       {/* Handles notification click events and foreground messages */}
       <NotificationHandler />
 
@@ -131,7 +146,6 @@ function App() {
       <ErrorBoundary>
         <Suspense fallback={<FullScreenLoader />}>
           <Routes>
-            <Route path='/Contact-Us' element={<Contact />} />
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
             <Route path="/Signup" element={<Signup />} />
@@ -152,14 +166,12 @@ function App() {
             <Route path="/site-engineer/projects/:id/inventory" element={<InventoryUsage />} />
             {/* common pages routes */}
             <Route path="/services" element={<Services />} />
-            <Route path="/waitlist" element={<Waitlist />} />
 
             {/* Attendance Route */}
             <Route path="/contractor/projects/:id/attendance" element={<ContractorAttendance />} />
             <Route path="/contractor/workers" element={<ContractorWorkers />} />
             <Route path="/contractor/add-worker" element={<AddWorker />} />
             <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
-            <Route path="/pricing" element={<Pricing />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<SignInSide />} />

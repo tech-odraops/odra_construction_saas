@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
-import { canAccess } from "../../utils/subscription";
 import FullScreenLoader from "../../Components/FullScreenLoader";
 
 export default function AssignWorkers() {
@@ -25,10 +24,7 @@ export default function AssignWorkers() {
 
   // check if it is allowed in the plan
   useEffect(() => {
-    if (!canAccess("assignWorkers")) {
-      toast.error("Upgrade to Business Plan to unlock Worker Assignment.");
-      navigate("/contractor/home");
-    }
+
   }, []);
 
   /* -------------------------
@@ -84,7 +80,7 @@ export default function AssignWorkers() {
   return (
     <>
       <ContractorNavbar />
-  
+
       <Box
         sx={{
           minHeight: "100vh",
@@ -102,14 +98,14 @@ export default function AssignWorkers() {
               {t("workers.assign_workers_desc")}
             </Typography>
           </Box>
-  
+
           {/* LOADING */}
           {loading && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
               <CircularProgress />
             </Box>
           )}
-  
+
           {/* EMPTY STATE */}
           {!loading && workers.length === 0 && (
             <Paper
@@ -129,7 +125,7 @@ export default function AssignWorkers() {
               </Typography>
             </Paper>
           )}
-  
+
           {/* WORKER LIST */}
           {!loading && workers.length > 0 && (
             <Box
@@ -165,7 +161,7 @@ export default function AssignWorkers() {
                     <Typography variant="h6" fontWeight={600}>
                       {worker.name}
                     </Typography>
-  
+
                     {worker.phone && (
                       <Typography
                         variant="body2"
@@ -175,7 +171,7 @@ export default function AssignWorkers() {
                         📞 {worker.phone}
                       </Typography>
                     )}
-  
+
                     <Typography
                       variant="caption"
                       sx={{
@@ -192,7 +188,7 @@ export default function AssignWorkers() {
                       {t("workers.available")}
                     </Typography>
                   </Box>
-  
+
                   <Button
                     variant="contained"
                     sx={{
@@ -211,7 +207,7 @@ export default function AssignWorkers() {
               ))}
             </Box>
           )}
-  
+
           {/* BACK ACTION */}
           <Box sx={{ mt: 5 }}>
             <Button
@@ -226,9 +222,9 @@ export default function AssignWorkers() {
           </Box>
         </Box>
       </Box>
-  
+
       <Footer />
     </>
   );
-  
+
 }

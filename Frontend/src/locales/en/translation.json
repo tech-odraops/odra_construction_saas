@@ -2,16 +2,13 @@
   "navbar": {
     "home": "Home",
     "services": "Services",
-    "contact": "Contact",
     "login": "Login",
     "signup": "Sign Up",
     "logout": "Logout",
     "add_project": "Add New Project",
     "all_projects": "All Projects",
     "workers": "Workers",
-    "add_worker": "Add Worker",
-    "pricing": "Pricing",
-    "waitlist": "Waitlist"
+    "add_worker": "Add Worker"
   },
   "auth": {
     "welcome_back": "Welcome Back",
@@ -242,30 +239,5 @@
       "ui_title": "Clean & User-Friendly UI",
       "ui_desc": "Designed to be simple, fast, and mobile-friendly so site engineers can focus on work—not learning software."
     }
-  },
-  "waitlist_page": {
-    "tagline": "PRE-LAUNCH REGISTRATION",
-    "title_1": "BE THE FIRST",
-    "title_2": "TO BUILD SMARTER",
-    "description": "ODRAOPS is an all-in-one platform to simplify your construction operations — from project management and workforce tracking to inventory control and site operations.",
-    "offer_prefix": "Sign up now and get ",
-    "offer_highlight": "10% OFF",
-    "offer_suffix": " when we go live!",
-    "manage_projects": "Manage Projects",
-    "track_workforce": "Track Workforce",
-    "control_inventory": "Control Inventory",
-    "streamline_ops": "Streamline Operations",
-    "form_title": "Join the Pre-Launch List",
-    "form_desc_1": "Be the first to know about ",
-    "form_desc_2": " and get ",
-    "form_desc_3": " when we go live!",
-    "company_name": "Company Name",
-    "owner_name": "Owner Name",
-    "email_id": "Email ID",
-    "signup_btn": "SIGN UP",
-    "submitting": "SUBMITTING...",
-    "privacy_note": "We respect your privacy.",
-    "success_msg": "Thank you for joining our pre-launch list! We will reach out soon.",
-    "error_msg": "Please fill in all fields correctly."
   }
 }

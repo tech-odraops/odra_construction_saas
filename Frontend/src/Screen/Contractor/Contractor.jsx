@@ -8,8 +8,6 @@ import { jwtDecode } from "jwt-decode";
 import axiosInstance from "../../utils/axiosInstance";
 import { Box, Typography, Button } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import UpgradeBanner from "../../Components/UpgradeBanner";
-import { getSubscription } from "../../utils/subscription";
 import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
 import HandymanRoundedIcon from "@mui/icons-material/HandymanRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
@@ -58,7 +56,6 @@ export default function ContractorDashboard() {
 
   return (
     <>
-      {getSubscription().plan === "free" && <UpgradeBanner />}
       <ContractorNavbar />
       <Box sx={{ minHeight: "100vh", bgcolor: "#fff", color: "#17212e", pb: 5 }}>
         <Box sx={{ maxWidth: 1160, mx: "auto", px: { xs: 2, sm: 3 }, pt: { xs: 4, md: 5 }, pb: 2,

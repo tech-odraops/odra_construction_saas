@@ -17,7 +17,6 @@ const StyledBreadcrumbs = styled(Breadcrumbs)(({ theme }) => ({
 export default function NavbarBreadcrumbs({ selectedTab = 'home' }) {
   const tabLabel = {
     home: 'Home',
-    waitlist: 'Waitlist',
     admins: 'Add Admins',
   }[selectedTab] || 'Home';
 
