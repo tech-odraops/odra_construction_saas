@@ -7,6 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "playwright test",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:live": "playwright test e2e/live-login.spec.js",
     "preview": "vite preview",
     "frontend": "npm run dev",
     "storybook": "storybook dev -p 6006",
@@ -47,6 +51,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.55.0",
     "@storybook/react-vite": "^10.6.1",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
