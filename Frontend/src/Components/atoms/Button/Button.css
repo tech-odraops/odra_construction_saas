@@ -1,14 +1,15 @@
 .button-atom {
   box-sizing: border-box;
-  width: 179px;
-  height: 47px;
-  padding: 16px 8px;
-  border: 2px solid transparent;
-  border-radius: 5px;
+  width: var(--button-width);
+  height: var(--button-height);
+  padding: var(--button-padding-block) var(--button-padding-inline);
+  border: var(--button-border-width) solid transparent;
+  border-radius: var(--button-border-radius);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  gap: var(--button-icon-gap);
+  font-size: var(--button-font-size);
   font-weight: 600;
   font-style: normal;
   line-height: 100%;
@@ -18,8 +19,8 @@
 }
 
 .button-atom:focus-visible {
-  outline: 3px solid var(--template-palette-primary-light);
-  outline-offset: 2px;
+  outline: var(--button-focus-outline-width) solid var(--template-palette-primary-light);
+  outline-offset: var(--button-focus-outline-offset);
 }
 
 .button-atom:disabled {
@@ -28,37 +29,83 @@
 }
 
 .button-atom--primary {
-  border-color: var(--template-palette-primary-main);
-  color: var(--template-palette-primary-main);
+  border-color: var(--button-primary-color);
+  color: var(--button-primary-color);
   background-color: transparent;
 }
 
 .button-atom--primary:not(:disabled):hover,
 .button-atom--primary.storybook-force-hover {
-  border-color: var(--template-palette-primary-main);
-  color: var(--template-palette-primary-contrastText);
-  background-color: var(--template-palette-primary-main);
+  border-color: var(--button-primary-hover-color);
+  color: var(--button-primary-hover-text-color);
+  background-color: var(--button-primary-hover-color);
 }
 
-.button-atom--secondary {
-  border-color: var(--template-palette-primary-main);
-  color: var(--template-palette-primary-contrastText);
-  background-color: var(--template-palette-primary-main);
+.button-atom--primary:not(:disabled):hover .button-atom__icon,
+.button-atom--primary.storybook-force-hover .button-atom__icon {
+  filter: brightness(0) invert(1);
 }
 
-.button-atom--secondary:not(:disabled):hover {
-  border-color: var(--template-palette-primary-dark);
-  background-color: var(--template-palette-primary-dark);
+.button-atom--icon-only {
+  width: var(--button-icon-only-width);
+  padding: var(--button-icon-only-padding);
 }
 
-.button-atom--tertiary {
-  border-color: var(--template-palette-text-primary);
-  color: var(--template-palette-text-primary);
-  background-color: transparent;
+.button-atom__icon {
+  transition: filter 140ms ease;
 }
 
-.button-atom--tertiary:not(:disabled):hover {
-  border-color: var(--template-palette-text-primary);
-  color: var(--template-palette-primary-contrastText);
-  background-color: var(--template-palette-text-primary);
+.button-atom__state-icons {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: var(--button-icon-size);
+  height: var(--button-icon-size);
+}
+
+.button-atom__state-icon {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.button-atom__state-icon--running {
+  animation: button-atom-spin 2.8s linear infinite;
+  animation-play-state: paused;
+}
+
+.button-atom--running .button-atom__state-icon--running,
+.button-atom--completed .button-atom__state-icon--completed,
+.button-atom--failed .button-atom__state-icon--failed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.button-atom--running .button-atom__state-icon--running {
+  animation-play-state: running;
+}
+
+.button-atom--running:not(:disabled):hover .button-atom__state-icon,
+.button-atom--running.storybook-force-hover .button-atom__state-icon,
+.button-atom--completed:not(:disabled):hover .button-atom__state-icon,
+.button-atom--completed.storybook-force-hover .button-atom__state-icon,
+.button-atom--failed:not(:disabled):hover .button-atom__state-icon,
+.button-atom--failed.storybook-force-hover .button-atom__state-icon {
+  filter: brightness(0) invert(1);
+}
+
+@keyframes button-atom-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button-atom__state-icon {
+    transition-duration: 0.01ms;
+  }
+
+  .button-atom__state-icon--running {
+    animation: none;
+  }
 }

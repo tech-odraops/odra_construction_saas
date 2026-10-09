@@ -1,4 +1,5 @@
 import Button from './Button';
+import { ICON_NAMES } from '../Icon/icon-names';
 
 export default {
   title: 'Atoms/Button',
@@ -7,41 +8,65 @@ export default {
     children: 'Continue',
   },
   argTypes: {
-    variant: {
+    icon: {
       control: 'select',
-      options: ['primary', 'secondary', 'tertiary'],
+      options: ICON_NAMES,
+    },
+    'icon-only-button': {
+      control: 'select',
+      options: ICON_NAMES,
+    },
+    state: {
+      control: 'select',
+      options: ['running', 'completed', 'failed'],
     },
   },
 };
 
-export const Primary = {
-  args: {
-    variant: 'primary',
-  },
-};
+export const Primary = {};
 
 export const PrimaryHover = {
   args: {
-    variant: 'primary',
     className: 'storybook-force-hover',
   },
 };
 
-export const Secondary = {
+export const WithIcon = {
   args: {
-    variant: 'secondary',
+    icon: 'check-mark',
   },
 };
 
-export const Tertiary = {
+export const Running = {
   args: {
-    variant: 'tertiary',
+    state: 'running',
+    children: 'Adding...',
+  },
+};
+
+export const Completed = {
+  args: {
+    state: 'completed',
+    children: 'Added',
+  },
+};
+
+export const Failed = {
+  args: {
+    state: 'failed',
+    children: 'Failed',
+  },
+};
+
+export const IconOnly = {
+  args: {
+    'icon-only-button': 'plus-math',
+    'aria-label': 'Add',
   },
 };
 
 export const Disabled = {
   args: {
-    variant: 'primary',
     disabled: true,
   },
 };

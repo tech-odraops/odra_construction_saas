@@ -144,7 +144,34 @@ export const typography = {
   },
 };
 
+export const buttonSizing = {
+  width: '10.3125rem',
+  height: '3.125rem',
+  borderRadius: '0.1875rem',
+  paddingBlock: '0.75rem',
+  paddingInline: '1rem',
+  borderWidth: '0.125rem',
+  fontSize: '1rem',
+  focusOutlineWidth: '0.1875rem',
+  focusOutlineOffset: '0.125rem',
+  iconGap: '0.75rem',
+  iconOnlyWidth: '3.125rem',
+  iconOnlyPadding: '0rem',
+  primaryColor: '#F55814',
+  primaryHoverColor: '#F55814',
+  primaryHoverTextColor: '#FFFFFF',
+};
+
+export const iconSizes = {
+  xs: '0.75rem',
+  sm: '1rem',
+  md: '1.25rem',
+  lg: '1.5rem',
+  xl: '2rem',
+  xxl: '3rem',
+  button: '1.875rem',
+};
+
 export const shape = {
   borderRadius: 8,
 };
-
