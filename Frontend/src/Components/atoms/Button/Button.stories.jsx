@@ -70,3 +70,30 @@ export const Disabled = {
     disabled: true,
   },
 };
+
+export const Gallery = {
+  render: () => (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(12rem, 1fr))',
+        alignItems: 'center',
+        gap: '1.5rem',
+        maxWidth: '48rem',
+        padding: '1.5rem',
+      }}
+    >
+      <Button>Primary</Button>
+      <Button className="storybook-force-hover">Primary hover</Button>
+      <Button icon="check-mark">With icon</Button>
+      <Button aria-label="Add item" iconOnlyButton="plus-math" />
+      <Button disabled>Disabled</Button>
+      <Button state="running">Running</Button>
+      <Button state="completed">Completed</Button>
+      <Button state="failed">Failed</Button>
+    </div>
+  ),
+  parameters: {
+    controls: { disable: true },
+  },
+};
