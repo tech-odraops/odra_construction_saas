@@ -21,7 +21,6 @@
 }
 
 /* Placeholder colours: swap for your design tokens. */
-.icon--gradient-success { background: linear-gradient(135deg, #4caf50, #2e7d32); }
-.icon--gradient-error   { background: linear-gradient(135deg, #ef5350, #c62828); }
-.icon--gradient-info    { background: linear-gradient(135deg, #42a5f5, #1565c0); }
-.icon--gradient-warning { background: linear-gradient(135deg, #ffca28, #f57f17); }
+.icon--gradient-primary { background: #F55814; }
+.icon--gradient-inverted { background: #FFFFFF; }
+.icon--gradient-disabled { background: #ACACAC; }
