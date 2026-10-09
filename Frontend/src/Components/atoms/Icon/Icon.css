@@ -1,0 +1,27 @@
+.icon {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  fill: currentColor;
+}
+
+.icon--xs  { --icon-size: 12px; }
+.icon--sm  { --icon-size: 16px; }
+.icon--md  { --icon-size: 20px; }
+.icon--lg  { --icon-size: 24px; }
+.icon--xl  { --icon-size: 32px; }
+.icon--xxl { --icon-size: 48px; }
+
+/* Gradient mode: the icon file is the mask; the gradient shows through it. */
+.icon--gradient {
+  -webkit-mask: var(--icon-src) center / contain no-repeat;
+  mask: var(--icon-src) center / contain no-repeat;
+}
+
+/* Placeholder colours: swap for your design tokens. */
+.icon--gradient-success { background: linear-gradient(135deg, #4caf50, #2e7d32); }
+.icon--gradient-error   { background: linear-gradient(135deg, #ef5350, #c62828); }
+.icon--gradient-info    { background: linear-gradient(135deg, #42a5f5, #1565c0); }
+.icon--gradient-warning { background: linear-gradient(135deg, #ffca28, #f57f17); }
