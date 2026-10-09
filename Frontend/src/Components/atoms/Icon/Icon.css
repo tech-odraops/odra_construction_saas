@@ -7,12 +7,12 @@
   fill: currentColor;
 }
 
-.icon--xs  { --icon-size: 12px; }
-.icon--sm  { --icon-size: 16px; }
-.icon--md  { --icon-size: 20px; }
-.icon--lg  { --icon-size: 24px; }
-.icon--xl  { --icon-size: 32px; }
-.icon--xxl { --icon-size: 48px; }
+.icon--xs  { --icon-size: 0.75rem; }
+.icon--sm  { --icon-size: 1rem; }
+.icon--md  { --icon-size: 1.25rem; }
+.icon--lg  { --icon-size: 1.5rem; }
+.icon--xl  { --icon-size: 2rem; }
+.icon--xxl { --icon-size: 3rem; }
 
 /* Gradient mode: the icon file is the mask; the gradient shows through it. */
 .icon--gradient {
