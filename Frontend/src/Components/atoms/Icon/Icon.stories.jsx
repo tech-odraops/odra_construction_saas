@@ -14,7 +14,7 @@ export default {
     },
     size: {
       control: 'select',
-      options: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'],
+      options: ['xs', 'sm', 'md', 'lg', 'xl', 'xxl', 'button'],
     },
     gradient: {
       control: 'select',
