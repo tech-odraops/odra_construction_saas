@@ -1,6 +1,9 @@
-<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<svg filter="url(#icon-orange)" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <rect width="20" height="20" fill="url(#pattern0_2067_7)"/>
 <defs>
+<filter id="icon-orange" color-interpolation-filters="sRGB">
+<feColorMatrix type="matrix" values="0 0 0 0 0.960784 0 0 0 0 0.345098 0 0 0 0 0.078431 0 0 0 1 0"/>
+</filter>
 <pattern id="pattern0_2067_7" patternContentUnits="objectBoundingBox" width="1" height="1">
 <use xlink:href="#image0_2067_7" transform="scale(0.0111111)"/>
 </pattern>

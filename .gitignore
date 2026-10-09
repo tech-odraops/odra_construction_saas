@@ -15,6 +15,7 @@ Frontend/dist
 Frontend/storybook-static/
 Frontend/playwright-report/
 Frontend/test-results/
+Frontend/public/icons/
 
 # Logs
 logs
