@@ -14,9 +14,7 @@
     "preview": "vite preview",
     "frontend": "npm run dev",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "test": "playwright test",
-    "test:e2e": "playwright test"
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -63,7 +61,6 @@
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
     "storybook": "^10.6.1",
-    "vite": "^7.1.7",
-    "@playwright/test": "^1.48.0"
+    "vite": "^7.1.7"
   }
 }
