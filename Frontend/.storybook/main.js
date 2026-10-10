@@ -19,6 +19,7 @@ async function withoutPwaPlugins(plugins = []) {
 
 export default {
   stories: ['../src/**/*.stories.@(js|jsx)'],
+  staticDirs: ['../public'],
   addons: [],
   framework: {
     name: '@storybook/react-vite',

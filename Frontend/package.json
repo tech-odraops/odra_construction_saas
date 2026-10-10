@@ -4,7 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "icons": "node src/utils/build-icons.mjs",
+    "predev": "npm run icons",
     "dev": "vite",
+    "prebuild": "npm run icons",
     "build": "vite build",
     "lint": "eslint .",
     "test": "playwright test",
@@ -13,7 +16,9 @@
     "test:e2e:live": "playwright test e2e/live-login.spec.js",
     "preview": "vite preview",
     "frontend": "npm run dev",
+    "prestorybook": "npm run icons",
     "storybook": "storybook dev -p 6006",
+    "prebuild-storybook": "npm run icons",
     "build-storybook": "storybook build"
   },
   "dependencies": {

@@ -1,0 +1,19 @@
+.icon {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  width: var(--icon-size);
+  height: var(--icon-size);
+  fill: currentColor;
+}
+
+/* Gradient mode: the icon file is the mask; the gradient shows through it. */
+.icon--gradient {
+  -webkit-mask: var(--icon-src) center / contain no-repeat;
+  mask: var(--icon-src) center / contain no-repeat;
+}
+
+/* Placeholder colours: swap for your design tokens. */
+.icon--gradient-primary { background: #F55814; }
+.icon--gradient-inverted { background: #FFFFFF; }
+.icon--gradient-disabled { background: #ACACAC; }
