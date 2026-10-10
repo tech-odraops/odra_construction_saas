@@ -12,8 +12,9 @@ Backend/serviceAccountKey.json
 Frontend/node_modules/
 Frontend/.env
 Frontend/dist
-
-
+Frontend/storybook-static/
+Frontend/playwright-report/
+Frontend/test-results/
 
 # Logs
 logs
