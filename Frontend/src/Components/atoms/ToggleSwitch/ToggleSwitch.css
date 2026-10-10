@@ -1,0 +1,68 @@
+.toggle-switch-atom {
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--template-palette-text-primary, #000);
+  font-size: 16px;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.toggle-switch-atom__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.toggle-switch-atom__track {
+  box-sizing: border-box;
+  width: 48px;
+  height: 28px;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  padding: 0.1875rem;
+  border-radius: 999px;
+  background: #E3E3E3;
+  transition: background-color 140ms ease;
+}
+
+.toggle-switch-atom__thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateX(0);
+  transition: transform 140ms ease;
+}
+
+.toggle-switch-atom__input:checked + .toggle-switch-atom__track {
+  background: var(--template-palette-primary-main, #f97316);
+}
+
+.toggle-switch-atom__input:checked + .toggle-switch-atom__track .toggle-switch-atom__thumb {
+  transform: translateX(20px);
+}
+
+.toggle-switch-atom__input:focus-visible + .toggle-switch-atom__track {
+  outline: 3px solid var(--template-palette-primary-light, #fdba74);
+  outline-offset: 2px;
+}
+
+.toggle-switch-atom__input:disabled + .toggle-switch-atom__track {
+  background: #e3e3e3;
+  cursor: not-allowed;
+}
+
+.toggle-switch-atom__input:disabled ~ .toggle-switch-atom__label {
+  color: #c7c7c7;
+}
+
+.toggle-switch-atom:has(.toggle-switch-atom__input:disabled) {
+  cursor: not-allowed;
+}
