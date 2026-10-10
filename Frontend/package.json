@@ -14,9 +14,7 @@
     "preview": "vite preview",
     "frontend": "npm run dev",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "test": "playwright test",
-    "test:e2e": "playwright test"
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

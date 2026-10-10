@@ -1,0 +1,76 @@
+.radio-button-atom {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0.25rem;
+  color: var(--template-palette-text-primary, #000);
+  font-size: 16px;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.radio-button-atom__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.radio-button-atom__control {
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border: 2.5px solid #b3b3b3;
+  border-radius: 50%;
+  background: #fff;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.radio-button-atom__control::after {
+  content: '';
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: transparent;
+  transform: scale(0.5);
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.radio-button-atom__input:checked + .radio-button-atom__control {
+  border-color: var(--template-palette-primary-main, #f97316);
+}
+
+.radio-button-atom__input:checked + .radio-button-atom__control::after {
+  background: var(--template-palette-primary-main, #f97316);
+  transform: scale(1);
+}
+
+.radio-button-atom__input:focus-visible + .radio-button-atom__control {
+  outline: 3px solid var(--template-palette-primary-light, #fdba74);
+  outline-offset: 2px;
+}
+
+.radio-button-atom__input:disabled + .radio-button-atom__control {
+  border-color: #E3E3E3;
+  background: #fff;
+  cursor: not-allowed;
+}
+
+.radio-button-atom__input:disabled:checked + .radio-button-atom__control::after {
+  background: #E3E3E3;
+}
+
+.radio-button-atom__input:disabled ~ .radio-button-atom__label {
+  color: #aaa;
+}
+
+.radio-button-atom:has(.radio-button-atom__input:disabled) {
+  cursor: not-allowed;
+}
