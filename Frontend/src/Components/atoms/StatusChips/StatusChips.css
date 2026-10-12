@@ -1,0 +1,46 @@
+.status-chip {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.status-chip__dot {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 1rem;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.status-chip--orange {
+  color: #E3650D;
+  background-color: #FFCFAD;
+}
+
+.status-chip--blue {
+  color: #4A61E9;
+  background-color: #D5DBFF;
+}
+
+.status-chip--red {
+  color: #DF361F;
+  background-color: #FFCBC5;
+}
+
+.status-chip--gray {
+  color: #666666;
+  background-color: #DDDDDD;
+}
+
+.status-chip--green {
+  color: #1A8F15;
+  background-color: #C4FFC2;
+}
