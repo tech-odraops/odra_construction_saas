@@ -15,7 +15,9 @@
   border: var(--input-border-width) solid var(--input-border-color);
   border-radius: var(--input-border-radius);
   background-color: var(--input-background-color);
-  transition: border-color 140ms ease, background-color 140ms ease;
+  transition:
+    border-color var(--motion-fast-duration) var(--motion-easing),
+    background-color var(--motion-fast-duration) var(--motion-easing);
 }
 
 .input-atom:focus-within {
@@ -40,6 +42,14 @@
 
 .input-atom__icon {
   color: inherit;
+}
+
+.input-atom .input-atom__icon {
+  background-color: var(--input-icon-color);
+}
+
+.input-atom--disabled .input-atom__icon {
+  background-color: var(--input-border-color);
 }
 
 .input-atom__control {
@@ -79,6 +89,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .input-atom {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-reduced-duration);
   }
 }

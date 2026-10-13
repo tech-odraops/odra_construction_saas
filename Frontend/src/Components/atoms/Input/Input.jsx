@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import { Icon } from '../Icon/Icon';
-import { inputSizing, typography } from '../../../shared-theme/themePrimitives';
+import { componentStyles } from '../../../shared-theme/themePrimitives';
 import './Input.css';
 
 const validationMessages = {
@@ -28,31 +28,8 @@ export default function Input({
     className,
   ].filter(Boolean).join(' ');
   const describedBy = [ariaDescribedBy, message && messageId].filter(Boolean).join(' ') || undefined;
-  const fieldStyle = {
-    fontFamily: typography.fontFamily,
-    '--input-width': inputSizing.width,
-    '--input-height': inputSizing.height,
-    '--input-padding-block': inputSizing.paddingBlock,
-    '--input-padding-inline': inputSizing.paddingInline,
-    '--input-border-width': inputSizing.borderWidth,
-    '--input-border-radius': inputSizing.borderRadius,
-    '--input-icon-gap': inputSizing.iconGap,
-    '--input-border-color': inputSizing.borderColor,
-    '--input-background-color': inputSizing.backgroundColor,
-    '--input-focus-border-color': inputSizing.focusBorderColor,
-    '--input-error-color': inputSizing.errorColor,
-    '--input-success-color': inputSizing.successColor,
-    '--input-disabled-background-color': inputSizing.disabledBackgroundColor,
-    '--input-placeholder-color': inputSizing.placeholderColor,
-    '--input-message-margin-top': inputSizing.messageMarginTop,
-    '--input-message-font-size': inputSizing.messageFontSize,
-    '--input-message-font-weight': inputSizing.messageFontWeight,
-    '--input-message-line-height': inputSizing.messageLineHeight,
-    '--input-message-letter-spacing': inputSizing.messageLetterSpacing,
-  };
-
   return (
-    <div className="input-atom__field" style={fieldStyle}>
+    <div className="input-atom__field" style={componentStyles.input}>
       <div className={classes}>
         {(disabled || icon) && (
           <Icon
@@ -60,11 +37,7 @@ export default function Input({
             size="button"
             gradient="primary"
             className="input-atom__icon"
-            style={{
-              backgroundColor: disabled
-                ? inputSizing.borderColor
-                : (iconColor || inputSizing.iconColor),
-            }}
+            style={iconColor && !disabled ? { '--input-icon-color': iconColor } : undefined}
           />
         )}
         <input
