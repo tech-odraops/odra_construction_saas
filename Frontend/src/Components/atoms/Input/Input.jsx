@@ -13,6 +13,8 @@ export default function Input({
   disabled = false,
   icon,
   iconColor,
+  endIcon,
+  endIconColor,
   id,
   validationState,
   'aria-describedby': ariaDescribedBy,
@@ -48,6 +50,15 @@ export default function Input({
           aria-invalid={validationState === 'error' || undefined}
           aria-describedby={describedBy}
         />
+        {endIcon && (
+          <Icon
+            variant={endIcon}
+            size="button"
+            gradient="primary"
+            className="input-atom__end-icon"
+            style={endIconColor ? { '--input-icon-color': endIconColor } : undefined}
+          />
+        )}
       </div>
       {message && (
         <span

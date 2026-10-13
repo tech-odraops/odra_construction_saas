@@ -48,7 +48,15 @@
   background-color: var(--input-icon-color);
 }
 
+.input-atom .input-atom__end-icon {
+  background-color: var(--input-icon-color);
+}
+
 .input-atom--disabled .input-atom__icon {
+  background-color: var(--input-border-color);
+}
+
+.input-atom--disabled .input-atom__end-icon {
   background-color: var(--input-border-color);
 }
 
