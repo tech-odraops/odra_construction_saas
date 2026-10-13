@@ -36,7 +36,7 @@ export default function Input({
         {(disabled || icon) && (
           <Icon
             variant={disabled ? 'lock' : icon}
-            size="button"
+            size="lg"
             gradient="primary"
             className="input-atom__icon"
             style={iconColor && !disabled ? { '--input-icon-color': iconColor } : undefined}
@@ -53,7 +53,7 @@ export default function Input({
         {endIcon && (
           <Icon
             variant={endIcon}
-            size="button"
+            size="md"
             gradient="primary"
             className="input-atom__end-icon"
             style={endIconColor ? { '--input-icon-color': endIconColor } : undefined}
