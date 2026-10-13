@@ -1,10 +1,8 @@
 .toggle-switch-atom {
   display: inline-flex;
   align-items: center;
-  gap: 20px;
-  color: var(--template-palette-text-primary, #000);
-  font-size: 16px;
-  line-height: 1.25;
+  gap: var(--toggle-gap);
+  color: var(--toggle-text-color);
   cursor: pointer;
 }
 
@@ -21,48 +19,55 @@
 
 .toggle-switch-atom__track {
   box-sizing: border-box;
-  width: 48px;
-  height: 28px;
-  flex: 0 0 48px;
+  width: var(--toggle-track-width);
+  height: var(--toggle-track-height);
+  flex: 0 0 var(--toggle-track-width);
   display: flex;
   align-items: center;
-  padding: 0.1875rem;
-  border-radius: 999px;
-  background: #E3E3E3;
-  transition: background-color 140ms ease;
+  padding: var(--toggle-track-padding);
+  border-radius: var(--toggle-track-border-radius);
+  background: var(--toggle-track-color);
+  transition: background-color var(--motion-fast-duration) var(--motion-easing);
 }
 
 .toggle-switch-atom__thumb {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #fff;
-  transform: translateX(0);
-  transition: transform 140ms ease;
+  width: var(--toggle-thumb-size);
+  height: var(--toggle-thumb-size);
+  border-radius: var(--toggle-thumb-border-radius);
+  background: var(--toggle-background-color);
+  transform: translateX(var(--effect-toggle-thumb-initial-offset));
+  transition: transform var(--motion-fast-duration) var(--motion-easing);
 }
 
 .toggle-switch-atom__input:checked + .toggle-switch-atom__track {
-  background: var(--template-palette-primary-main, #f97316);
+  background: var(--toggle-primary-color);
 }
 
 .toggle-switch-atom__input:checked + .toggle-switch-atom__track .toggle-switch-atom__thumb {
-  transform: translateX(20px);
+  transform: translateX(var(--toggle-thumb-offset));
 }
 
 .toggle-switch-atom__input:focus-visible + .toggle-switch-atom__track {
-  outline: 3px solid var(--template-palette-primary-light, #fdba74);
-  outline-offset: 2px;
+  outline: var(--toggle-focus-outline-width) solid var(--toggle-focus-color);
+  outline-offset: var(--toggle-focus-outline-offset);
 }
 
 .toggle-switch-atom__input:disabled + .toggle-switch-atom__track {
-  background: #e3e3e3;
+  background: var(--toggle-track-color);
   cursor: not-allowed;
 }
 
 .toggle-switch-atom__input:disabled ~ .toggle-switch-atom__label {
-  color: #c7c7c7;
+  color: var(--toggle-disabled-text-color);
 }
 
 .toggle-switch-atom:has(.toggle-switch-atom__input:disabled) {
   cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle-switch-atom__track,
+  .toggle-switch-atom__thumb {
+    transition-duration: var(--motion-reduced-duration);
+  }
 }

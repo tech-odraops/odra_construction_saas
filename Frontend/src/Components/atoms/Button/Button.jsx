@@ -1,5 +1,5 @@
 import './Button.css';
-import { buttonSizing, iconSizes, typography } from '../../../shared-theme/themePrimitives';
+import { componentStyles } from '../../../shared-theme/themePrimitives';
 import { Icon } from '../Icon/Icon';
 
 export default function Button({
@@ -30,26 +30,7 @@ export default function Button({
     isIconOnly && 'button-atom--icon-only',
     className,
   ].filter(Boolean).join(' ');
-  const buttonStyle = {
-    fontFamily: typography.fontFamily,
-    '--button-width': buttonSizing.width,
-    '--button-height': buttonSizing.height,
-    '--button-border-radius': buttonSizing.borderRadius,
-    '--button-padding-block': buttonSizing.paddingBlock,
-    '--button-padding-inline': buttonSizing.paddingInline,
-    '--button-border-width': buttonSizing.borderWidth,
-    '--button-font-size': buttonSizing.fontSize,
-    '--button-focus-outline-width': buttonSizing.focusOutlineWidth,
-    '--button-focus-outline-offset': buttonSizing.focusOutlineOffset,
-    '--button-icon-gap': buttonSizing.iconGap,
-    '--button-icon-size': iconSizes.button,
-    '--button-icon-only-width': buttonSizing.iconOnlyWidth,
-    '--button-icon-only-padding': buttonSizing.iconOnlyPadding,
-    '--button-primary-color': buttonSizing.primaryColor,
-    '--button-primary-hover-color': buttonSizing.primaryHoverColor,
-    '--button-primary-hover-text-color': buttonSizing.primaryHoverTextColor,
-    ...style,
-  };
+  const buttonStyle = { ...componentStyles.button, ...style };
 
   return (
     <button

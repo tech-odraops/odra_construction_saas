@@ -1,0 +1,102 @@
+.input-atom__field {
+  display: inline-flex;
+  flex-direction: column;
+  width: var(--input-width);
+}
+
+.input-atom {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--input-icon-gap);
+  width: 100%;
+  height: var(--input-height);
+  padding: var(--input-padding-block) var(--input-padding-inline);
+  border: var(--input-border-width) solid var(--input-border-color);
+  border-radius: var(--input-border-radius);
+  background-color: var(--input-background-color);
+  transition:
+    border-color var(--motion-fast-duration) var(--motion-easing),
+    background-color var(--motion-fast-duration) var(--motion-easing);
+}
+
+.input-atom:focus-within {
+  border-color: var(--input-focus-border-color);
+}
+
+.input-atom--error,
+.input-atom--error:focus-within {
+  border-color: var(--input-error-color);
+}
+
+.input-atom--success,
+.input-atom--success:focus-within {
+  border-color: var(--input-success-color);
+}
+
+.input-atom--disabled,
+.input-atom--disabled:focus-within {
+  border-color: var(--input-border-color);
+  background-color: var(--input-disabled-background-color);
+}
+
+.input-atom__icon {
+  color: inherit;
+}
+
+.input-atom .input-atom__icon {
+  background-color: var(--input-icon-color);
+}
+
+.input-atom .input-atom__end-icon {
+  background-color: var(--input-icon-color);
+}
+
+.input-atom--disabled .input-atom__icon {
+  background-color: var(--input-border-color);
+}
+
+.input-atom--disabled .input-atom__end-icon {
+  background-color: var(--input-border-color);
+}
+
+.input-atom__control {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+
+.input-atom__control::placeholder {
+  color: var(--input-placeholder-color);
+  opacity: 1;
+}
+
+.input-atom__control:disabled {
+  cursor: not-allowed;
+}
+
+.input-atom__message {
+  margin-top: var(--input-message-margin-top);
+  color: var(--input-error-color);
+  font-size: var(--input-message-font-size);
+  font-weight: var(--input-message-font-weight);
+  line-height: var(--input-message-line-height);
+  letter-spacing: var(--input-message-letter-spacing);
+}
+
+.input-atom--success + .input-atom__message {
+  color: var(--input-success-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .input-atom {
+    transition-duration: var(--motion-reduced-duration);
+  }
+}

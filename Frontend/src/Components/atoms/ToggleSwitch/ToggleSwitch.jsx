@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import './ToggleSwitch.css';
-import { typography } from '../../../shared-theme/themePrimitives';
+import { componentStyles } from '../../../shared-theme/themePrimitives';
 
 export default function ToggleSwitch({
   label,
@@ -14,7 +14,11 @@ export default function ToggleSwitch({
   const classes = ['toggle-switch-atom', className].filter(Boolean).join(' ');
 
   return (
-    <label className={classes} htmlFor={inputId} style={{ fontFamily: typography.fontFamily, ...style }}>
+    <label
+      className={classes}
+      htmlFor={inputId}
+      style={{ ...componentStyles.toggleSwitch, ...style }}
+    >
       <input className="toggle-switch-atom__input" id={inputId} type="checkbox" role="switch" {...props} />
       <span className="toggle-switch-atom__track" aria-hidden="true">
         <span className="toggle-switch-atom__thumb" />
