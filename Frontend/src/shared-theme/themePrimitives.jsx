@@ -172,6 +172,29 @@ export const iconSizes = {
   button: '1.875rem',
 };
 
+export const inputSizing = {
+  width: '13.5625rem',
+  height: '2.9375rem',
+  paddingBlock: '0.625rem',
+  paddingInline: '0.75rem',
+  borderWidth: '0.125rem',
+  borderRadius: '0.25rem',
+  iconGap: buttonSizing.iconGap,
+  borderColor: '#BFBFBF',
+  backgroundColor: colorSchemes.light.palette.background.paper,
+  focusBorderColor: colorSchemes.light.palette.primary.main,
+  iconColor: colorSchemes.light.palette.text.primary,
+  placeholderColor: '#666666',
+  errorColor: '#DF361F',
+  successColor: '#20A21A',
+  disabledBackgroundColor: 'rgba(237, 237, 237, 0.97)',
+  messageMarginTop: '0.375rem',
+  messageFontSize: '0.8125rem',
+  messageFontWeight: 600,
+  messageLineHeight: '100%',
+  messageLetterSpacing: '0',
+};
+
 export const shape = {
   borderRadius: 8,
 };
