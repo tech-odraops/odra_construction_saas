@@ -1,8 +1,17 @@
 import { ICON_NAMES } from './icon-names';
-import { iconSizes } from '../../../shared-theme/themePrimitives';
+import { colors, sizing } from '../../../shared-theme/themePrimitives';
 import './Icon.css';
 
 const BASE = import.meta.env.BASE_URL; // '/' by default; ends with '/'
+const iconSizeNames = {
+  xs: 'Xs',
+  sm: 'Sm',
+  md: 'Md',
+  lg: 'Lg',
+  xl: 'Xl',
+  xxl: 'Xxl',
+  button: 'Button',
+};
 
 /**
  * @param {object} props
@@ -19,7 +28,13 @@ export function Icon({ variant, size = 'md', gradient = 'success', label, classN
 
   const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
   const classes = `icon icon--${size} ${className}`.trim();
-  const iconStyle = { '--icon-size': iconSizes[size], ...style };
+  const iconStyle = {
+    '--icon-size': sizing[`icon${iconSizeNames[size]}`],
+    '--icon-gradient-primary': colors.iconPrimary,
+    '--icon-gradient-inverted': colors.iconInverted,
+    '--icon-gradient-disabled': colors.iconDisabled,
+    ...style,
+  };
 
   if (gradient) {
     return (

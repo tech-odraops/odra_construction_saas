@@ -1,22 +1,4 @@
 .status-chip {
-  --status-chip-gap: 0.75rem;
-  --status-chip-padding-block: 0.5rem;
-  --status-chip-padding-inline: 1rem;
-  --status-chip-radius: 999px;
-  --status-chip-font-size: 1rem;
-  --status-chip-font-weight: 600;
-  --status-chip-line-height: 1.25;
-  --status-chip-dot-size: 1rem;
-  --status-chip-orange-text: #E3650D;
-  --status-chip-orange-background: #FFCFAD;
-  --status-chip-blue-text: #4A61E9;
-  --status-chip-blue-background: #D5DBFF;
-  --status-chip-red-text: #DF361F;
-  --status-chip-red-background: #FFCBC5;
-  --status-chip-gray-text: #666666;
-  --status-chip-gray-background: #DDDDDD;
-  --status-chip-green-text: #1A8F15;
-  --status-chip-green-background: #C4FFC2;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;

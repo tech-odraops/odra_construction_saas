@@ -10,22 +10,25 @@
   justify-content: center;
   gap: var(--button-icon-gap);
   font-size: var(--button-font-size);
-  font-weight: 600;
+  font-weight: var(--button-font-weight);
   font-style: normal;
-  line-height: 100%;
-  letter-spacing: 0;
+  line-height: var(--button-line-height);
+  letter-spacing: var(--button-letter-spacing);
   cursor: pointer;
-  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+  transition:
+    color var(--motion-fast-duration) var(--motion-easing),
+    background-color var(--motion-fast-duration) var(--motion-easing),
+    border-color var(--motion-fast-duration) var(--motion-easing);
 }
 
 .button-atom:focus-visible {
-  outline: var(--button-focus-outline-width) solid var(--template-palette-primary-light);
+  outline: var(--button-focus-outline-width) solid var(--button-focus-color);
   outline-offset: var(--button-focus-outline-offset);
 }
 
 .button-atom:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: var(--effect-disabled-opacity);
 }
 
 .button-atom--primary {
@@ -52,7 +55,7 @@
 }
 
 .button-atom__icon {
-  transition: filter 140ms ease;
+  transition: filter var(--motion-fast-duration) var(--motion-easing);
 }
 
 .button-atom__state-icons {
@@ -64,21 +67,23 @@
 
 .button-atom__state-icon {
   grid-area: 1 / 1;
-  opacity: 0;
-  transform: scale(0.7);
-  transition: opacity 180ms ease, transform 180ms ease;
+  opacity: var(--effect-hidden-opacity);
+  transform: scale(var(--effect-button-icon-initial-scale));
+  transition:
+    opacity var(--motion-standard-duration) var(--motion-easing),
+    transform var(--motion-standard-duration) var(--motion-easing);
 }
 
 .button-atom__state-icon--running {
-  animation: button-atom-spin 2.8s linear infinite;
+  animation: button-atom-spin var(--motion-spin-duration) var(--motion-linear-easing) infinite;
   animation-play-state: paused;
 }
 
 .button-atom--running .button-atom__state-icon--running,
 .button-atom--completed .button-atom__state-icon--completed,
 .button-atom--failed .button-atom__state-icon--failed {
-  opacity: 1;
-  transform: scale(1);
+  opacity: var(--effect-visible-opacity);
+  transform: scale(var(--effect-active-scale));
 }
 
 .button-atom--running .button-atom__state-icon--running {
@@ -102,7 +107,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .button-atom__state-icon {
-    transition-duration: 0.01ms;
+    transition-duration: var(--motion-reduced-duration);
   }
 
   .button-atom__state-icon--running {

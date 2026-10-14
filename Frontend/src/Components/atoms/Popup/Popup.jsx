@@ -1,4 +1,5 @@
 import './Popup.css';
+import { componentStyles } from '../../../shared-theme/themePrimitives';
 
 const VARIANTS = ['success', 'error'];
 
@@ -8,6 +9,7 @@ export default function Popup({
   variant = 'success',
   onClose,
   className = '',
+  style,
   ...props
 }) {
   const tone = VARIANTS.includes(variant) ? variant : 'success';
@@ -16,6 +18,7 @@ export default function Popup({
     <div
       className={['popup', `popup--${tone}`, className].filter(Boolean).join(' ')}
       role={tone === 'error' ? 'alert' : 'status'}
+      style={{ ...componentStyles.popup, ...style }}
       {...props}
     >
       <span className="popup__icon" aria-hidden="true">

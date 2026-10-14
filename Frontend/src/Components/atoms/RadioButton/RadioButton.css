@@ -1,26 +1,9 @@
 .radio-button-atom {
-  --radio-button-gap: 14px;
-  --radio-button-padding: 0.25rem;
-  --radio-button-font-size: 16px;
-  --radio-button-text-color: var(--template-palette-text-primary, #000);
-  --radio-button-size: 36px;
-  --radio-button-border-width: 2.5px;
-  --radio-button-border-color: #b3b3b3;
-  --radio-button-background: #fff;
-  --radio-button-dot-size: 18px;
-  --radio-button-selected-color: var(--template-palette-primary-main, #f97316);
-  --radio-button-focus-width: 3px;
-  --radio-button-focus-color: var(--template-palette-primary-light, #fdba74);
-  --radio-button-focus-offset: 2px;
-  --radio-button-disabled-color: #E3E3E3;
-  --radio-button-disabled-text-color: #aaa;
   display: inline-flex;
   align-items: center;
-  gap: var(--radio-button-gap);
-  padding: var(--radio-button-padding);
-  color: var(--radio-button-text-color);
-  font-size: var(--radio-button-font-size);
-  line-height: 1.25;
+  gap: var(--radio-gap);
+  padding: var(--radio-padding);
+  color: var(--radio-text-color);
   cursor: pointer;
 }
 
@@ -37,55 +20,66 @@
 
 .radio-button-atom__control {
   box-sizing: border-box;
-  width: var(--radio-button-size);
-  height: var(--radio-button-size);
-  flex: 0 0 var(--radio-button-size);
+  width: var(--radio-control-size);
+  height: var(--radio-control-size);
+  flex: 0 0 var(--radio-control-size);
   display: grid;
   place-items: center;
-  border: var(--radio-button-border-width) solid var(--radio-button-border-color);
-  border-radius: 50%;
-  background: var(--radio-button-background);
-  transition: border-color 140ms ease, background-color 140ms ease;
+  border: var(--radio-border-width) solid var(--radio-border-color);
+  border-radius: var(--radio-border-radius);
+  background: var(--radio-background-color);
+  transition:
+    border-color var(--motion-fast-duration) var(--motion-easing),
+    background-color var(--motion-fast-duration) var(--motion-easing);
 }
 
 .radio-button-atom__control::after {
   content: '';
-  width: var(--radio-button-dot-size);
-  height: var(--radio-button-dot-size);
-  border-radius: 50%;
+  width: var(--radio-dot-size);
+  height: var(--radio-dot-size);
+  border-radius: var(--radio-border-radius);
   background: transparent;
-  transform: scale(0.5);
-  transition: background-color 140ms ease, transform 140ms ease;
+  transform: scale(var(--effect-radio-dot-initial-scale));
+  transition:
+    background-color var(--motion-fast-duration) var(--motion-easing),
+    transform var(--motion-fast-duration) var(--motion-easing);
 }
 
 .radio-button-atom__input:checked + .radio-button-atom__control {
-  border-color: var(--radio-button-selected-color);
+  border-color: var(--radio-primary-color);
 }
 
 .radio-button-atom__input:checked + .radio-button-atom__control::after {
-  background: var(--radio-button-selected-color);
-  transform: scale(1);
+  background: var(--radio-primary-color);
+  transform: scale(var(--effect-active-scale));
 }
 
 .radio-button-atom__input:focus-visible + .radio-button-atom__control {
-  outline: var(--radio-button-focus-width) solid var(--radio-button-focus-color);
-  outline-offset: var(--radio-button-focus-offset);
+  outline: var(--radio-focus-outline-width) solid var(--radio-focus-color);
+  outline-offset: var(--radio-focus-outline-offset);
 }
 
 .radio-button-atom__input:disabled + .radio-button-atom__control {
-  border-color: var(--radio-button-disabled-color);
-  background: var(--radio-button-background);
+  border-color: var(--radio-disabled-border-color);
+  background: var(--radio-background-color);
   cursor: not-allowed;
 }
 
 .radio-button-atom__input:disabled:checked + .radio-button-atom__control::after {
-  background: var(--radio-button-disabled-color);
+  background: var(--radio-disabled-border-color);
 }
 
 .radio-button-atom__input:disabled ~ .radio-button-atom__label {
-  color: var(--radio-button-disabled-text-color);
+  color: var(--radio-disabled-text-color);
 }
 
 .radio-button-atom:has(.radio-button-atom__input:disabled) {
   cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .radio-button-atom__control,
+  .radio-button-atom__control::after {
+    transition-duration: var(--motion-reduced-duration);
+  }
 }

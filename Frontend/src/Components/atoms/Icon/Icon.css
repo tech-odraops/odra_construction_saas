@@ -13,7 +13,6 @@
   mask: var(--icon-src) center / contain no-repeat;
 }
 
-/* Placeholder colours: swap for your design tokens. */
-.icon--gradient-primary { background: #F55814; }
-.icon--gradient-inverted { background: #FFFFFF; }
-.icon--gradient-disabled { background: #ACACAC; }
+.icon--gradient-primary { background: var(--icon-gradient-primary); }
+.icon--gradient-inverted { background: var(--icon-gradient-inverted); }
+.icon--gradient-disabled { background: var(--icon-gradient-disabled); }

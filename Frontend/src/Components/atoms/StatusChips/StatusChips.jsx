@@ -1,5 +1,5 @@
 import './StatusChips.css';
-import { typography } from '../../../shared-theme/themePrimitives';
+import { componentStyles } from '../../../shared-theme/themePrimitives';
 
 const STATUS_TONES = {
   pending: 'orange',
@@ -32,7 +32,7 @@ export default function StatusChips({
     <span
       className={classes}
       data-status={normalizedStatus}
-      style={{ fontFamily: typography.fontFamily, ...style }}
+      style={{ ...componentStyles.statusChip, ...style }}
       {...props}
     >
       <span className="status-chip__dot" aria-hidden="true" />
