@@ -1,46 +1,64 @@
 .status-chip {
+  --status-chip-gap: 0.75rem;
+  --status-chip-padding-block: 0.5rem;
+  --status-chip-padding-inline: 1rem;
+  --status-chip-radius: 999px;
+  --status-chip-font-size: 1rem;
+  --status-chip-font-weight: 600;
+  --status-chip-line-height: 1.25;
+  --status-chip-dot-size: 1rem;
+  --status-chip-orange-text: #E3650D;
+  --status-chip-orange-background: #FFCFAD;
+  --status-chip-blue-text: #4A61E9;
+  --status-chip-blue-background: #D5DBFF;
+  --status-chip-red-text: #DF361F;
+  --status-chip-red-background: #FFCBC5;
+  --status-chip-gray-text: #666666;
+  --status-chip-gray-background: #DDDDDD;
+  --status-chip-green-text: #1A8F15;
+  --status-chip-green-background: #C4FFC2;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem;
+  gap: var(--status-chip-gap);
+  padding: var(--status-chip-padding-block) var(--status-chip-padding-inline);
   border: 0;
-  border-radius: 999px;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.25;
+  border-radius: var(--status-chip-radius);
+  font-size: var(--status-chip-font-size);
+  font-weight: var(--status-chip-font-weight);
+  line-height: var(--status-chip-line-height);
   white-space: nowrap;
 }
 
 .status-chip__dot {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 1rem;
+  width: var(--status-chip-dot-size);
+  height: var(--status-chip-dot-size);
+  flex: 0 0 var(--status-chip-dot-size);
   border-radius: 50%;
   background-color: currentColor;
 }
 
 .status-chip--orange {
-  color: #E3650D;
-  background-color: #FFCFAD;
+  color: var(--status-chip-orange-text);
+  background-color: var(--status-chip-orange-background);
 }
 
 .status-chip--blue {
-  color: #4A61E9;
-  background-color: #D5DBFF;
+  color: var(--status-chip-blue-text);
+  background-color: var(--status-chip-blue-background);
 }
 
 .status-chip--red {
-  color: #DF361F;
-  background-color: #FFCBC5;
+  color: var(--status-chip-red-text);
+  background-color: var(--status-chip-red-background);
 }
 
 .status-chip--gray {
-  color: #666666;
-  background-color: #DDDDDD;
+  color: var(--status-chip-gray-text);
+  background-color: var(--status-chip-gray-background);
 }
 
 .status-chip--green {
-  color: #1A8F15;
-  background-color: #C4FFC2;
+  color: var(--status-chip-green-text);
+  background-color: var(--status-chip-green-background);
 }
