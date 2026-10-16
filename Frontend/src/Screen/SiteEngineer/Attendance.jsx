@@ -7,7 +7,6 @@ import {
   Typography,
   Paper,
   Button,
-  Switch,
   CircularProgress,
   TextField,
   InputAdornment
@@ -22,6 +21,7 @@ import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import FullScreenLoader from "../../Components/FullScreenLoader";
 import pageBackground from "../../assets/background image.png";
+import ToggleSwitch from "../../Components/atoms/ToggleSwitch/ToggleSwitch";
 
 export default function Attendance() {
   const navigate = useNavigate();
@@ -354,17 +354,9 @@ export default function Attendance() {
                       : t("attendance.absent")}
                   </Typography>
 
-                  <Switch
+                  <ToggleSwitch
                     checked={attendance[worker._id] === "present"}
                     onChange={() => toggleAttendance(worker._id)}
-                    sx={{
-                      "& .MuiSwitch-switchBase.Mui-checked": {
-                        color: "#F97316",
-                      },
-                      "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-                        backgroundColor: "#F97316",
-                      },
-                    }}
                     disabled={project.status === "Completed"}
                   />
                 </Box>

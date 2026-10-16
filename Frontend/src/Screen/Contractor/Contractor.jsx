@@ -13,6 +13,7 @@ import HandymanRoundedIcon from "@mui/icons-material/HandymanRounded";
 import CheckCircleOutlineRoundedIcon from "@mui/icons-material/CheckCircleOutlineRounded";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
 import constructionBackground from "../../assets/construction_dashboard_background.png";
+import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 
 export default function ContractorDashboard() {
   const [projects, setProjects] = useState({});
@@ -85,11 +86,13 @@ export default function ContractorDashboard() {
           <Typography sx={{ fontWeight: 700, fontSize: 21, mb: 1.5, "&:after": { content: '""', display: "block", mt: 1, width: 42, height: 3, bgcolor: "#ff5b0a", borderRadius: 2 } }}>{t("dashboard.contractor.view_projects")}</Typography>
           <Box sx={{ overflow: "hidden", borderRadius: 3, boxShadow: "0 5px 20px rgba(25,35,45,.08)", bgcolor: "rgba(255,255,255,.96)" }}>
             {projects?.recentProjects?.length ? projects.recentProjects.map((project) => {
-              const done = project.status?.toLowerCase() === "completed";
               return <Box key={project._id} onClick={() => navigate(`/contractor/project/${project._id}`)} sx={{ minHeight: 70, px: { xs: 2, sm: 2.5 }, display: "flex", alignItems: "center", gap: 2, borderBottom: "1px solid #eceef0", cursor: "pointer", transition: "background .15s", "&:last-child": { borderBottom: 0 }, "&:hover": { bgcolor: "#fffaf7" } }}>
                 <Box sx={{ width: 46, height: 46, bgcolor: "#fff0e9", color: "#ff5b0a", borderRadius: "50%", display: "grid", placeItems: "center", flexShrink: 0 }}><BusinessRoundedIcon /></Box>
                 <Typography sx={{ fontWeight: 550, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project.title}</Typography>
-                <Box component="span" sx={{ px: 1.7, py: .45, borderRadius: 10, bgcolor: done ? "#d9f3dd" : "#ffe4a3", color: done ? "#216b2c" : "#694b09", fontWeight: 600, fontSize: 13, whiteSpace: "nowrap" }}>{project.status}</Box>
+                <StatusChips
+                  label={project.status || t("project.ongoing")}
+                  status={project.status || "ongoing"}
+                />
               </Box>;
             }) : <Typography sx={{ color: "#667085", p: 3 }}>{t("dashboard.contractor.no_projects")}</Typography>}
           </Box>

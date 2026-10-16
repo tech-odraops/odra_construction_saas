@@ -2,18 +2,18 @@ import './StatusChips.css';
 import { componentStyles } from '../../../shared-theme/themePrimitives';
 
 const STATUS_TONES = {
-  pending: 'orange',
+  ongoing: 'orange',
   completed: 'green',
   draft: 'gray',
-  'in-progress': 'blue',
-  failed: 'red',
+  upcoming: 'blue',
+  cancelled: 'red',
   approved: 'green',
   rejected: 'red',
 };
 
 export default function StatusChips({
   label,
-  status = 'pending',
+  status = 'ongoing',
   tone,
   className = '',
   style,

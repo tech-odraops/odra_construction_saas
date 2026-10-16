@@ -72,7 +72,7 @@
 .popup__message {
   min-width: 0;
   font-size: var(--popup-message-font-size);
-  font-weight: 600;
+  font-weight: 400;
   line-height: var(--popup-message-line-height);
   white-space: nowrap;
 }
