@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import { useTranslation } from "react-i18next";
+import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 
 function ProjectBuildingIcon() {
   return (
@@ -104,7 +105,10 @@ export default function Project() {
                 <div className="project-card-copy">
                   <Typography component="h2" title={project.title}>{project.title}</Typography>
                   <span className="project-card-date">{formattedDate(project)}</span>
-                  <span className={`project-status ${project.status?.toLowerCase() === "completed" ? "is-completed" : ""}`}>{project.status || t("project.ongoing")}</span>
+                  <StatusChips
+                    label={project.status || t("project.ongoing")}
+                    status={project.status || "ongoing"}
+                  />
                 </div>
                 <div className="project-card-actions" onClick={(event) => event.stopPropagation()}>
                   <Tooltip title={t("project.open_project")}>

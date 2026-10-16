@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Box, Divider, Paper, Typography, IconButton } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
-import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getFCMToken } from "../services/notificationService";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import homeBg from "../assets/Home bg image.png";
+import Popup from "../Components/atoms/Popup/Popup";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -21,6 +21,7 @@ export default function Login() {
   });
   const [validated, setValidated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [popup, setPopup] = useState(null);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -52,7 +53,7 @@ export default function Login() {
         localStorage.setItem("IsLogin", true);
         localStorage.setItem("name", response.data.name);
 
-        toast.success("Logged in successfully!");
+        setPopup({ variant: "success", title: "Success!", message: "Logged in successfully." });
 
         // generating fcm token
         const fcmToken = await getFCMToken();
@@ -62,28 +63,24 @@ export default function Login() {
           });
         }
 
-        switch (response.data.role) {
-          case "site engineer":
-            navigate("/engineer/home");
-            break;
-          case "manager":
-            navigate("/contractor/home");
-            break;
-          default:
-            navigate("/");
-        }
+        const destination = response.data.role === "site engineer"
+          ? "/engineer/home"
+          : response.data.role === "manager"
+            ? "/contractor/home"
+            : "/";
+        window.setTimeout(() => navigate(destination), 1200);
       }
     } catch (e) {
       const status = e.response?.status;
       const data = e.response?.data;
       console.log(e)
 
-      if (status === 422) return toast.error(data.error[0].msg);
-      if (status === 404) return toast.error(data.error);
-      if (status === 401) return toast.error(data.error);
-
-      toast.error("Something went wrong. Please try again.");
-      console.log(e);
+      const message = status === 422
+        ? data?.error?.[0]?.msg
+        : status === 404 || status === 401
+          ? data?.error
+          : "Something went wrong. Please try again.";
+      setPopup({ variant: "error", title: "Login failed", message: message || "Please check your details and try again." });
     }
 
     setValidated(true);
@@ -91,6 +88,11 @@ export default function Login() {
 
   return (
     <Box className="auth-shell auth-login">
+      {popup && (
+        <Box sx={{ position: "fixed", top: 24, right: 24, zIndex: 1400, maxWidth: "calc(100vw - 32px)" }}>
+          <Popup {...popup} onClose={() => setPopup(null)} style={{ maxWidth: "100%" }} />
+        </Box>
+      )}
       <Box className="auth-visual-panel">
         <Box className="auth-wordmark"><span>ODRA</span><span>OPS</span></Box>
         <Box className="auth-visual-copy">
