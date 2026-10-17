@@ -1,0 +1,46 @@
+.status-chip {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--status-chip-gap);
+  padding: var(--status-chip-padding-block) var(--status-chip-padding-inline);
+  border: 0;
+  border-radius: var(--status-chip-radius);
+  font-size: var(--status-chip-font-size);
+  font-weight: var(--status-chip-font-weight);
+  line-height: var(--status-chip-line-height);
+  white-space: nowrap;
+}
+
+.status-chip__dot {
+  width: var(--status-chip-dot-size);
+  height: var(--status-chip-dot-size);
+  flex: 0 0 var(--status-chip-dot-size);
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.status-chip--orange {
+  color: var(--status-chip-orange-text);
+  background-color: var(--status-chip-orange-background);
+}
+
+.status-chip--blue {
+  color: var(--status-chip-blue-text);
+  background-color: var(--status-chip-blue-background);
+}
+
+.status-chip--red {
+  color: var(--status-chip-red-text);
+  background-color: var(--status-chip-red-background);
+}
+
+.status-chip--gray {
+  color: var(--status-chip-gray-text);
+  background-color: var(--status-chip-gray-background);
+}
+
+.status-chip--green {
+  color: var(--status-chip-green-text);
+  background-color: var(--status-chip-green-background);
+}

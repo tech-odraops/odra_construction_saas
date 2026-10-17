@@ -20,6 +20,7 @@ import Groups2OutlinedIcon from "@mui/icons-material/Groups2Outlined";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 
 function OverviewBuildingIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V3.5c0-.55.45-1 1-1h9c.55 0 1 .45 1 1V21M15 9h4c.55 0 1 .45 1 1v11M2.5 21h19" /><path d="M7 6h1M11 6h1M7 9h1M11 9h1M7 12h1M11 12h1M7 15h1M11 15h1M17 12h1M17 15h1M17 18h1M9.5 21v-3h2v3" /></svg>;
@@ -268,14 +269,11 @@ export default function ProjectDetails() {
             </Box>
             <Box className="project-metadata-list">
               <div className="project-metadata-row"><OverviewFlagIcon /><strong>{t("project.status")}:</strong>
-                <span
-                  className={`badge ${project.status === "Completed"
-                    ? "bg-success"
-                    : "bg-warning text-dark"
-                    }`}
-                >
-                  {project.status}
-                </span>
+                <StatusChips
+                  label={project.status || t("project.ongoing")}
+                  status={project.status || "ongoing"}
+                  style={{ justifySelf: "start", alignSelf: "center" }}
+                />
               </div>
               <div className="project-metadata-row"><CalendarMonthOutlinedIcon /><strong>{t("project.start_date")}:</strong><span>{project.startDate ? new Date(project.startDate).toLocaleDateString("en-GB") : "—"}</span></div>
               <div className="project-metadata-row"><EventAvailableOutlinedIcon /><strong>{t("project.end_date")}:</strong><span>{project.endDate ? new Date(project.endDate).toLocaleDateString("en-GB") : "—"}</span></div>

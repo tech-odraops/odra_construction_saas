@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Box, Divider, Paper, Typography, IconButton } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
-import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { getFCMToken } from "../services/notificationService";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
-import homeBg from "../assets/Home bg image.png";
+import signInBg from "../assets/Sign in bg.png";
+import Popup from "../Components/atoms/Popup/Popup";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -17,10 +17,10 @@ export default function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    role: "",
   });
   const [validated, setValidated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [popup, setPopup] = useState(null);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -38,11 +38,11 @@ export default function Login() {
     }
 
     try {
-      const { email, password , role  } = formData;
+      const { email, password } = formData;
 
       const response = await axiosInstance.post(
         "/auth/signIn",
-        { email, password, role },
+        { email, password },
         { headers: { "Content-Type": "application/json" } }
       );
 
@@ -52,7 +52,7 @@ export default function Login() {
         localStorage.setItem("IsLogin", true);
         localStorage.setItem("name", response.data.name);
 
-        toast.success("Logged in successfully!");
+        setPopup({ variant: "success", title: "Success!", message: "Logged in successfully." });
 
         // generating fcm token
         const fcmToken = await getFCMToken();
@@ -62,16 +62,12 @@ export default function Login() {
           });
         }
 
-        switch (response.data.role) {
-          case "site engineer":
-            navigate("/engineer/home");
-            break;
-          case "manager":
-            navigate("/contractor/home");
-            break;
-          default:
-            navigate("/");
-        }
+        const destination = response.data.role === "site engineer"
+          ? "/engineer/home"
+          : response.data.role === "manager"
+            ? "/contractor/home"
+            : "/";
+        window.setTimeout(() => navigate(destination), 1200);
       }
     } catch (e) {
       const status = e.response?.status;
@@ -91,16 +87,20 @@ export default function Login() {
 
   return (
     <Box className="auth-shell auth-login">
+      {popup && (
+        <Box sx={{ position: "fixed", top: 24, right: 24, zIndex: 1400, maxWidth: "calc(100vw - 32px)" }}>
+          <Popup {...popup} onClose={() => setPopup(null)} style={{ maxWidth: "100%" }} />
+        </Box>
+      )}
       <Box className="auth-visual-panel">
         <Box className="auth-wordmark"><span>ODRA</span><span>OPS</span></Box>
         <Box className="auth-visual-copy">
           <Typography component="h1">BUILDING<br /><span>SMARTER</span><br />TOMORROW</Typography>
-          <Typography><strong>ODRAOPS</strong> delivers reliable construction, infrastructure, and <em>resource management</em> solutions.</Typography>
+          <Typography><strong>ODRAOPS</strong> delivers reliable construction, <br></br> infrastructure, and <em>resource management</em> solutions.</Typography>
         </Box>
       </Box>
 
-      <Box className="auth-form-panel" style={{ "--auth-bg": `url("${homeBg}")` }}>
-        <Box className="auth-dots" aria-hidden="true">{Array.from({ length: 25 }, (_, i) => <i key={i} />)}</Box>
+      <Box className="auth-form-panel" style={{ "--auth-bg": `url("${signInBg}")` }}>
         <Paper elevation={0} className="auth-card">
           {/* Header */}
           <Box className="auth-card-header">
@@ -164,27 +164,6 @@ export default function Login() {
               </div>
             </Box>
 
-
-            {/* Role */}
-            <Box mb={2}>
-              <label className="form-label fw-semibold">{t("auth.role")}</label>
-              <select
-                name="role"
-                className="form-select"
-                value={formData.role}
-                onChange={handleChange}
-                required
-              >
-                <option value="" disabled>
-                {t("auth.choose_role")}
-                </option>
-                <option value="site engineer">{t("auth.site_engineer")}</option>
-                <option value="manager">{t("auth.manager")}</option>
-              </select>
-              <div className="invalid-feedback">
-                Please select a role.
-              </div>
-            </Box>
 
             {/* Submit */}
             <button

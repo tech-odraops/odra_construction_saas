@@ -17,6 +17,7 @@ import Tooltip from "@mui/material/Tooltip";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import IconButton from "@mui/material/IconButton";
 import FullScreenLoader from "../../Components/FullScreenLoader";
+import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 
 function ProjectBuildingIcon() {
   return (
@@ -188,9 +189,10 @@ export default function MyProjects() {
                       {project.title || t("project.untitled_project")}
                     </Typography>
                     <span className="project-card-date">{formattedDate(project)}</span>
-                    <span className={`project-status ${project.status?.toLowerCase() === "completed" ? "is-completed" : ""}`}>
-                      {project.status || t("project.ongoing")}
-                    </span>
+                    <StatusChips
+                      label={project.status || t("project.ongoing")}
+                      status={project.status || "ongoing"}
+                    />
                   </div>
                   <div className="project-card-actions" onClick={(event) => event.stopPropagation()}>
                     <Tooltip title={t("project.open_project")}>
