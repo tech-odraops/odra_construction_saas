@@ -407,7 +407,6 @@ main,
   font-size: .78rem;
 }
 
-.auth-card .form-control,
 .auth-card .form-select {
   min-height: 42px;
   border-color: #d7dce0;
@@ -416,7 +415,6 @@ main,
   box-shadow: none;
 }
 
-.auth-card .form-control:focus,
 .auth-card .form-select:focus {
   border-color: #F97316;
 }
@@ -1090,14 +1088,13 @@ main,
   gap: 5px;
 }
 
-.add-project-control label {
+.add-project-control > label {
   color: #24282b;
   font-family: Poppins, Arial, sans-serif;
   font-size: .66rem;
   font-weight: 600;
 }
 
-.add-project-control input,
 .add-project-control textarea {
   width: 100%;
   border: 1px solid #dce0e3;
@@ -1110,22 +1107,16 @@ main,
   transition: border-color .15s, box-shadow .15s;
 }
 
-.add-project-control input {
-  height: 38px;
-}
-
 .add-project-control textarea {
   min-height: 88px;
   resize: vertical;
 }
 
-.add-project-control input:focus,
 .add-project-control textarea:focus {
   border-color: #F97316;
   box-shadow: 0 0 0 2px rgba(249, 115, 22, .12);
 }
 
-.add-project-control input::placeholder,
 .add-project-control textarea::placeholder {
   color: #697177;
   opacity: 1;
@@ -2980,4 +2971,3 @@ main,
     grid-template-columns: 1fr;
   }
 }
-
