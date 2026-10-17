@@ -22,8 +22,8 @@ const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const notificationRoutes = require("./routes/notification");
 const testNotificationRoute = require("./routes/testNotification");
 const { sendToUser } = require("./services/notification.service");
+const { password } = require("./routes/auth/password");
 const User = require("./models/user");
-const waitlistRoute = require('./routes/waitlistRoute');
 
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
     ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
@@ -178,6 +178,11 @@ app.get("/health", (req, res) => {
 app.use('/auth', signup);
 app.use('/auth', signin);
 
+// founder activation link 
+const { activation } = require("./routes/auth/activation");
+app.use("/auth", activation);
+app.use("/auth", password);
+
 // requiring google auth
 app.use('/auth', googleAuth);
 
@@ -202,9 +207,6 @@ app.use('/token', tokenValidation);
 // using the notification routes
 app.use("/notification", notificationRoutes);
 // app.use("/notification", testNotificationRoute);
-
-// using the waitlist route
-app.use("/waitlist", waitlistRoute);
 
 // for testing porpose
 app.get("/ping", (req, res) => {

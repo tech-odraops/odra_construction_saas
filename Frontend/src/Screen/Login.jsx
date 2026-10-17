@@ -83,7 +83,7 @@ export default function Login() {
       if (status === 401) return toast.error(data.error);
 
       toast.error("Something went wrong. Please try again.");
-      console.log(e);
+      console.log(e); 
     }
 
     setValidated(true);
