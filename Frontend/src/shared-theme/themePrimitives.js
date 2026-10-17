@@ -15,6 +15,15 @@ export const gray = {
   900: "hsl(220, 35%, 3%)",
 };
 
+export const fontWeight = {
+  light: 300,
+  regular: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  bolder: 800
+};
+
 export const colorSchemes = {
   light: {
     palette: {
@@ -86,38 +95,39 @@ export const colorSchemes = {
   },
 };
 
+
 export const fontSizing = {
   fontFamily: "Inter, sans-serif",
   headingFontFamily: "Sora, sans-serif",
-  h1FontSize: defaultTheme.typography.pxToRem(30),
   h1FontWeight: 600,
-  h1LineHeight: 1.2,
-  h1LetterSpacing: -0.5,
-  h2FontSize: defaultTheme.typography.pxToRem(36),
   h2FontWeight: 600,
-  h2LineHeight: 1.2,
-  h3FontSize: defaultTheme.typography.pxToRem(30),
-  h3LineHeight: 1.2,
-  h4FontSize: defaultTheme.typography.pxToRem(24),
   h4FontWeight: 600,
-  h4LineHeight: 1.5,
-  h5FontSize: defaultTheme.typography.pxToRem(20),
   h5FontWeight: 600,
-  h6FontSize: defaultTheme.typography.pxToRem(18),
   h6FontWeight: 600,
+  bodyFontWeight: 400,
+  buttonFontWeight: 600,
+  subtitle2FontWeight: 500,
+  captionFontWeight: 400,
+  inputMessageFontWeight: 600,
+  h1LetterSpacing: -0.5,
+  h1LineHeight: 1.2,
+  h2LineHeight: 1.2,
+  h3LineHeight: 1.2,
+  h4LineHeight: 1.5,
+  h1FontSize: defaultTheme.typography.pxToRem(30),
+  h2FontSize: defaultTheme.typography.pxToRem(36),
+  h3FontSize: defaultTheme.typography.pxToRem(30),
+  h4FontSize: defaultTheme.typography.pxToRem(24),
+  h5FontSize: defaultTheme.typography.pxToRem(20),
+  h6FontSize: defaultTheme.typography.pxToRem(18),
   subtitle1FontSize: defaultTheme.typography.pxToRem(18),
   subtitle2FontSize: defaultTheme.typography.pxToRem(14),
-  subtitle2FontWeight: 500,
   bodyFontSize: defaultTheme.typography.pxToRem(14),
-  bodyFontWeight: 400,
   captionFontSize: defaultTheme.typography.pxToRem(12),
-  captionFontWeight: 400,
   buttonFontSize: "1rem",
-  buttonFontWeight: 600,
   buttonLineHeight: "100%",
   buttonLetterSpacing: "0",
   inputMessageFontSize: "13px",
-  inputMessageFontWeight: 600,
   inputMessageLineHeight: "100%",
   inputMessageLetterSpacing: "0",
   controlFontSize: "1rem",
@@ -129,36 +139,37 @@ export const typography = {
   h1: {
     fontFamily: fontSizing.headingFontFamily,
     fontSize: fontSizing.h1FontSize,
-    fontWeight: fontSizing.h1FontWeight,
+    fontWeight: fontWeight.semibold,
     lineHeight: fontSizing.h1LineHeight,
     letterSpacing: fontSizing.h1LetterSpacing,
   },
   h2: {
     fontFamily: fontSizing.headingFontFamily,
     fontSize: fontSizing.h2FontSize,
-    fontWeight: fontSizing.h2FontWeight,
+    fontWeight: fontWeight.semibold,
     lineHeight: fontSizing.h2LineHeight,
   },
   h3: {
     fontFamily: fontSizing.headingFontFamily,
     fontSize: fontSizing.h3FontSize,
     lineHeight: fontSizing.h3LineHeight,
+    fontWeight: fontWeight.semibold,
   },
   h4: {
     fontFamily: fontSizing.headingFontFamily,
     fontSize: fontSizing.h4FontSize,
-    fontWeight: fontSizing.h4FontWeight,
+    fontWeight: fontWeight.semibold,
     lineHeight: fontSizing.h4LineHeight,
   },
   h5: {
     fontFamily: fontSizing.headingFontFamily,
     fontSize: fontSizing.h5FontSize,
-    fontWeight: fontSizing.h5FontWeight,
+    fontWeight: fontWeight.semibold,
   },
   h6: {
     fontFamily: fontSizing.headingFontFamily,
     fontSize: fontSizing.h6FontSize,
-    fontWeight: fontSizing.h6FontWeight,
+    fontWeight: fontWeight.semibold,
   },
   subtitle1: { fontSize: fontSizing.subtitle1FontSize },
   subtitle2: {
@@ -232,6 +243,7 @@ export const colors = {
   inputError: "#DF361F",
   inputSuccess: "#20A21A",
   inputDisabledBackground: "rgba(237, 237, 237, 0.97)",
+  inputEyeIconColor: "#6d7378",
   radioBorder: "#b3b3b3",
   disabledBorder: "#E3E3E3",
   disabledText: "#aaa",

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
-import { Box, Divider, Paper, Typography, IconButton } from "@mui/material";
+import { Box, Divider, Paper, Typography } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import Input from "../Components/atoms/Input/Input";
+import { emailValidator, minLengthValidator, requiredValidator } from "../utils/validation";
 import homeBg from "../assets/Home bg image.png";
 
 export default function Signup() {
@@ -20,18 +20,62 @@ export default function Signup() {
     password: ""
   });
   const [validated, setValidated] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [validationStates, setValidationStates] = useState({});
+const [validationMessages, setValidationMessages] = useState({});
 
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setValidationStates((prev) => ({
+      ...prev,
+      [name]: validateSignupField(name, value) ? "success" : "error"
+    }));
+  }
+
+  function handleBlur(event) {
+    const { name } = event.target;
+    setValidationStates((prev) => ({
+      ...prev,
+      [name]: validateSignupField(name, event.target.value) ? "success" : "error"
+    }));
+  }
+
+  function validateSignupField(name, value) {
+    if (name === "name") {
+      return requiredValidator(value) && minLengthValidator(value, 2);
+    }
+    if (name === "email") {
+let required = requiredValidator(value);
+      console.log("required", required);
+      setValidationMessages((prev) => ({
+        ...prev,
+        [name]: required ? undefined : t("validation.required"),
+      }));
+      if (!required) return required;
+      let emailValid = emailValidator(value);
+      console.log("emailValid", emailValid);
+      setValidationMessages((prev) => ({
+        ...prev,
+        [name]: emailValid ? undefined : t("validation.invalid_email"),
+      }));
+      if (!emailValid) return emailValid;
+      return required && emailValid;    }
+    if (name === "password") {
+      return requiredValidator(value) && minLengthValidator(value, 5);
+    }
+    return true;
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const form = event.currentTarget;
+    const nextValidationStates = {
+      name: validateSignupField("name", formData.name) ? "success" : "error",
+      email: validateSignupField("email", formData.email) ? "success" : "error",
+      password: validateSignupField("password", formData.password) ? "success" : "error"
+    };
+    setValidationStates(nextValidationStates);
 
-    if (!form.checkValidity()) {
+    if (Object.values(nextValidationStates).includes("error")) {
       setValidated(true);
       event.stopPropagation();
       return;
@@ -107,16 +151,19 @@ export default function Signup() {
           >
             {/* Name */}
             <Box mb={2}>
-              <label className="form-label fw-semibold">{t("auth.full_name")}</label>
-              <input
+              <Input
+                id="signup-name"
+                label={t("auth.full_name")}
                 name="name"
                 type="text"
-                className="form-control"
+                className="auth-input"
                 placeholder={t("auth.name_placeholder")}
                 value={formData.name}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 required
                 minLength={2}
+                validationState={validationStates.name}
               />
               <div className="invalid-feedback">
                 Please provide a valid name.
@@ -125,15 +172,19 @@ export default function Signup() {
 
             {/* Email */}
             <Box mb={2}>
-              <label className="form-label fw-semibold">{t("auth.email")}</label>
-              <input
+              <Input
+                id="signup-email"
+                label={t("auth.email")}
                 name="email"
                 type="email"
-                className="form-control"
+                className="auth-input"
                 placeholder={t("auth.email_placeholder")}
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 required
+                validationState={validationStates.email}
+                validationMessage={validationMessages.email}
               />
               <div className="invalid-feedback">
                 Please provide a valid email.
@@ -142,28 +193,20 @@ export default function Signup() {
 
             {/* Password */}
             <Box mb={2}>
-              <label className="form-label fw-semibold">{t("auth.password")}</label>
-              <Box sx={{ position: "relative" }}>
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  className="form-control"
-                  placeholder={t("auth.min_password_placeholder")}
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  minLength={5}
-                  style={{ paddingRight: 40 }}
-                />
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  sx={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", color: "#6d7378", p: 0.5 }}
-                  tabIndex={-1}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <VisibilityOffOutlinedIcon sx={{ fontSize: 18 }} /> : <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />}
-                </IconButton>
-              </Box>
+              <Input
+                id="signup-password"
+                label={t("auth.password")}
+                name="password"
+                type="password"
+                className="auth-input"
+                placeholder={t("auth.min_password_placeholder")}
+                value={formData.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                required
+                minLength={5}
+                validationState={validationStates.password}
+              />
               <div className="invalid-feedback">
                 Password must be at least 5 characters.
               </div>

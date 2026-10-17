@@ -11,7 +11,8 @@ import {
   motion,
   effects,
   shape,
-} from "../shared-theme/themePrimitives.js"; // Update this path
+  fontWeight,
+} from "../shared-theme/themePrimitives.js";
 
 const OUTPUT = "src/shared-theme/variables.css";
 
@@ -33,22 +34,14 @@ function flattenTokens(value, prefix = "", result = {}) {
       .filter(Boolean)
       .join("-");
 
-    if (child === null || child === undefined) {
-      continue;
-    }
+    if (child === null || child === undefined) continue;
 
-    if (
-      typeof child === "object" &&
-      !Array.isArray(child)
-    ) {
+    if (typeof child === "object" && !Array.isArray(child)) {
       flattenTokens(child, name, result);
       continue;
     }
 
-    if (
-      typeof child !== "string" &&
-      typeof child !== "number"
-    ) {
+    if (typeof child !== "string" && typeof child !== "number") {
       continue;
     }
 
@@ -70,29 +63,79 @@ function flattenTokens(value, prefix = "", result = {}) {
   return result;
 }
 
-const groups = [
-  ["gray", gray],
-  ["palette", colorSchemes.light.palette],
-  ["font", fontSizing],
-  ["", sizing],
-  ["color", colors],
-  ["motion", motion],
-  ["effect", effects],
-  ["shape", shape],
+// Each section gets its own comment in the generated CSS.
+const sections = [
+  {
+    title: "GRAY SCALE",
+    prefix: "gray",
+    tokens: gray,
+  },
+  {
+    title: "COLOR PALETTE",
+    prefix: "palette",
+    tokens: colorSchemes.light.palette,
+  },
+  {
+    title: "TYPOGRAPHY",
+    prefix: "font",
+    tokens: fontSizing,
+  },
+  {
+    title: "SIZING & DIMENSIONS",
+    prefix: "",
+    tokens: sizing,
+  },
+  {
+    title: "COMPONENT COLORS",
+    prefix: "color",
+    tokens: colors,
+  },
+  {
+    title: "MOTION & TRANSITIONS",
+    prefix: "motion",
+    tokens: motion,
+  },
+  {
+    title: "EFFECTS & OPACITY",
+    prefix: "effect",
+    tokens: effects,
+  },
+  {
+    title: "SHAPE & BORDER RADIUS",
+    prefix: "shape",
+    tokens: shape,
+  },
+  {
+    title: "FONT WEIGHT",
+    prefix: "font-weight",
+    tokens: fontWeight,
+  }
 ];
 
-const variables = {};
+const cssSections = [];
 
-for (const [prefix, tokens] of groups) {
-  flattenTokens(tokens, prefix, variables);
+for (const section of sections) {
+  const variables = flattenTokens(section.tokens, section.prefix);
+
+  const entries = Object.entries(variables).sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+
+  const content = entries
+    .map(([name, value]) => `  ${name}: ${value};`)
+    .join("\n");
+
+  if (content) {
+    cssSections.push(
+      `  /* === ${section.title} === */\n${content}`
+    );
+  }
 }
 
 const css = [
   "/* AUTO-GENERATED FILE. DO NOT EDIT MANUALLY. */",
   ":root {",
-  ...Object.entries(variables)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([name, value]) => `  ${name}: ${value};`),
+  cssSections.join("\n\n"),
   "}",
   "",
 ].join("\n");

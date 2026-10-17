@@ -5,10 +5,11 @@ import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined
 import { Icon } from "../Icon/Icon";
 import { colors, componentStyles } from "../../../shared-theme/themePrimitives";
 import "./Input.css";
+import i18n from "../../../i18n";
 
-const validationMessages = {
-  error: "This field is required.",
-  success: "Looks good!",
+const ValidationMessages = {
+  error: i18n.t("validation.required"),
+  success: i18n.t("validation.success"),
 };
 
 export default function Input({
@@ -20,30 +21,43 @@ export default function Input({
   endIconColor,
   id,
   label,
+  looksGood = true,
   required = false,
   type = "text",
+  rows = 4,
   validationState,
+  validationMessage,
   "aria-describedby": ariaDescribedBy,
   ...props
 }) {
   const generatedId = useId();
   const [showPassword, setShowPassword] = useState(false);
+
   const inputId = id || generatedId;
   const messageId = `${inputId}-message`;
-  const message = validationMessages[validationState];
+  
+  const message = validationMessage ? validationMessage :looksGood
+    ? ValidationMessages[validationState]
+    : { ...ValidationMessages, success: undefined }[validationState];
+  
+  const isTextarea = type === "textarea";
   const isPassword = type === "password";
   const inputType = isPassword && showPassword ? "text" : type;
+
   const classes = [
     "input-atom",
+    isTextarea && "input-atom--textarea",
     disabled && "input-atom--disabled",
     validationState && `input-atom--${validationState}`,
     className,
   ]
     .filter(Boolean)
     .join(" ");
+
   const describedBy =
     [ariaDescribedBy, message && messageId].filter(Boolean).join(" ") ||
     undefined;
+
   return (
     <div className="input-atom__field" style={componentStyles.input}>
       {label && (
@@ -57,6 +71,7 @@ export default function Input({
           )}
         </label>
       )}
+
       <div className={classes}>
         {(disabled || icon) && (
           <Icon
@@ -71,16 +86,31 @@ export default function Input({
             }
           />
         )}
-        <input
-          {...props}
-          id={inputId}
-          type={inputType}
-          required={required}
-          className="input-atom__control"
-          disabled={disabled}
-          aria-invalid={validationState === "error" || undefined}
-          aria-describedby={describedBy}
-        />
+
+        {isTextarea ? (
+          <textarea
+            {...props}
+            id={inputId}
+            rows={rows}
+            required={required}
+            className="input-atom__control"
+            disabled={disabled}
+            aria-invalid={validationState === "error" || undefined}
+            aria-describedby={describedBy}
+          />
+        ) : (
+          <input
+            {...props}
+            id={inputId}
+            type={inputType}
+            required={required}
+            className="input-atom__control"
+            disabled={disabled}
+            aria-invalid={validationState === "error" || undefined}
+            aria-describedby={describedBy}
+          />
+        )}
+
         {isPassword && (
           <IconButton
             className="input-atom__password-toggle"
@@ -97,18 +127,26 @@ export default function Input({
             )}
           </IconButton>
         )}
-        {(endIcon || validationState === "success") && (
+
+        {!isTextarea && (endIcon || validationState === "success") && (
           <Icon
             variant={validationState === "success" ? "check-mark" : endIcon}
             size="md"
             gradient={validationState === "success" ? "success" : "primary"}
             className="input-atom__end-icon"
             style={
-              validationState !== "success" && endIconColor ? { "--input-icon-color": endIconColor } : { "--input-icon-color": colors.inputSuccess }
+              validationState !== "success" && endIconColor
+                ? {
+                    "--input-icon-color": endIconColor,
+                  }
+                : {
+                    "--input-icon-color": colors.inputSuccess,
+                  }
             }
           />
         )}
       </div>
+
       {message && (
         <span id={messageId} className="input-atom__message" aria-live="polite">
           {message}
