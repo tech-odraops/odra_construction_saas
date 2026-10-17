@@ -74,12 +74,12 @@ export default function Login() {
       const data = e.response?.data;
       console.log(e)
 
-      const message = status === 422
-        ? data?.error?.[0]?.msg
-        : status === 404 || status === 401
-          ? data?.error
-          : "Something went wrong. Please try again.";
-      setPopup({ variant: "error", title: "Login failed", message: message || "Please check your details and try again." });
+      if (status === 422) return toast.error(data.error[0].msg);
+      if (status === 404) return toast.error(data.error);
+      if (status === 401) return toast.error(data.error);
+
+      toast.error("Something went wrong. Please try again.");
+      console.log(e); 
     }
 
     setValidated(true);
