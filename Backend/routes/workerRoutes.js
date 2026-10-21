@@ -6,16 +6,15 @@ const {authen} = require("../middleware/tokenValidatorsMiddleware");
 
 
 // Create worker (Contractor only)
-router.post('/', authen, validateRoles("manager"), workersController.createWorker);
+router.post('/', authen, validateRoles("Founder"), workersController.createWorker);
 
 // Get workers for a project
-router.get('/:projectId', authen, validateRoles(["manager", "site engineer"]), workersController.getProjectWorkers);
+router.get('/:projectId', authen, validateRoles(["Founder", "Site Engineer"]), workersController.getProjectWorkers);
 
 // Get all workers
-router.get('/', authen, validateRoles("manager"), workersController.getAllWorkers);
+router.get('/', authen, validateRoles("Founder"), workersController.getAllWorkers);
 
 // Assign worker to project
-router.post('/:workerId/assign', authen, validateRoles("manager"), workersController.assignWorkerToProject);
+router.post('/:workerId/assign', authen, validateRoles("Founder"), workersController.assignWorkerToProject);
 
 module.exports = router;
-

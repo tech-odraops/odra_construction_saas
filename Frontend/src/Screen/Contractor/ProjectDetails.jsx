@@ -43,7 +43,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  MenuItem
 } from "@mui/material";
 import FullScreenLoader from "../../Components/FullScreenLoader"
 
@@ -54,6 +55,15 @@ export default function ProjectDetails() {
   const [openWageModal, setOpenWageModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [siteMembers, setSiteMembers] = useState([]);
+  const [memberSearchLoading, setMemberSearchLoading] = useState(false);
+  const [assigningMemberId, setAssigningMemberId] = useState("");
+  const [openInviteDialog, setOpenInviteDialog] = useState(false);
+  const [inviteName, setInviteName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("Site Engineer");
+  const [sendingInvite, setSendingInvite] = useState(false);
   const { id } = useParams();
   const socketRef = useRef(null);
   const navigate = useNavigate();
@@ -77,6 +87,89 @@ export default function ProjectDetails() {
 
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed");
+    }
+  };
+
+
+  const searchSiteMembers = async (searchValue) => {
+    setMemberSearch(searchValue);
+    if (!searchValue.trim()) {
+      setSiteMembers([]);
+      return;
+    }
+
+    setMemberSearchLoading(true);
+    try {
+      const response = await axiosInstance.get("/site-members", {
+        params: { search: searchValue.trim() },
+      });
+      const members = Array.isArray(response.data?.members)
+        ? response.data.members
+        : [];
+      setSiteMembers(members.filter((member) => member.role === "Site Engineer"));
+    } catch (error) {
+      console.error("Search site members error:", error);
+      toast.error(error.response?.data?.message || "Unable to search site members.");
+      setSiteMembers([]);
+    } finally {
+      setMemberSearchLoading(false);
+    }
+  };
+
+  const inviteSiteMember = async (event) => {
+    event.preventDefault();
+
+    const name = inviteName.trim();
+    const email = inviteEmail.trim().toLowerCase();
+
+    if (!name || !email || !inviteRole) {
+      toast.error("Name, email, and role are required.");
+      return;
+    }
+
+    setSendingInvite(true);
+    try {
+      await axiosInstance.post("/site-members/invite", {
+        name,
+        email,
+        role: inviteRole,
+      });
+
+      toast.success("Invitation sent. The member can be assigned after activating their account.");
+      setOpenInviteDialog(false);
+      setInviteName("");
+      setInviteEmail("");
+      setInviteRole("Site Engineer");
+      setMemberSearch("");
+      setSiteMembers([]);
+    } catch (error) {
+      console.error("Invite site member error:", error);
+      toast.error(error.response?.data?.message || "Unable to send invitation.");
+    } finally {
+      setSendingInvite(false);
+    }
+  };
+
+  const assignSiteEngineer = async (member) => {
+    if (!member?._id) return;
+    setAssigningMemberId(member._id);
+
+    try {
+      await axiosInstance.post(`/site-members/projects/${id}/assign`, {
+        userId: member._id,
+      });
+      setProject((previous) => ({
+        ...previous,
+        siteEngineer: member,
+      }));
+      setSiteMembers([]);
+      setMemberSearch("");
+      toast.success("Site Engineer assigned successfully.");
+    } catch (error) {
+      console.error("Assign Site Engineer error:", error);
+      toast.error(error.response?.data?.message || "Could not assign Site Engineer.");
+    } finally {
+      setAssigningMemberId("");
     }
   };
 
@@ -227,6 +320,94 @@ export default function ProjectDetails() {
           <Typography variant="body1" className="project-overview-subtitle">
             {t("project.project_overview_desc")}
           </Typography>
+        </Box>
+
+
+        {/* MANAGE SITE MEMBERS */}
+        <Box
+          sx={{
+            backgroundColor: "#fff",
+            borderRadius: "16px",
+            p: { xs: 2.5, md: 3 },
+            mb: 4,
+            boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+            Manage Site Members
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#667085", mb: 2 }}>
+            Search for an active Site Engineer in your organization and assign them to this project. New members must activate their account before they can be assigned.
+          </Typography>
+
+          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, mb: 2 }}>
+            <TextField
+              fullWidth
+              size="small"
+              label="Search Site Engineers"
+              placeholder="Enter name or email"
+              value={memberSearch}
+              onChange={(event) => searchSiteMembers(event.target.value)}
+              inputProps={{ maxLength: 100 }}
+            />
+            <Button
+              variant="outlined"
+              onClick={() => setOpenInviteDialog(true)}
+              sx={{ whiteSpace: "nowrap", minWidth: { sm: "190px" } }}
+            >
+              + Invite New Member
+            </Button>
+          </Box>
+
+          {memberSearchLoading && <CircularProgress size={24} sx={{ mb: 1 }} />}
+
+          {memberSearch.trim() && !memberSearchLoading && (
+            <Box sx={{ mt: 1.5, display: "grid", gap: 1 }}>
+              {siteMembers.length > 0 ? siteMembers.map((member) => (
+                <Box
+                  key={member._id}
+                  sx={{
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 2,
+                    p: 1.5,
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: { sm: "center" },
+                    justifyContent: "space-between",
+                    gap: 1.5,
+                  }}
+                >
+                  <Box>
+                    <Typography sx={{ fontWeight: 600 }}>{member.name}</Typography>
+                    <Typography variant="body2" color="text.secondary">{member.email}</Typography>
+                    <Typography variant="caption" color="text.secondary">{member.role}</Typography>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    disabled={Boolean(assigningMemberId)}
+                    onClick={() => assignSiteEngineer(member)}
+                  >
+                    {assigningMemberId === member._id ? "Assigning..." : "Assign"}
+                  </Button>
+                </Box>
+              )) : (
+                <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+                  No active Site Engineers found for this search.
+                </Typography>
+              )}
+            </Box>
+          )}
+
+          <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: "#f8fafc" }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Currently assigned: {project.siteEngineer?.name || "No Site Engineer assigned"}
+            </Typography>
+            {project.siteEngineer?.email && (
+              <Typography variant="body2" color="text.secondary">
+                {project.siteEngineer.email}
+              </Typography>
+            )}
+          </Box>
         </Box>
 
         {/* PROJECT INFO CARD */}
@@ -623,6 +804,66 @@ export default function ProjectDetails() {
         project={project}
         refreshProject={fetchProject}
       />
+
+      <Dialog
+        open={openInviteDialog}
+        onClose={() => {
+          if (!sendingInvite) setOpenInviteDialog(false);
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+        <DialogTitle>Invite New Site Member</DialogTitle>
+        <Box component="form" onSubmit={inviteSiteMember}>
+          <DialogContent>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              An activation email will be sent. This member will become selectable for project assignment after activating their account.
+            </Typography>
+            <TextField
+              fullWidth
+              required
+              margin="normal"
+              label="Full name"
+              value={inviteName}
+              onChange={(event) => setInviteName(event.target.value)}
+              inputProps={{ maxLength: 100 }}
+            />
+            <TextField
+              fullWidth
+              required
+              margin="normal"
+              type="email"
+              label="Email address"
+              value={inviteEmail}
+              onChange={(event) => setInviteEmail(event.target.value)}
+              inputProps={{ maxLength: 254 }}
+            />
+            <TextField
+              fullWidth
+              required
+              select
+              margin="normal"
+              label="Role"
+              value={inviteRole}
+              onChange={(event) => setInviteRole(event.target.value)}
+            >
+              <MenuItem value="Site Engineer">Site Engineer</MenuItem>
+              <MenuItem value="Site Supervisor">Site Supervisor</MenuItem>
+            </TextField>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={() => setOpenInviteDialog(false)}
+              disabled={sendingInvite}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" variant="contained" disabled={sendingInvite}>
+              {sendingInvite ? "Sending..." : "Send Invitation"}
+            </Button>
+          </DialogActions>
+        </Box>
+      </Dialog>
 
       <Dialog
         className="project-title-dialog"

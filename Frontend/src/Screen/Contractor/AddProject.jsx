@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -5,8 +6,6 @@ import { toast } from "react-toastify";
 import { Button, Typography } from "@mui/material";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import TextSnippetOutlinedIcon from "@mui/icons-material/TextSnippetOutlined";
-import MailOutlineIcon from "@mui/icons-material/MailOutline";
-import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import ContractorNavbar from "../../Components/ContractorNavbar";
 import Input from "../../Components/atoms/Input/Input";
 import axiosInstance from "../../utils/axiosInstance";
@@ -16,47 +15,39 @@ import projectArtwork from "../../assets/Add New Project (2).png";
 export default function AddProject() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [siteEngineerEmail, setSiteEngineerEmail] = useState("");
-  const [siteEngineerName, setSiteEngineerName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [validationStates, setValidationStates] = useState({});
-  const [validationMessages, setValidationMessages] = useState({});
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const nextValidationStates = {
-      "project-title": requiredValidator(title) ? "success" : "required",
-      "project-description": requiredValidator(description)
-        ? "success"
-        : "required",
-      "engineer-email": validateProjectField(
-        "engineer-email",
-        siteEngineerEmail,
-      )
-        ? "success"
-        : "error",
-      "engineer-name": requiredValidator(siteEngineerName)
-        ? "success"
-        : "required",
-    };
-    setValidationStates(nextValidationStates);
-    if (Object.values(nextValidationStates).includes("error")) return;
 
     setLoading(true);
+
     try {
-      await axiosInstance.post("/projects", {
+      const response = await axiosInstance.post("/projects", {
         title,
         description,
-        siteEngineerEmail,
-        siteEngineerName,
       });
+
+      const projectId = response.data?.newProject?._id;
+
+      if (!projectId) {
+        toast.error(
+          "Project created, but its ID was not returned."
+        );
+        return;
+      }
+
       toast.success("Project created successfully");
-      navigate("/contractor/home");
+
+      navigate(`/contractor/project/${projectId}`);
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.error || "Error creating project");
+      console.error("Error creating project:", err);
+
+      toast.error(
+        err.response?.data?.error || "Error creating project"
+      );
     } finally {
       setLoading(false);
     }
@@ -115,46 +106,39 @@ export default function AddProject() {
       icon: TextSnippetOutlinedIcon,
       multiline: true,
     },
-    {
-      id: "engineer-email",
-      label: t("project.assign_engineer"),
-      placeholder: t("project.enter_engineer_email"),
-      value: siteEngineerEmail,
-      setValue: setSiteEngineerEmail,
-      icon: MailOutlineIcon,
-      type: "email",
-    },
-    {
-      id: "engineer-name",
-      label: t("project.assign_engineer_name"),
-      placeholder: t("project.enter_engineer_name"),
-      value: siteEngineerName,
-      setValue: setSiteEngineerName,
-      icon: PersonOutlineIcon,
-      type: "text",
-    },
   ];
 
   return (
     <div
       className="add-project-page"
-      style={{ "--project-art": `url("${projectArtwork}")` }}
+      style={{
+        "--project-art": `url("${projectArtwork}")`,
+      }}
     >
       <ContractorNavbar />
+
       <main className="add-project-main">
         <section className="add-project-card">
           <div className="add-project-form-panel">
             <header className="add-project-heading">
-              <Typography component="h1" className="add-project-title">
+              <Typography
+                component="h1"
+                className="add-project-title"
+              >
                 Add New <span>Project</span>
               </Typography>
-              <Typography component="p" className="add-project-subtitle">
-                Create a new project and assign it to a site engineer.
+
+              <Typography
+                component="p"
+                className="add-project-subtitle"
+              >
+                Create a project now and add your site team
+                from the project details page.
               </Typography>
             </header>
+
             <form
               className="add-project-form"
-              noValidate
               onSubmit={handleSubmit}
             >
               {fields.map(
@@ -168,49 +152,51 @@ export default function AddProject() {
                   multiline,
                   type,
                 }) => (
-                  <div className="add-project-field" key={id}>
+                  <div
+                    className="add-project-field"
+                    key={id}
+                  >
                     <span className="add-project-field-icon">
                       <Icon />
                     </span>
+
                     <div className="add-project-control">
+                      <label htmlFor={id}>{label}</label>
+
                       {multiline ? (
-                        <Input
+                        <textarea
                           id={id}
-                          label={label}
-                          name={id}
-                          type={"textarea"}
-                          rows={4}
-                          looksGood={false}
-                          className="add-project-input"
+                          rows="4"
                           placeholder={placeholder}
                           required
                           value={value}
-                          onChange={handleInputChange(id, setValue)}
-                          onBlur={handleInputBlur(id)}
-                          validationState={validationStates[id]}
+                          onChange={(event) =>
+                            setValue(event.target.value)
+                          }
                         />
                       ) : (
-                        <Input
+                        <input
                           id={id}
-                          label={label}
-                          name={id}
                           type={type}
-                          className="add-project-input"
                           placeholder={placeholder}
                           required
                           value={value}
-                          onChange={handleInputChange(id, setValue)}
-                          onBlur={handleInputBlur(id)}
-                          validationState={validationStates[id]}
-                          validationMessage={validationMessages[id]}
+                          onChange={(event) =>
+                            setValue(event.target.value)
+                          }
                         />
                       )}
                     </div>
                   </div>
-                ),
+                )
               )}
+
               <div className="add-project-actions">
-                <Button type="submit" variant="contained" disabled={loading}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                >
                   {loading
                     ? t("project.creating")
                     : t("project.create_project")}
@@ -219,6 +205,7 @@ export default function AddProject() {
                   type="button"
                   variant="outlined"
                   onClick={() => navigate(-1)}
+                  disabled={loading}
                 >
                   {t("project.cancel")}
                 </Button>

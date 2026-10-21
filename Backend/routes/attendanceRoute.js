@@ -6,12 +6,28 @@ const {validateRoles} = require("../middleware/roles");
 const {authen} = require("../middleware/tokenValidatorsMiddleware");
 
 // Get workers for a project (used by attendance page)
-router.get('/workers/:projectId', authen, validateRoles("site engineer"), workersController.getProjectWorkers);
+router.get(
+    '/workers/:projectId',
+    authen,
+    validateRoles("Site Engineer"),
+    workersController.getProjectWorkers
+);
 
 // Mark attendance
-router.post('/mark', authen, validateRoles("site engineer"), attendanceController.markAttendance);
+router.post(
+    '/mark',
+    authen,
+    validateRoles("Site Engineer"),
+    attendanceController.markAttendance
+);
 
 // Get attendance for a specific project and date
-router.get('/:projectId/:date', authen, validateRoles(["site engineer", "manager"]), attendanceController.getAttendance);
+router.get(
+    '/:projectId/:date',
+    authen,
+    validateRoles(["Site Engineer", "Founder"]),
+    attendanceController.getAttendance
+);
+
 module.exports = router;
 

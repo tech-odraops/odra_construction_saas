@@ -3,6 +3,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { Box, Divider, Paper, Typography } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { getFCMToken } from "../services/notificationService";
 import Input from "../Components/atoms/Input/Input";
@@ -100,6 +101,7 @@ export default function Login() {
         localStorage.setItem("User_id", response.data.User_id);
         localStorage.setItem("IsLogin", true);
         localStorage.setItem("name", response.data.name);
+        localStorage.setItem("organizationId",response.data.organizationId);
 
         setPopup({
           variant: "success",
@@ -115,13 +117,31 @@ export default function Login() {
           });
         }
 
-        const destination =
-          response.data.role === "site engineer"
-            ? "/engineer/home"
-            : response.data.role === "manager"
-              ? "/contractor/home"
-              : "/";
+        const roleDestinations = {
+          Founder: "/contractor/home",
+          "Site Engineer": "/engineer/home",
+        };
+
+        const destination = roleDestinations[response.data.role];
+
+        if (!destination) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("User_id");
+          localStorage.removeItem("IsLogin");
+          localStorage.removeItem("name");
+
+          setPopup({
+            variant: "error",
+            title: "Role not configured",
+            message:
+              "Your account is authenticated, but a dashboard has not been configured for your role.",
+          });
+
+          return;
+        }
+
         window.setTimeout(() => navigate(destination), 1200);
+        
       }
     } catch (e) {
       const status = e.response?.status;

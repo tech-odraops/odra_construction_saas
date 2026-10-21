@@ -1,5 +1,5 @@
 const express = require('express')
-const { query, validationResult, body } = require('express-validator');
+const { validationResult, body } = require('express-validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const user = require('../../models/user');
@@ -7,115 +7,121 @@ const User = require('../../models/user');
 const env = require('dotenv').config();
 const Organization = require("../../models/Organization");
 
-// signup
-const signup = express.Router()
-signup.post('/signUp', [
-    body('email').isEmail().withMessage("Enter a valid email"),
-    body('name').notEmpty().withMessage("Please enter a valid name"),
-    body('password')
-        .isLength({ min: 5 }).withMessage("Password too short")
-        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&^()_\-+=.]{8,}$/).withMessage("Password must contain at least one letter, one number, and no spaces"),
-], async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        console.error(`Validation Error: ${errors.array()}`)
-        return res.status(422).json({ success: false, error: errors.array() })
-    }
-
-    try {
-        const { email, password, name } = req.body;
-
-        // check if the user already exists
-        const response = await user.findOne({ email })  //if the email/user is not there then it will give null .. but if the mongodb connection error isther the  throws error
-        if (response) {
-            console.error('The user already exits');
-            return res.status(409).json({success:false , error: "The user already exists"});
-        } else {
-            const hassedPw = await bcrypt.hash(password, 12)
-            
-            // Step 1: Create user (temporary without organizationId)
-            const newUser = await User.create({
-                name,
-                email,
-                role : "manager",
-                password: hassedPw
-            })
-
-            // Step 2: Create organization
-            const organization = await Organization.create({
-                name: `${name}'s Organization`,
-                ownerId: newUser._id
-             });
-
-            // Step 3: Link user to organization
-            newUser.organizationId = organization._id;
-            await newUser.save();
-
-            // Step 4: Generate JWT including organizationId
-            if (newUser) {
-                const token = jwt.sign({
-                    User_id: newUser._id,
-                    isLoggedIn: true,
-                    role:newUser.role,
-                    organizationId:organization._id
-                }, process.env.secret_key, { expiresIn: '1h' });
-                return res.status(200).json({ success: true, token,User_id: newUser._id ,role:newUser.role,name });
-            } 
-        }
-
-    } catch (e) {
-        return res.status(500).json({ success: false, error: "Internal Server Error" });
-    }
-
-})
-
 // signin
 const signin = express.Router()
-signin.post('/signIn',[
-    body('email').isEmail().withMessage("Enter a valid email"),
-    body('password')
-        .isLength({ min: 5 }).withMessage("Password too short")
-        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&^()_\-+=.]{8,}$/).withMessage("Password must contain at least one letter, one number, and no spaces"),
-    body('role')
-        .notEmpty()
-        .withMessage("Please enter a role")
-        .isIn(['manager', 'site engineer'])
-        .withMessage("Role must be either 'manager' or 'site engineer'")
-],async (req,res)=>{
-    const errors = validationResult(req);
-    if(!errors.isEmpty()){
-        console.error("Validation Error",errors.array());
-        return res.status(422).json({ success: false, error: errors.array() })
-    }
-    try{
-        const {email, role , password} = req.body;
-        const response = await User.findOne({email});
 
-        if(!response){
-            console.error("The user doesnot exit please singup first");
-            return res.status(404).json({success:false , error:"The user doesnot exist"});
+signin.post(
+    "/signIn",
+    [
+        body("email")
+            .isEmail()
+            .withMessage("Enter a valid email"),
+        body("password")
+            .notEmpty()
+            .withMessage("Password is required")
+    ],
+    async (req, res) => {
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.status(422).json({
+                success: false,
+                error: errors.array()
+            });
         }
 
-        const isMatchPassword = await bcrypt.compare(password,response.password);
-        const isMatchRole = (role == response.role);
+        try {
+            const email = req.body.email.trim().toLowerCase();
+            const { password } = req.body;
 
-        if(!isMatchPassword || !isMatchRole){
-            console.error("The credentials don't match");
-            return res.status(401).json({success:false,error:"Credentials mismatched"});
+            const response = await User.findOne({ email });
+
+            // Use the same response for unknown users and invalid credentials.
+            if (!response) {
+                return res.status(401).json({
+                    success: false,
+                    error: "Invalid email or password."
+                });
+            }
+
+            const isMatchPassword = await bcrypt.compare(
+                password,
+                response.password
+            );
+
+            if (!isMatchPassword) {
+                return res.status(401).json({
+                    success: false,
+                    error: "Invalid email or password."
+                });
+            }
+
+            // Only activated accounts may sign in.
+            if (response.status !== "active") {
+                return res.status(403).json({
+                    success: false,
+                    error: "Your account is not active. Please contact your organization administrator."
+                });
+            }
+
+            const allowedRoles = [
+                "Founder",
+                "Site Supervisor",
+                "Site Engineer"
+            ];
+
+            if (!allowedRoles.includes(response.role)) {
+                return res.status(403).json({
+                    success: false,
+                    error: "This account role is not permitted to sign in here."
+                });
+            }
+
+            if (!response.organizationId) {
+                return res.status(403).json({
+                    success: false,
+                    error: "This account is not associated with an organization."
+                });
+            }
+
+            const organization = await Organization.findById(
+                response.organizationId
+            );
+
+            if (!organization || organization.status !== "active") {
+                return res.status(403).json({
+                    success: false,
+                    error: "This organization is not active."
+                });
+            }
+
+            const token = jwt.sign(
+                {
+                    User_id: response._id,
+                    isLoggedIn: true,
+                    role: response.role,
+                    organizationId: organization._id
+                },
+                process.env.secret_key,
+                { expiresIn: "1h" }
+            );
+
+            return res.status(200).json({
+                success: true,
+                token,
+                User_id: response._id,
+                role: response.role,
+                name: response.name,
+                organizationId: organization._id
+            });
+        } catch (error) {
+            console.error("Sign-in error:", error.message);
+
+            return res.status(500).json({
+                success: false,
+                error: "Internal Server Error"
+            });
         }
-        console.log("Org id =",response.organizationId)
-        const token = jwt.sign({
-            User_id: response._id,
-            isLoggedIn: true,
-            role:response.role,
-            organizationId: response.organizationId
-        },process.env.secret_key,{expiresIn:'1h'});
-        console.log(`Token = ${token}`);
-        return res.status(200).json({success:true,token,User_id:response._id,role,name:response.name});
-    }catch(e){
-        console.error('Internal server error',e);
-        return res.status(500).json({ success: false, error: "Internal Server Error" });
     }
-})
-
-module.exports = {signup,signin}
+);
+module.exports = { signin }
