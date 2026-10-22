@@ -21,10 +21,10 @@ const projectSchema = new Schema({
   },
 
   // Multiple Site Engineers assigned to this project
-siteEngineers: [{
-  type: Schema.Types.ObjectId,
-  ref: "User"
-}],
+  siteEngineers: [{
+    type: Schema.Types.ObjectId,
+    ref: "User"
+  }],
 
   reports: [
     {

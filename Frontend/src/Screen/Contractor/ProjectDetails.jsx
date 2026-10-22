@@ -22,6 +22,24 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 
+function getAssignedSiteEngineers(project) {
+  const engineers = [
+    ...(Array.isArray(project?.siteEngineers) ? project.siteEngineers : []),
+    project?.siteEngineer,
+  ].filter(Boolean);
+  const seenIds = new Set();
+
+  return engineers.filter((engineer) => {
+    const id = typeof engineer === "object" ? engineer?._id : engineer;
+    if (!id) return true;
+
+    const normalizedId = id.toString();
+    if (seenIds.has(normalizedId)) return false;
+    seenIds.add(normalizedId);
+    return true;
+  });
+}
+
 function OverviewBuildingIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V3.5c0-.55.45-1 1-1h9c.55 0 1 .45 1 1V21M15 9h4c.55 0 1 .45 1 1v11M2.5 21h19" /><path d="M7 6h1M11 6h1M7 9h1M11 9h1M7 12h1M11 12h1M7 15h1M11 15h1M17 12h1M17 15h1M17 18h1M9.5 21v-3h2v3" /></svg>;
 }
@@ -70,6 +88,7 @@ export default function ProjectDetails() {
   const { t } = useTranslation();
   const overviewTitle = t("project.project_overview");
   const overviewTitleSplit = overviewTitle.lastIndexOf(" ");
+  const assignedSiteEngineers = getAssignedSiteEngineers(project);
 
   const handleCompleteProject = async () => {
     const confirm = window.confirm(
@@ -160,8 +179,9 @@ export default function ProjectDetails() {
       });
       setProject((previous) => ({
         ...previous,
-        siteEngineer: member,
+        siteEngineers: [...getAssignedSiteEngineers(previous), member],
       }));
+      await fetchProject();
       setSiteMembers([]);
       setMemberSearch("");
       toast.success("Site Engineer assigned successfully.");
@@ -400,11 +420,34 @@ export default function ProjectDetails() {
 
           <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: "#f8fafc" }}>
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              Currently assigned: {project.siteEngineer?.name || "No Site Engineer assigned"}
+              Currently assigned site engineers
             </Typography>
-            {project.siteEngineer?.email && (
-              <Typography variant="body2" color="text.secondary">
-                {project.siteEngineer.email}
+            {assignedSiteEngineers.length > 0 ? (
+              <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 2.5 }}>
+                {assignedSiteEngineers.map((engineer, index) => (
+                  <li key={typeof engineer === "object" ? engineer?._id || index : engineer}>
+                    <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
+                      {typeof engineer === "object" ? engineer?.name || "Site Engineer" : "Site Engineer"}
+                    </Typography>
+                    {typeof engineer === "object" && engineer?.email && (
+                      <>
+                        {" — "}
+                        <Typography
+                          component="a"
+                          variant="body2"
+                          href={`mailto:${engineer.email}`}
+                          sx={{ color: "text.secondary", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                        >
+                          {engineer.email}
+                        </Typography>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </Box>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                No site engineers assigned yet.
               </Typography>
             )}
           </Box>
@@ -459,7 +502,17 @@ export default function ProjectDetails() {
               <div className="project-metadata-row"><CalendarMonthOutlinedIcon /><strong>{t("project.start_date")}:</strong><span>{project.startDate ? new Date(project.startDate).toLocaleDateString("en-GB") : "—"}</span></div>
               <div className="project-metadata-row"><EventAvailableOutlinedIcon /><strong>{t("project.end_date")}:</strong><span>{project.endDate ? new Date(project.endDate).toLocaleDateString("en-GB") : "—"}</span></div>
               <div className="project-metadata-row"><PersonOutlineIcon /><strong>{t("project.contractor")}:</strong><span>{project.contractor?.name || "N/A"}</span></div>
-              <div className="project-metadata-row"><SiteEngineerIcon /><strong>{t("project.site_engineer")}:</strong><span>{project.siteEngineer?.name || "N/A"}</span></div>
+              <div className="project-metadata-row">
+                <SiteEngineerIcon />
+                <strong>{t("project.site_engineers")}:</strong>
+                <Box component="span" sx={{ display: "grid", gap: 0.5, py: 1 }}>
+                  {assignedSiteEngineers.length > 0 ? assignedSiteEngineers.map((engineer, index) => (
+                    <span key={typeof engineer === "object" ? engineer?._id || index : engineer}>
+                      {typeof engineer === "object" ? engineer?.name || "Site Engineer" : "Site Engineer"}
+                    </span>
+                  )) : <span>N/A</span>}
+                </Box>
+              </div>
             </Box>
           </Box>
 

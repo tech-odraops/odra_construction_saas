@@ -101,7 +101,10 @@ exports.createProject = async (req, res) => {
 exports.getProject = async (req, res) => {
     try {
         const contractorId = req.user.User_id;
-        const contratProjects = await Project.find({ organizationId: req.user.organizationId }).populate('siteEngineer', 'name email').lean();
+        const contratProjects = await Project.find({ organizationId: req.user.organizationId })
+            .populate('siteEngineer', 'name email')
+            .populate('siteEngineers', 'name email')
+            .lean();
 
         if (contratProjects.length === 0) {
             return res.status(200).json({
@@ -124,7 +127,13 @@ exports.getProjectSE = async (req, res) => {
 
         // The .lean() method in Mongoose tells the query to return plain JavaScript objects instead of full Mongoose documents.
         // This makes queries faster and uses less memory when you only need to read data (not use Mongoose document methods).
-        const allProject = await Project.find({ siteEngineer: siteEngineerId, organizationId: req.user.organizationId })
+        const allProject = await Project.find({
+            organizationId: req.user.organizationId,
+            $or: [
+                { siteEngineers: siteEngineerId },
+                { siteEngineer: siteEngineerId }
+            ]
+        })
             .select("title status contractor")
             .populate('contractor', 'name')
             .lean();
@@ -154,6 +163,7 @@ exports.getProjectById = async (req, res) => {
         const project = await Project.findOne({ _id: id, organizationId: req.user.organizationId })
             .populate('contractor', 'name email')
             .populate('siteEngineer', 'name email')
+            .populate('siteEngineers', '_id name email role')
             .populate({
                 path: 'reports',
                 populate: { path: 'siteEngineerId', select: 'name email' },
@@ -223,15 +233,21 @@ exports.completeProject = async (req, res) => {
 exports.deleteProject = async (req, res) => {
     try {
         const { id } = req.params;
-        const contractor_id = req.user.User_id;
         const organizationId = req.user.organizationId;
         const project = await Project.findOne({ _id: id, organizationId });
-        const project_name = project.title;
-        const siteEng_id = project.siteEngineer;
 
         if (!project) {
             return res.status(404).json({ message: "Project not found" });
         }
+
+        const project_name = project.title;
+        const siteEngineerIds = [
+            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : []),
+            project.siteEngineer
+        ]
+            .filter(Boolean)
+            .map((siteEngineerId) => siteEngineerId.toString());
+        const uniqueSiteEngineerIds = [...new Set(siteEngineerIds)];
 
         // 1 remove project from contractor
         await User.findOneAndUpdate({ _id: project.contractor, organizationId: organizationId }, {
@@ -239,13 +255,15 @@ exports.deleteProject = async (req, res) => {
         })
 
         // 2️⃣ Remove project from Site Engineer
-        await User.findOneAndUpdate({ _id: project.siteEngineer, organizationId }, {
-            $pull: { assignedProjects: id }
-        });
+        for (const siteEngineerId of uniqueSiteEngineerIds) {
+            await User.findOneAndUpdate({ _id: siteEngineerId, organizationId }, {
+                $pull: { assignedProjects: id }
+            });
+        }
 
         // 3️⃣ Free workers (remove project reference)
         await Worker.updateMany(
-            { currentProjectId: id },
+            { currentProjectId: id, organizationId },
             { $set: { currentProjectId: null, status: "free" } }
         );
 
@@ -269,13 +287,14 @@ exports.deleteProject = async (req, res) => {
 
         // 🔔 Real-time notify engineer
         const io = req.app.get("io");
-        const roomName = `siteEngineer-${siteEng_id.toString()}`;
         const roomName2 = `project-${id}`
 
-        io.to(roomName).emit("project:deleted", {
-            project_id: id,
-            project_name
-        });
+        for (const siteEngineerId of uniqueSiteEngineerIds) {
+            io.to(`siteEngineer-${siteEngineerId}`).emit("project:deleted", {
+                project_id: id,
+                project_name
+            });
+        }
 
         io.to(roomName2).emit("project:deleted", {
             project_id: id,
@@ -636,8 +655,13 @@ exports.updateProjectTitle = async (req, res) => {
         // socket realtime update
         const io = req.app.get("io");
 
-        const siteEng_id = project.siteEngineer;
-        const roomName = `siteEngineer-${siteEng_id.toString()}`;
+        const siteEngineerIds = [
+            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : []),
+            project.siteEngineer
+        ]
+            .filter(Boolean)
+            .map((siteEngineerId) => siteEngineerId.toString());
+        const uniqueSiteEngineerIds = [...new Set(siteEngineerIds)];
 
         // broadcast to project room
         io.to(`project-${projectId}`).emit("project:titleUpdated", {
@@ -645,11 +669,13 @@ exports.updateProjectTitle = async (req, res) => {
             title
         });
 
-        // broadcast to site eng room
-        io.to(roomName).emit("project:titleUpdated", {
-            projectId,
-            title
-        });
+        // broadcast to each assigned site engineer
+        for (const siteEngineerId of uniqueSiteEngineerIds) {
+            io.to(`siteEngineer-${siteEngineerId}`).emit("project:titleUpdated", {
+                projectId,
+                title
+            });
+        }
 
         return res.status(200).json({
             success: true,
