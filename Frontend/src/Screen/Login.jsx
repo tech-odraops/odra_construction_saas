@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./Login.css";
 import axiosInstance from "../utils/axiosInstance";
 import { Box, Divider, Paper, Typography, IconButton } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
@@ -9,6 +10,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import signInBg from "../assets/Sign in bg.png";
 import Popup from "../Components/atoms/Popup/Popup";
+import { loginPrimitives } from "../shared-theme/themePrimitives";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -86,7 +88,10 @@ export default function Login() {
   }
 
   return (
-    <Box className="auth-shell auth-login">
+    <Box
+      className="auth-shell auth-login"
+      style={{ ...loginPrimitives, "--auth-bg": `url("${signInBg}")` }}
+    >
       {popup && (
         <Box sx={{ position: "fixed", top: 24, right: 24, zIndex: 1400, maxWidth: "calc(100vw - 32px)" }}>
           <Popup {...popup} onClose={() => setPopup(null)} style={{ maxWidth: "100%" }} />
@@ -100,7 +105,7 @@ export default function Login() {
         </Box>
       </Box>
 
-      <Box className="auth-form-panel" style={{ "--auth-bg": `url("${signInBg}")` }}>
+      <Box className="auth-form-panel">
         <Paper elevation={0} className="auth-card">
           {/* Header */}
           <Box className="auth-card-header">

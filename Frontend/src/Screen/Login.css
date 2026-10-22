@@ -1,0 +1,264 @@
+/* Login page artwork and layout */
+.auth-shell.auth-login {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: block;
+  overflow: hidden;
+  color: var(--login-color-ink);
+  background: var(--login-color-background);
+  background-image: var(--auth-bg);
+  background-size: cover;
+  background-position: center;
+}
+
+.auth-login .auth-visual-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 0;
+  overflow: hidden;
+  color: var(--login-color-ink);
+  background: none;
+  pointer-events: none;
+}
+
+.auth-login .auth-wordmark {
+  top: 14px;
+  left: 16px;
+  color: var(--login-color-white);
+  font-family: var(--login-font-family);
+  font-size: 22px;
+  font-weight: var(--login-font-weight);
+  letter-spacing: -.045em;
+  text-shadow: var(--login-brand-shadow);
+}
+
+.auth-login .auth-visual-copy {
+  position: absolute;
+  top: 36%;
+  left: 2.3%;
+  width: 35%;
+  max-width: 440px;
+}
+
+.auth-login .auth-visual-copy h1.MuiTypography-root {
+  margin: 0 0 8px;
+  color: var(--login-color-ink);
+  font-family: var(--login-font-family);
+  font-size: clamp(2.4rem, 3.8vw, 3.6rem);
+  font-weight: var(--login-font-weight);
+  line-height: .98;
+  letter-spacing: -.025em;
+}
+
+.auth-login .auth-visual-copy h1 span {
+  color: var(--login-color-accent);
+  font-family: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+}
+
+.auth-login .auth-visual-copy > p.MuiTypography-root {
+  max-width: 360px;
+  margin: 0;
+  color: var(--login-color-copy);
+  font-family: var(--login-font-family);
+  font-size: clamp(.7rem, .85vw, .86rem);
+  line-height: 1.45;
+}
+
+.auth-login .auth-visual-copy strong {
+  color: var(--login-color-copy);
+  font-weight: var(--login-font-weight);
+}
+
+.auth-login .auth-visual-copy em {
+  color: var(--login-color-accent);
+  font-style: normal;
+}
+
+.auth-login .auth-form-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 9.35% 0 0;
+  overflow: visible;
+  background: transparent;
+}
+
+.auth-login .auth-card.MuiPaper-root {
+  width: clamp(290px, 28.2vw, 360px);
+  padding: 20px 16px 22px;
+  border: 1px solid var(--login-color-card-border);
+  border-radius: 16px;
+  background: var(--login-color-card);
+  box-shadow: var(--login-card-shadow);
+}
+
+.auth-login .auth-card.MuiPaper-root::before {
+  top: 0;
+  left: 0;
+  border-top-left-radius: 15px;
+}
+
+.auth-login .auth-card-header {
+  margin-bottom: 13px;
+}
+
+.auth-login .auth-card-header h5 {
+  font-size: 1rem;
+}
+
+.auth-login .auth-card .form-label {
+  color: var(--login-color-ink);
+  font-size: .7rem;
+}
+
+.auth-login .auth-card .form-control,
+.auth-login .auth-card .form-select {
+  min-height: 32px;
+  border-color: var(--login-color-input-border);
+  border-radius: 4px;
+  background: var(--login-color-input-surface);
+  font-size: .68rem;
+}
+
+.auth-login .auth-submit {
+  min-height: 34px;
+  border-radius: 3px;
+  background: var(--login-color-accent) !important;
+  font-size: .74rem;
+}
+
+.auth-login .auth-submit:hover {
+  background: var(--login-color-accent-hover) !important;
+}
+
+.auth-login .auth-divider {
+  margin: 14px 0 10px;
+}
+
+.auth-login .auth-google button {
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--login-color-google-border);
+  border-radius: 50%;
+  background: var(--login-color-white);
+  box-shadow: var(--login-google-shadow);
+}
+
+@media (max-width: 860px) {
+  .auth-login .auth-visual-copy {
+    top: 29%;
+    left: 3%;
+    width: 42%;
+  }
+
+  .auth-login .auth-visual-copy h1.MuiTypography-root {
+    font-size: clamp(1.8rem, 5vw, 2.7rem);
+  }
+
+  .auth-login .auth-form-panel {
+    justify-content: center;
+    align-items: flex-end;
+    padding: 20px 5% max(20px, env(safe-area-inset-bottom));
+  }
+
+  .auth-shell.auth-login {
+    background-position: 42% center;
+  }
+
+  .auth-login .auth-card.MuiPaper-root {
+    width: min(40vw, 360px);
+  }
+}
+
+@media (max-width: 560px) {
+  .auth-shell.auth-login {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .auth-login .auth-visual-panel {
+    min-height: 0;
+    height: 52vh;
+    height: 52dvh;
+    overflow: visible;
+  }
+
+  .auth-login .auth-wordmark {
+    top: max(14px, env(safe-area-inset-top));
+    left: 18px;
+    font-size: 20px;
+  }
+
+  .auth-login .auth-visual-copy {
+    top: 37vh;
+    left: 18px;
+    width: calc(100% - 36px);
+  }
+
+  .auth-login .auth-visual-copy h1.MuiTypography-root {
+    font-size: clamp(2.15rem, 8.6vw, 2.55rem);
+    font-weight: var(--login-font-weight);
+    line-height: .98;
+    letter-spacing: -.025em;
+  }
+
+  .auth-login .auth-visual-copy > p.MuiTypography-root {
+    max-width: 250px;
+    font-size: .64rem;
+  }
+
+  .auth-login .auth-form-panel {
+    position: relative;
+    inset: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 42vh 14px 16px;
+  }
+
+  .auth-shell.auth-login {
+    background-position: center top;
+  }
+
+  .auth-login .auth-card.MuiPaper-root {
+    width: 100%;
+    max-width: 380px;
+    padding: 18px 18px 14px;
+  }
+}
+
+@media (max-width: 560px) and (max-height: 700px) {
+  .auth-login .auth-card.MuiPaper-root {
+    padding: 14px 16px 12px;
+  }
+
+  .auth-login .auth-card-header {
+    margin-bottom: 10px;
+  }
+
+  .auth-login .auth-card form > .MuiBox-root {
+    margin-bottom: 8px !important;
+  }
+
+  .auth-login .auth-divider {
+    margin-top: 9px;
+    margin-bottom: 7px;
+  }
+}
