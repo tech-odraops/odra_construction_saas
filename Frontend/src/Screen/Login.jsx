@@ -10,7 +10,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import signInBg from "../assets/Sign in bg.png";
 import Popup from "../Components/atoms/Popup/Popup";
-import { loginPrimitives } from "../shared-theme/themePrimitives";
+import { loginPrimitives } from "../shared-theme/themePrimitives.jsx";
 
 export default function Login() {
   const navigate = useNavigate();

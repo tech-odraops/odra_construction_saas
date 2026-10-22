@@ -1,0 +1,184 @@
+/* AUTO-GENERATED FILE. DO NOT EDIT MANUALLY. */
+:root {
+  /* === GRAY SCALE === */
+  --gray-100: hsl(220, 30%, 94%);
+  --gray-200: hsl(220, 20%, 88%);
+  --gray-300: hsl(220, 20%, 80%);
+  --gray-400: hsl(220, 20%, 65%);
+  --gray-50: hsl(220, 35%, 97%);
+  --gray-500: hsl(220, 20%, 42%);
+  --gray-600: hsl(220, 20%, 35%);
+  --gray-700: hsl(220, 20%, 25%);
+  --gray-800: hsl(220, 30%, 6%);
+  --gray-900: hsl(220, 35%, 3%);
+
+  /* === COLOR PALETTE === */
+  --palette-action-hover: rgba(249, 115, 22, 0.08);
+  --palette-action-selected: rgba(249, 115, 22, 0.16);
+  --palette-background-default: #fff;
+  --palette-background-paper: #ffffff;
+  --palette-base-shadow: 0px 4px 16px rgba(25, 34, 43, 0.06), 0px 8px 20px rgba(25, 34, 43, 0.08);
+  --palette-divider: rgba(25, 34, 43, 0.1);
+  --palette-error-contrast-text: #ffffff;
+  --palette-error-dark: #B71C1C;
+  --palette-error-light: #FFE5E5;
+  --palette-error-main: #E53935;
+  --palette-grey-100: hsl(220, 30%, 94%);
+  --palette-grey-200: hsl(220, 20%, 88%);
+  --palette-grey-300: hsl(220, 20%, 80%);
+  --palette-grey-400: hsl(220, 20%, 65%);
+  --palette-grey-50: hsl(220, 35%, 97%);
+  --palette-grey-500: hsl(220, 20%, 42%);
+  --palette-grey-600: hsl(220, 20%, 35%);
+  --palette-grey-700: hsl(220, 20%, 25%);
+  --palette-grey-800: hsl(220, 30%, 6%);
+  --palette-grey-900: hsl(220, 35%, 3%);
+  --palette-info-contrast-text: #ffffff;
+  --palette-info-dark: #C2410C;
+  --palette-info-light: #FFEDD5;
+  --palette-info-main: #F97316;
+  --palette-primary-contrast-text: #ffffff;
+  --palette-primary-dark: #E65E0C;
+  --palette-primary-light: #FDBA74;
+  --palette-primary-main: #F97316;
+  --palette-secondary-contrast-text: #ffffff;
+  --palette-secondary-main: #7C2D12;
+  --palette-success-contrast-text: #ffffff;
+  --palette-success-dark: #E65E0C;
+  --palette-success-light: #FFEDD5;
+  --palette-success-main: #F97316;
+  --palette-text-primary: #000;
+  --palette-text-secondary: #000;
+  --palette-warning-contrast-text: #000;
+  --palette-warning-dark: #C49000;
+  --palette-warning-light: #FFF4D6;
+  --palette-warning-main: #F4B400;
+
+  /* === TYPOGRAPHY === */
+  --font-body-font-size: 0.875rem;
+  --font-body-font-weight: 400;
+  --font-button-font-size: 1rem;
+  --font-button-font-weight: 600;
+  --font-button-letter-spacing: 0;
+  --font-button-line-height: 100%;
+  --font-caption-font-size: 0.75rem;
+  --font-caption-font-weight: 400;
+  --font-control-font-size: 1rem;
+  --font-control-line-height: 1.25;
+  --font-font-family: Inter, sans-serif;
+  --font-h1-font-size: 1.875rem;
+  --font-h1-font-weight: 600;
+  --font-h1-letter-spacing: -0.5;
+  --font-h1-line-height: 1.2;
+  --font-h2-font-size: 2.25rem;
+  --font-h2-font-weight: 600;
+  --font-h2-line-height: 1.2;
+  --font-h3-font-size: 1.875rem;
+  --font-h3-line-height: 1.2;
+  --font-h4-font-size: 1.5rem;
+  --font-h4-font-weight: 600;
+  --font-h4-line-height: 1.5;
+  --font-h5-font-size: 1.25rem;
+  --font-h5-font-weight: 600;
+  --font-h6-font-size: 1.125rem;
+  --font-h6-font-weight: 600;
+  --font-heading-font-family: Sora, sans-serif;
+  --font-input-message-font-size: 13px;
+  --font-input-message-font-weight: 600;
+  --font-input-message-letter-spacing: 0;
+  --font-input-message-line-height: 100%;
+  --font-subtitle1-font-size: 1.125rem;
+  --font-subtitle2-font-size: 0.875rem;
+  --font-subtitle2-font-weight: 500;
+
+  /* === SIZING & DIMENSIONS === */
+  --button-border-radius: 0.1875rem;
+  --button-border-width: 0.125rem;
+  --button-focus-outline-offset: 0.125rem;
+  --button-focus-outline-width: 0.1875rem;
+  --button-height: 3.125rem;
+  --button-icon-gap: 0.75rem;
+  --button-icon-only-padding: 0rem;
+  --button-icon-only-width: 3.125rem;
+  --button-padding-block: 0.75rem;
+  --button-padding-inline: 1rem;
+  --button-width: 10.3125rem;
+  --control-focus-outline-offset: 0.125rem;
+  --control-focus-outline-width: 0.1875rem;
+  --icon-button: 1.875rem;
+  --icon-lg: 1.5rem;
+  --icon-md: 1.25rem;
+  --icon-sm: 1rem;
+  --icon-xl: 2rem;
+  --icon-xs: 0.75rem;
+  --icon-xxl: 3rem;
+  --input-border-radius: 0.25rem;
+  --input-border-width: 0.125rem;
+  --input-height: 2.9375rem;
+  --input-message-margin-top: 0.375rem;
+  --input-padding-block: 0.625rem;
+  --input-padding-inline: 0.75rem;
+  --input-width: 13.5625rem;
+  --radio-border-radius: 50%;
+  --radio-border-width: 0.15625rem;
+  --radio-control-size: 2.25rem;
+  --radio-dot-size: 1.125rem;
+  --radio-gap: 0.875rem;
+  --radio-padding: 0.25rem;
+  --toggle-gap: 1.25rem;
+  --toggle-thumb-border-radius: 50%;
+  --toggle-thumb-offset: 1.25rem;
+  --toggle-thumb-size: 1.25rem;
+  --toggle-track-border-radius: 999px;
+  --toggle-track-height: 1.75rem;
+  --toggle-track-padding: 0.1875rem;
+  --toggle-track-width: 3rem;
+
+  /* === COMPONENT COLORS === */
+  --color-button-hover: #F55814;
+  --color-button-hover-text: #FFFFFF;
+  --color-button-primary: #F55814;
+  --color-disabled-border: #E3E3E3;
+  --color-disabled-text: #aaa;
+  --color-icon-disabled: #ACACAC;
+  --color-icon-inverted: #FFFFFF;
+  --color-icon-primary: #F55814;
+  --color-input-border: #BFBFBF;
+  --color-input-disabled-background: rgba(237, 237, 237, 0.97);
+  --color-input-error: #DF361F;
+  --color-input-eye-icon-color: #6d7378;
+  --color-input-placeholder: #666666;
+  --color-input-success: #20A21A;
+  --color-radio-border: #b3b3b3;
+  --color-toggle-disabled-text: #c7c7c7;
+  --color-toggle-track: #E3E3E3;
+
+  /* === MOTION & TRANSITIONS === */
+  --motion-easing: ease;
+  --motion-fast-duration: 140ms;
+  --motion-linear-easing: linear;
+  --motion-reduced-motion-duration: 0.01ms;
+  --motion-spin-duration: 2.8s;
+  --motion-standard-duration: 180ms;
+
+  /* === EFFECTS & OPACITY === */
+  --effect-active-scale: 1;
+  --effect-button-icon-initial-scale: 0.7;
+  --effect-disabled-opacity: 0.55;
+  --effect-hidden-opacity: 0;
+  --effect-radio-dot-initial-scale: 0.5;
+  --effect-toggle-thumb-initial-offset: 0rem;
+  --effect-visible-opacity: 1;
+
+  /* === SHAPE & BORDER RADIUS === */
+  --shape-border-radius: 8px;
+  --shape-border-radius-large: 16px;
+
+  /* === FONT WEIGHT === */
+  --font-weight-bold: 700;
+  --font-weight-bolder: 800;
+  --font-weight-light: 300;
+  --font-weight-medium: 500;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+}

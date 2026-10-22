@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "icons": "node src/utils/build-icons.mjs",
-    "predev": "npm run icons",
+    "variables": "node src/utils/variablesGenerator.mjs",
+    "predev": "npm run icons && npm run variables",
     "dev": "vite",
-    "prebuild": "npm run icons",
+    "prebuild": "npm run icons && npm run variables",
     "build": "vite build",
     "lint": "eslint .",
     "test": "playwright test",
