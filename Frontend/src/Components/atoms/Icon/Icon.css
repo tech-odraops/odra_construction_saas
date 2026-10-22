@@ -16,3 +16,4 @@
 .icon--gradient-primary { background: var(--icon-gradient-primary); }
 .icon--gradient-inverted { background: var(--icon-gradient-inverted); }
 .icon--gradient-disabled { background: var(--icon-gradient-disabled); }
+.icon--gradient-success { background: var(--icon-gradient-success); }

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
 
 import {
   Dialog,
@@ -7,45 +7,59 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  TextField,
-  Box
+  Box,
 } from "@mui/material";
 
+import Input from "./atoms/Input/Input";
 import axiosInstance from "../utils/axiosInstance";
+import { requiredValidator } from "../utils/validation";
 import { toast } from "react-toastify";
 
 export default function AddMiscExpenseModal({
   open,
   onClose,
   projectId,
-  onSuccess
+  onSuccess,
 }) {
-
-  const navigate = useNavigate();
-
+  // const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     itemName: "",
     purchaseDate: "",
     unit: "",
     quantity: "",
-    pricePerUnit: ""
+    pricePerUnit: "",
   });
+  const [validationStates, setValidationStates] = useState({});
 
   const handleChange = (e) => {
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [name]: value,
+    }));
+    setValidationStates((prev) => ({
+      ...prev,
+      [name]: requiredValidator(value) ? "success" : "error",
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const nextValidationStates = Object.fromEntries(
+      fields.map(({ name }) => [
+        name,
+        requiredValidator(formData[name]) ? "success" : "error",
+      ]),
+    );
+    setValidationStates(nextValidationStates);
+
+    if (Object.values(nextValidationStates).includes("error")) return;
 
     try {
-
       await axiosInstance.post(
         `/projects/${projectId}/miscellaneous`,
-        formData
+        formData,
       );
 
       toast.success("Expense added successfully");
@@ -53,103 +67,65 @@ export default function AddMiscExpenseModal({
       onSuccess();
 
       onClose();
-
     } catch (error) {
-
       console.log(error);
 
-      toast.error(
-        error.response?.data?.message ||
-        "Failed to add expense"
-      );
-
+      toast.error(error.response?.data?.message || "Failed to add expense");
     }
-
   };
 
+  const fields = [
+    { name: "itemName", label: "Item Name", type: "text" },
+    { name: "purchaseDate", label: "Purchase Date", type: "date" },
+    { name: "unit", label: "Unit", type: "text" },
+    { name: "quantity", label: "Quantity", type: "number" },
+    { name: "pricePerUnit", label: "Price Per Unit", type: "number" },
+  ];
+
   return (
-
-    <Dialog
-      open={open}
-      onClose={onClose}
-      fullWidth
-      maxWidth="sm"
-    >
-
-      <DialogTitle>
-        Add Miscellaneous Expense
-      </DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Add Miscellaneous Expense</DialogTitle>
 
       <DialogContent>
-
         <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 2,
-            mt: 1
-          }}
+          component="form"
+          id="misc-expense-form"
+          noValidate
+          onSubmit={handleSubmit}
         >
-
-          <TextField
-            label="Item Name"
-            name="itemName"
-            fullWidth
-            onChange={handleChange}
-          />
-
-          <TextField
-            type="date"
-            name="purchaseDate"
-            fullWidth
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-          />
-
-          <TextField
-            label="Unit"
-            name="unit"
-            fullWidth
-            onChange={handleChange}
-          />
-
-          <TextField
-            label="Quantity"
-            name="quantity"
-            type="number"
-            fullWidth
-            onChange={handleChange}
-          />
-
-          <TextField
-            label="Price Per Unit"
-            name="pricePerUnit"
-            type="number"
-            fullWidth
-            onChange={handleChange}
-          />
-
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              mt: 1,
+            }}
+          >
+            {fields.map(({ name, label, type }) => (
+              <Box key={name} sx={{ width: "100%" }}>
+                <Input
+                  id={`misc-expense-${name}`}
+                  label={label}
+                  name={name}
+                  type={type}
+                  value={formData[name]}
+                  onChange={handleChange}
+                  required
+                  validationState={validationStates[name]}
+                />
+              </Box>
+            ))}
+          </Box>
         </Box>
-
       </DialogContent>
 
       <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
 
-        <Button onClick={onClose}>
-          Cancel
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-        >
+        <Button variant="contained" type="submit" form="misc-expense-form">
           Add Expense
         </Button>
-
       </DialogActions>
-
     </Dialog>
-
   );
-
 }
