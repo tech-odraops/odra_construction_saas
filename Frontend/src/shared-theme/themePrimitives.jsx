@@ -291,25 +291,6 @@ export const colors = {
   popupErrorDecoration: 'radial-gradient(ellipse 3.3rem 1.5rem at 19% 0%, rgb(255 255 255 / 22%) 0 58%, transparent 62%), radial-gradient(ellipse 3rem 1.5rem at 82% 0%, rgb(255 255 255 / 18%) 0 58%, transparent 62%), radial-gradient(ellipse 2.8rem 1.3rem at 96% 100%, rgb(255 255 255 / 15%) 0 58%, transparent 62%)',
 };
 
-export const loginPrimitives = {
-  '--login-color-background': '#f7f7f7',
-  '--login-color-ink': '#252a30',
-  '--login-color-copy': '#202326',
-  '--login-color-accent': colorSchemes.light.palette.primary.main,
-  '--login-color-accent-hover': colorSchemes.light.palette.primary.dark,
-  '--login-color-white': '#fff',
-  '--login-color-card': 'rgba(255, 255, 255, .96)',
-  '--login-color-card-border': 'rgba(211, 215, 218, .85)',
-  '--login-color-input-border': '#d7dce0',
-  '--login-color-input-surface': 'rgba(255, 255, 255, .7)',
-  '--login-color-google-border': '#e2e5e8',
-  '--login-font-family': '"IBM Plex Sans", Arial, sans-serif',
-  '--login-font-weight': 600,
-  '--login-card-shadow': '0 8px 22px rgba(22, 27, 31, .04)',
-  '--login-brand-shadow': '0 1px 5px rgba(0, 0, 0, .28)',
-  '--login-google-shadow': '0 1px 4px rgba(30, 40, 50, .08)',
-};
-
 export const motion = {
   fastDuration: '140ms',
   standardDuration: '180ms',

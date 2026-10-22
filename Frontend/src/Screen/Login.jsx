@@ -10,7 +10,6 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import signInBg from "../assets/Sign in bg.png";
 import Popup from "../Components/atoms/Popup/Popup";
-import { loginPrimitives } from "../shared-theme/themePrimitives.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -90,7 +89,7 @@ export default function Login() {
   return (
     <Box
       className="auth-shell auth-login"
-      style={{ ...loginPrimitives, "--auth-bg": `url("${signInBg}")` }}
+      style={{ "--auth-bg": `url("${signInBg}")` }}
     >
       {popup && (
         <Box sx={{ position: "fixed", top: 24, right: 24, zIndex: 1400, maxWidth: "calc(100vw - 32px)" }}>
