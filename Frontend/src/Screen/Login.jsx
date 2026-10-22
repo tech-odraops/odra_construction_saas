@@ -139,6 +139,14 @@ export default function Login() {
         title: "Login failed",
         message: message || "Please check your details and try again.",
       });
+      console.log(e)
+
+      if (status === 422) return toast.error(data.error[0].msg);
+      if (status === 404) return toast.error(data.error);
+      if (status === 401) return toast.error(data.error);
+
+      toast.error("Something went wrong. Please try again.");
+      console.log(e); 
     }
 
     setValidated(true);
