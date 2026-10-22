@@ -24,7 +24,14 @@ exports.createReport = async (req, res) => {
         }
 
         // check if this site engineer is allowed to for this project
-        if (projectDetails.siteEngineer.toString() !== siteEngineerId.toString()) {
+        const assignedSiteEngineerIds = [
+            ...(Array.isArray(projectDetails.siteEngineers) ? projectDetails.siteEngineers : []),
+            projectDetails.siteEngineer
+        ]
+            .filter(Boolean)
+            .map((assignedSiteEngineerId) => assignedSiteEngineerId.toString());
+
+        if (!assignedSiteEngineerIds.includes(siteEngineerId.toString())) {
             return res.status(403).json({ message: 'You are not assigned to this project' });
         }
 

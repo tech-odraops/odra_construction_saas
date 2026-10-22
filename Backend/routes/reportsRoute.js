@@ -6,14 +6,14 @@ const reportController = require("../controllers/reportControllers");
 const upload = require("../middleware/audioUpload");
 
 // create report by site engineer
-router.post('/',authen,validateRoles('site engineer'),reportController.createReport);
+router.post('/',authen,validateRoles('Site Engineer'),reportController.createReport);
 
-router.post('/:reportId/review', authen,validateRoles('manager'), reportController.reviewReport);
+router.post('/:reportId/review', authen,validateRoles('Founder'), reportController.reviewReport);
 
 // ai summary
 router.post('/:reportId/ai-summary',
     authen,
-    validateRoles('manager'),
+    validateRoles('Founder'),
     reportController.generateAISummary
 );
 
@@ -26,6 +26,6 @@ router.post(
 );
 
 // get report by id
-router.get('/:id',authen,validateRoles('manager'),reportController.getReportById);
+router.get('/:id',authen,validateRoles('Founder'),reportController.getReportById);
 
 module.exports = router;

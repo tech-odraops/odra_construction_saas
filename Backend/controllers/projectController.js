@@ -13,6 +13,7 @@ const Attendance = require("../models/Attendance");
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 const mongoose = require("mongoose");
+const Invitation = require("../models/Invitation");
 
 
 const sendEmail = async (to, subject, html, replyToEmail) => {
@@ -33,149 +34,65 @@ const sendEmail = async (to, subject, html, replyToEmail) => {
     }
 };
 
-
 exports.createProject = async (req, res) => {
     try {
-        const { title, description, startDate, endDate, siteEngineerEmail, siteEngineerName } = req.body;
-        if (!title || !description || !siteEngineerEmail) {
-            return res.status(404).json({ success: false, error: "Fields can not be empty." });
+        const { title, description, startDate, endDate } = req.body;
+
+        if (!title?.trim() || !description?.trim()) {
+            return res.status(400).json({
+                success: false,
+                error: "Project title and description are required."
+            });
         }
 
-        const contractorId = req.user.User_id;
+        const founderId = req.user.User_id;
         const organizationId = req.user.organizationId;
 
-        // Ensure contractor exists
-        const contractor = await User.findOne({ _id: contractorId, organizationId: req.user.organizationId });
-        if (!contractor) {
-            return res.status(404).json({ success: false, error: "Contractor not found" });
-        }
-
-        // 🔎 Find site engineer by email
-        let stEng = await User.findOne({
-            email: siteEngineerEmail,
-            role: "site engineer"
-        });
-
-        // 🚫 If engineer exists but belongs to another organization → BLOCK
-        if (stEng && stEng.organizationId?.toString() !== organizationId) {
-            return res.status(403).json({
-                success: false,
-                error: "Site engineer belongs to another organization"
-            });
-        }
-
-        // 🆕 If engineer does not exist → create inside same organization
-        let tempPassword = null;
-        if (!stEng) {
-            console.log("Creating SE")
-            tempPassword = crypto.randomBytes(4).toString("hex"); // random 8 chars
-            const hashedPassword = await bcrypt.hash(tempPassword, 10);
-
-            stEng = await User.create({
-                name: siteEngineerName,
-                email: siteEngineerEmail,
-                password: hashedPassword,
-                role: "site engineer",
-                organizationId
-            });
-
-        }
-        // send email to site engineer 
-        if (tempPassword) {
-            const htmlContent = `
-    <div style="font-family: Arial, sans-serif; background:#f4f6f9; padding:20px;">
-        <div style="max-width:600px; margin:auto; background:#ffffff; padding:30px; border-radius:10px;">
-            
-            <h2 style="color:#2c3e50;">Welcome to ODRA BUILD 🚀</h2>
-
-            <p>Hello,</p>
-
-            <p>You have been assigned as a <strong>Site Engineer</strong> for the project:</p>
-
-            <div style="background:#f0f3f7; padding:15px; border-radius:8px; margin:15px 0;">
-                <strong>Project:</strong> ${title}<br/>
-                <strong>Assigned By:</strong> ${contractor.name}
-            </div>
-
-            <p>Here are your login credentials:</p>
-
-            <div style="background:#f8f9fa; padding:15px; border-radius:8px; font-size:14px;">
-                <strong>Email:</strong> ${siteEngineerEmail}<br/>
-                <strong>Temporary Password:</strong> ${tempPassword}
-            </div>
-
-            <div style="text-align:center; margin:25px 0;">
-                <a href="https://odraopssaas.netlify.app/Login" 
-                   style="background:#1abc9c; color:white; padding:12px 25px; 
-                   text-decoration:none; border-radius:5px;">
-                   Login to Dashboard
-                </a>
-            </div>
-
-            <p style="color:#7f8c8d; font-size:13px;">
-                For security reasons, please change your password after logging in.
-            </p>
-
-            <hr/>
-
-            <p style="font-size:12px; color:#95a5a6;">
-                © ${new Date().getFullYear()} PBM. All rights reserved.
-            </p>
-        </div>
-    </div>
-`; console.log("Sendign email")
-            await sendEmail(
-                siteEngineerEmail,
-                `You’ve Been Assigned to Project "${title}"`,
-                htmlContent,
-                contractor.email   // 🔥 THIS IS KEY
-            );
-        }
-
-        // 🏗 Create project (organization locked)
-        const newProject = await Project.create({
-            title,
-            description,
-            status: "Ongoing",
-            startDate: startDate ? new Date(startDate) : new Date(),
-            endDate: endDate ? new Date(endDate) : new Date(),
-            siteEngineer: stEng._id,
-            contractor: contractorId,
+        // Verify the Founder belongs to this organization.
+        const founder = await User.findOne({
+            _id: founderId,
             organizationId
         });
 
-        await contractor.save();
+        if (!founder) {
+            return res.status(404).json({
+                success: false,
+                error: "Founder or organization account not found."
+            });
+        }
 
-        // Push project reference
-        await User.findByIdAndUpdate(contractorId, {
-            $push: { createdProjects: newProject._id }
+        // Create project without assigning a site member.
+        const newProject = await Project.create({
+            title: title.trim(),
+            description: description.trim(),
+            status: "Ongoing",
+            startDate: startDate ? new Date(startDate) : new Date(),
+            endDate: endDate ? new Date(endDate) : null,
+            siteEngineer: null,
+            contractor: founderId,
+            organizationId
         });
 
-        await User.findByIdAndUpdate(stEng._id, {
-            $push: { assignedProjects: newProject._id }
+        // Record the project under the Founder.
+        await User.findByIdAndUpdate(founderId, {
+            $addToSet: {
+                createdProjects: newProject._id
+            }
         });
-
-        // 🔔 Real-time notify engineer
-        const io = req.app.get("io");
-        const roomName = `siteEngineer-${stEng._id.toString()}`;
-
-        io.to(roomName).emit("project:assigned", {
-            newProject,
-            contractorName: contractor.name
-        });
-
 
         return res.status(201).json({
             success: true,
             newProject,
-            contractorName: contractor.name
+            contractorName: founder.name,
+            message: "Project created successfully. You can assign site members from the project details page."
         });
 
     } catch (error) {
         console.error("Create Project Error:", error);
+
         return res.status(500).json({
             success: false,
-            error: "Internal Server Error"
+            error: "Could not create project."
         });
     }
 };
@@ -184,7 +101,10 @@ exports.createProject = async (req, res) => {
 exports.getProject = async (req, res) => {
     try {
         const contractorId = req.user.User_id;
-        const contratProjects = await Project.find({ organizationId: req.user.organizationId }).populate('siteEngineer', 'name email').lean();
+        const contratProjects = await Project.find({ organizationId: req.user.organizationId })
+            .populate('siteEngineer', 'name email')
+            .populate('siteEngineers', 'name email')
+            .lean();
 
         if (contratProjects.length === 0) {
             return res.status(200).json({
@@ -207,7 +127,13 @@ exports.getProjectSE = async (req, res) => {
 
         // The .lean() method in Mongoose tells the query to return plain JavaScript objects instead of full Mongoose documents.
         // This makes queries faster and uses less memory when you only need to read data (not use Mongoose document methods).
-        const allProject = await Project.find({ siteEngineer: siteEngineerId, organizationId: req.user.organizationId })
+        const allProject = await Project.find({
+            organizationId: req.user.organizationId,
+            $or: [
+                { siteEngineers: siteEngineerId },
+                { siteEngineer: siteEngineerId }
+            ]
+        })
             .select("title status contractor")
             .populate('contractor', 'name')
             .lean();
@@ -229,14 +155,15 @@ exports.getProjectSE = async (req, res) => {
     }
 }
 
-// to get project by id so that both contractor and site engineer see the page and no other sees the page
+// to get project by id so that both contractor and Site Engineer see the page and no other sees the page
 exports.getProjectById = async (req, res) => {
     try {
         const { id } = req.params;
-        // Ensure the requester is either contractor of project or assigned site engineer
+        // Ensure the requester is either contractor of project or assigned Site Engineer
         const project = await Project.findOne({ _id: id, organizationId: req.user.organizationId })
             .populate('contractor', 'name email')
             .populate('siteEngineer', 'name email')
+            .populate('siteEngineers', '_id name email role')
             .populate({
                 path: 'reports',
                 populate: { path: 'siteEngineerId', select: 'name email' },
@@ -289,7 +216,7 @@ exports.completeProject = async (req, res) => {
             { currentProjectId: null, status: "free" }
         );
 
-        // notify the site engineer
+        // notify the Site Engineer
         const io = req.app.get("io");
         io.to(`project-${projectId}`).emit("project:completed", {
             projectId
@@ -306,29 +233,37 @@ exports.completeProject = async (req, res) => {
 exports.deleteProject = async (req, res) => {
     try {
         const { id } = req.params;
-        const contractor_id = req.user.User_id;
         const organizationId = req.user.organizationId;
         const project = await Project.findOne({ _id: id, organizationId });
-        const project_name = project.title;
-        const siteEng_id = project.siteEngineer;
 
         if (!project) {
             return res.status(404).json({ message: "Project not found" });
         }
+
+        const project_name = project.title;
+        const siteEngineerIds = [
+            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : []),
+            project.siteEngineer
+        ]
+            .filter(Boolean)
+            .map((siteEngineerId) => siteEngineerId.toString());
+        const uniqueSiteEngineerIds = [...new Set(siteEngineerIds)];
 
         // 1 remove project from contractor
         await User.findOneAndUpdate({ _id: project.contractor, organizationId: organizationId }, {
             $pull: { createdProjects: id }
         })
 
-        // 2️⃣ Remove project from site engineer
-        await User.findOneAndUpdate({ _id: project.siteEngineer, organizationId }, {
-            $pull: { assignedProjects: id }
-        });
+        // 2️⃣ Remove project from Site Engineer
+        for (const siteEngineerId of uniqueSiteEngineerIds) {
+            await User.findOneAndUpdate({ _id: siteEngineerId, organizationId }, {
+                $pull: { assignedProjects: id }
+            });
+        }
 
         // 3️⃣ Free workers (remove project reference)
         await Worker.updateMany(
-            { currentProjectId: id },
+            { currentProjectId: id, organizationId },
             { $set: { currentProjectId: null, status: "free" } }
         );
 
@@ -352,13 +287,14 @@ exports.deleteProject = async (req, res) => {
 
         // 🔔 Real-time notify engineer
         const io = req.app.get("io");
-        const roomName = `siteEngineer-${siteEng_id.toString()}`;
         const roomName2 = `project-${id}`
 
-        io.to(roomName).emit("project:deleted", {
-            project_id: id,
-            project_name
-        });
+        for (const siteEngineerId of uniqueSiteEngineerIds) {
+            io.to(`siteEngineer-${siteEngineerId}`).emit("project:deleted", {
+                project_id: id,
+                project_name
+            });
+        }
 
         io.to(roomName2).emit("project:deleted", {
             project_id: id,
@@ -719,8 +655,13 @@ exports.updateProjectTitle = async (req, res) => {
         // socket realtime update
         const io = req.app.get("io");
 
-        const siteEng_id = project.siteEngineer;
-        const roomName = `siteEngineer-${siteEng_id.toString()}`;
+        const siteEngineerIds = [
+            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : []),
+            project.siteEngineer
+        ]
+            .filter(Boolean)
+            .map((siteEngineerId) => siteEngineerId.toString());
+        const uniqueSiteEngineerIds = [...new Set(siteEngineerIds)];
 
         // broadcast to project room
         io.to(`project-${projectId}`).emit("project:titleUpdated", {
@@ -728,11 +669,13 @@ exports.updateProjectTitle = async (req, res) => {
             title
         });
 
-        // broadcast to site eng room
-        io.to(roomName).emit("project:titleUpdated", {
-            projectId,
-            title
-        });
+        // broadcast to each assigned site engineer
+        for (const siteEngineerId of uniqueSiteEngineerIds) {
+            io.to(`siteEngineer-${siteEngineerId}`).emit("project:titleUpdated", {
+                projectId,
+                title
+            });
+        }
 
         return res.status(200).json({
             success: true,

@@ -10,7 +10,7 @@ const {validateRoles} = require("../middleware/roles");
 router.get(
   "/summary/:projectId",
   authen,
-  validateRoles(["manager"]),
+  validateRoles(["Founder"]),
   inventoryController.getInventorySummary
 );
 
@@ -18,7 +18,7 @@ router.get(
 router.get(
   "/history/:projectId",
   authen,
-  validateRoles(["manager"]),
+  validateRoles(["Founder"]),
   inventoryController.getInventoryUsageHistory
 );
 
@@ -26,7 +26,7 @@ router.get(
 router.post(
   "/usage",
   authen,
-  validateRoles(["site engineer"]),
+  validateRoles(["Site Engineer"]),
   inventoryController.logInventoryUsage
 );
 
@@ -34,7 +34,7 @@ router.post(
 router.get(
   "/purchase-history/:projectId",
   authen,
-  validateRoles(["manager"]),
+  validateRoles(["Founder"]),
   inventoryController.getInventoryPurchaseHistory
 );
 
@@ -42,7 +42,7 @@ router.get(
 router.post(
   "/:projectId",
   authen,
-  validateRoles(["manager","site engineer"]),
+  validateRoles(["Founder","Site Engineer"]),
   inventoryController.addInventoryItem
 );
 
@@ -50,7 +50,7 @@ router.post(
 router.get(
   "/:projectId",
   authen,
-  validateRoles(["manager","site engineer"]),
+  validateRoles(["Founder","Site Engineer"]),
   inventoryController.getProjectInventory
 );
 

@@ -3,8 +3,10 @@ const router = express.Router();
 
 const User = require("../models/user");
 const { sendToUser } = require("../services/notification.service");
+const { authen } = require("../middleware/tokenValidatorsMiddleware");
+const { validateRoles } = require("../middleware/roles");
 
-router.get("/test", async (req, res) => {
+router.get("/test", authen, validateRoles(["admin"]), async (req, res) => {
 
     try {
 
@@ -37,9 +39,9 @@ router.get("/test", async (req, res) => {
             success: true
         });
 
-    } catch (err) {
+    } catch {
 
-        console.error(err);
+        console.error("Test notification failed.");
 
         res.status(500).json({
             success: false

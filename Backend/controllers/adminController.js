@@ -28,6 +28,7 @@ exports.adminLogin = async (req,res)=>{
             User_id: admin._id,
             role: admin.role,
             name:admin.name,
+            isLoggedIn: true,
             email
         },
             process.env.secret_key,

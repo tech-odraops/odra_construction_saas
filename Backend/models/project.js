@@ -6,7 +6,7 @@ const projectSchema = new Schema({
   description: { type: String, required: true },
   status: { type: String, enum: ['Ongoing', 'Completed'] },
   startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
+  endDate: { type: Date, default:null },
 
   contractor: {
     type: Schema.Types.ObjectId,
@@ -17,8 +17,14 @@ const projectSchema = new Schema({
   siteEngineer: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    default:null
   },
+
+  // Multiple Site Engineers assigned to this project
+  siteEngineers: [{
+    type: Schema.Types.ObjectId,
+    ref: "User"
+  }],
 
   reports: [
     {

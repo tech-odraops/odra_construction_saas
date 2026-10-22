@@ -68,6 +68,7 @@
     "end_date": "End Date",
     "contractor": "Contractor",
     "site_engineer": "Site Engineer",
+    "site_engineers": "Site Engineers",
     "actions": "Actions",
     "view_attendance": "View Attendance",
     "assign_workers": "Assign Workers",
