@@ -8,6 +8,16 @@ export default {
     placeholder: 'Enter value',
   },
   argTypes: {
+    label: {
+      control: 'text',
+    },
+    required: {
+      control: 'boolean',
+    },
+    type: {
+      control: 'select',
+      options: ['text', 'email', 'password', 'date', 'number'],
+    },
     icon: {
       control: 'select',
       options: ICON_NAMES,
@@ -30,6 +40,22 @@ export default {
 };
 
 export const WithoutIcon = {};
+
+export const WithRequiredLabel = {
+  args: {
+    label: 'Email address',
+    required: true,
+    type: 'email',
+  },
+};
+
+export const WithPasswordToggle = {
+  args: {
+    label: 'Password',
+    required: true,
+    type: 'password',
+  },
+};
 
 export const WithIcon = {
   args: {

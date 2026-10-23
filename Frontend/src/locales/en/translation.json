@@ -1,4 +1,12 @@
 {
+  "validation": {
+    "success": "Looks good!",
+    "required": "This field is required.",
+    "invalid_email": "Please enter a valid email address.",
+    "min_length": "Please enter at least {{min}} characters.",
+    "max_length": "Please enter no more than {{max}} characters.",
+    "password_mismatch": "Passwords do not match."
+  },
   "navbar": {
     "home": "Home",
     "services": "Services",
@@ -48,6 +56,8 @@
     "enter_title": "Enter project title",
     "enter_description": "Describe the project scope and details",
     "enter_engineer_email": "engineer@example.com",
+    "assign_engineer_name": "Site Engineer Name",
+    "enter_engineer_name": "Site Engineer Name",
     "create_project": "Create Project",
     "creating": "Creating...",
     "cancel": "Cancel",
@@ -58,6 +68,7 @@
     "end_date": "End Date",
     "contractor": "Contractor",
     "site_engineer": "Site Engineer",
+    "site_engineers": "Site Engineers",
     "actions": "Actions",
     "view_attendance": "View Attendance",
     "assign_workers": "Assign Workers",

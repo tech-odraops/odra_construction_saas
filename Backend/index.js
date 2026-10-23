@@ -10,6 +10,7 @@ const { createServer } = require('http');
 const http = require('http');
 const reportRoute = require('./routes/reportsRoute');
 const projectRoute = require('./routes/projectRoutes');
+const siteMemberRoutes = require("./routes/siteMemberRoutes");
 const attendanceRoute = require('./routes/attendanceRoute');
 const chatRouter = require('./routes/chatRouter');
 const workerRoutes = require('./routes/workerRoutes');
@@ -22,8 +23,8 @@ const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
 const notificationRoutes = require("./routes/notification");
 const testNotificationRoute = require("./routes/testNotification");
 const { sendToUser } = require("./services/notification.service");
+const { password } = require("./routes/auth/password");
 const User = require("./models/user");
-const waitlistRoute = require('./routes/waitlistRoute');
 
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
     ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
@@ -159,7 +160,7 @@ io.on('connection', (socket) => {
 })
 
 // requiring routes
-const { signup, signin } = require('./routes/auth/createUser')
+const { signin } = require('./routes/auth/createUser')
 const { googleAuth } = require('./routes/auth/googleAuth');
 const { messagePost } = require("./routes/message");
 
@@ -175,8 +176,13 @@ app.get("/health", (req, res) => {
 });
 
 // requiring singup and signin
-app.use('/auth', signup);
+// app.use('/auth', signup);
 app.use('/auth', signin);
+
+// founder activation link 
+const { activation } = require("./routes/auth/activation");
+app.use("/auth", activation);
+app.use("/auth", password);
 
 // requiring google auth
 app.use('/auth', googleAuth);
@@ -192,6 +198,9 @@ app.use('/chat', chatRouter);
 app.use('/workers', workerRoutes);
 app.use('/inventory', inventoryRoute);
 
+// Site Member management 
+app.use("/site-members", siteMemberRoutes);
+
 // using admin routes
 app.use("/admin", adminRoutes);
 app.use("/admin", adminDashboardRoutes);
@@ -202,9 +211,6 @@ app.use('/token', tokenValidation);
 // using the notification routes
 app.use("/notification", notificationRoutes);
 // app.use("/notification", testNotificationRoute);
-
-// using the waitlist route
-app.use("/waitlist", waitlistRoute);
 
 // for testing porpose
 app.get("/ping", (req, res) => {

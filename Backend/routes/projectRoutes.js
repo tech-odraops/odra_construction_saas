@@ -5,34 +5,34 @@ const {validateRoles} = require("../middleware/roles");
 const {authen} = require("../middleware/tokenValidatorsMiddleware");
 
 // create Project
-router.post('/',authen,validateRoles("manager"),projectController.createProject);
+router.post('/',authen,validateRoles("Founder"),projectController.createProject);
 
 // get all project
-router.get('/',authen,validateRoles("manager"),projectController.getProject);
+router.get('/',authen,validateRoles("Founder"),projectController.getProject);
 
 // get all project for the siteEn
-router.get('/my-projects',authen,validateRoles("site engineer"),projectController.getProjectSE);
+router.get('/my-projects',authen,validateRoles("Site Engineer"),projectController.getProjectSE);
 
 // get dashboard summary for contractor
-router.get("/dashboard",authen, validateRoles("manager"),projectController.getContractorDashboard);
+router.get("/dashboard",authen, validateRoles("Founder"),projectController.getContractorDashboard);
 
-// single project for contractor or site engineer
-router.get('/:id',authen,validateRoles(["manager","site engineer"]),projectController.getProjectById);
+// single project for contractor or Site Engineer
+router.get('/:id',authen,validateRoles(["Founder","Site Engineer"]),projectController.getProjectById);
 
 // complete project
-router.post('/:projectId/complete',authen,validateRoles("manager"),projectController.completeProject);
+router.post('/:projectId/complete',authen,validateRoles("Founder"),projectController.completeProject);
 
 // get wage
-router.get( "/:projectId/wages", authen,validateRoles(["manager"]), projectController.getProjectWages);
+router.get( "/:projectId/wages", authen,validateRoles(["Founder"]), projectController.getProjectWages);
 
 // delete project 
-router.delete("/:id", authen, validateRoles("manager"), projectController.deleteProject);
+router.delete("/:id", authen, validateRoles("Founder"), projectController.deleteProject);
 
 // add miscellaneous item
 router.post(
     "/:projectId/miscellaneous",
     authen,
-    validateRoles("site engineer"),
+    validateRoles("Site Engineer"),
     projectController.addMiscellaneousItem
 );
 
@@ -40,7 +40,7 @@ router.post(
 router.patch(
     "/:projectId/miscellaneous/:itemId/status",
     authen,
-    validateRoles("manager"),
+    validateRoles("Founder"),
     projectController.updateMiscellaneousStatus
 );
 
@@ -48,7 +48,7 @@ router.patch(
 router.patch(
     "/:projectId/title",
     authen,
-    validateRoles("manager"),
+    validateRoles("Founder"),
     projectController.updateProjectTitle
 )
 

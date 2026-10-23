@@ -1,13 +1,18 @@
 import React, { useState } from "react";
 import "./Login.css";
 import axiosInstance from "../utils/axiosInstance";
-import { Box, Divider, Paper, Typography, IconButton } from "@mui/material";
+import { Box, Divider, Paper, Typography } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { getFCMToken } from "../services/notificationService";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
+import Input from "../Components/atoms/Input/Input";
+import {
+  emailValidator,
+  minLengthValidator,
+  requiredValidator,
+} from "../utils/validation";
 import signInBg from "../assets/Sign in bg.png";
 import Popup from "../Components/atoms/Popup/Popup";
 
@@ -20,19 +25,64 @@ export default function Login() {
     password: "",
   });
   const [validated, setValidated] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const [popup, setPopup] = useState(null);
-
+  const [validationStates, setValidationStates] = useState({});
+  const [validationMessages, setValidationMessages] = useState({});
+  
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setValidationStates((prev) => ({
+      ...prev,
+      [name]: validateLoginField(name, value) ? "success" : "error",
+    }));
+  }
+
+  function handleBlur(event) {
+    const { name } = event.target;
+    setValidationStates((prev) => ({
+      ...prev,
+      [name]: validateLoginField(name, event.target.value)
+        ? "success"
+        : "error",
+    }));
+  }
+
+  function validateLoginField(name, value) {
+    if (name === "email") {
+      let required = requiredValidator(value);
+      setValidationMessages((prev) => ({
+        ...prev,
+        [name]: required ? undefined : t("validation.required"),
+      }));
+      if (!required) return required;
+      let emailValid = emailValidator(value);
+      setValidationMessages((prev) => ({
+        ...prev,
+        [name]: emailValid ? undefined : t("validation.invalid_email"),
+      }));
+      if (!emailValid) return emailValid;
+      return required && emailValid;
+    }
+    if (name === "password") {
+      return requiredValidator(value) && minLengthValidator(value, 5);
+    }
+    if (name === "role") return requiredValidator(value);
+    return true;
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
-    const form = event.currentTarget;
+    const nextValidationStates = {
+      email: validateLoginField("email", formData.email) ? "success" : "error",
+      password: validateLoginField("password", formData.password)
+        ? "success"
+        : "error",
+      role: validateLoginField("role", formData.role) ? "success" : "error",
+    };
+    setValidationStates(nextValidationStates);
 
-    if (!form.checkValidity()) {
+    if (Object.values(nextValidationStates).includes("error")) {
       setValidated(true);
       event.stopPropagation();
       return;
@@ -44,7 +94,7 @@ export default function Login() {
       const response = await axiosInstance.post(
         "/auth/signIn",
         { email, password },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
 
       if (response.status === 200) {
@@ -52,35 +102,72 @@ export default function Login() {
         localStorage.setItem("User_id", response.data.User_id);
         localStorage.setItem("IsLogin", true);
         localStorage.setItem("name", response.data.name);
+        localStorage.setItem("organizationId",response.data.organizationId);
 
-        setPopup({ variant: "success", title: "Success!", message: "Logged in successfully." });
+        setPopup({
+          variant: "success",
+          title: "Success!",
+          message: "Logged in successfully.",
+        });
 
         // generating fcm token
         const fcmToken = await getFCMToken();
         if (fcmToken) {
           await axiosInstance.post("/notification/fcm-token", {
-            fcmToken
+            fcmToken,
           });
         }
 
-        const destination = response.data.role === "site engineer"
-          ? "/engineer/home"
-          : response.data.role === "manager"
-            ? "/contractor/home"
-            : "/";
+        const roleDestinations = {
+          Founder: "/contractor/home",
+          "Site Engineer": "/engineer/home",
+        };
+
+        const destination = roleDestinations[response.data.role];
+
+        if (!destination) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("User_id");
+          localStorage.removeItem("IsLogin");
+          localStorage.removeItem("name");
+
+          setPopup({
+            variant: "error",
+            title: "Role not configured",
+            message:
+              "Your account is authenticated, but a dashboard has not been configured for your role.",
+          });
+
+          return;
+        }
+
         window.setTimeout(() => navigate(destination), 1200);
+        
       }
     } catch (e) {
       const status = e.response?.status;
       const data = e.response?.data;
+      console.log(e);
+
+      const message =
+        status === 422
+          ? data?.error?.[0]?.msg
+          : status === 404 || status === 401
+            ? data?.error
+            : "Something went wrong. Please try again.";
+      setPopup({
+        variant: "error",
+        title: "Login failed",
+        message: message || "Please check your details and try again.",
+      });
       console.log(e)
 
-      const message = status === 422
-        ? data?.error?.[0]?.msg
-        : status === 404 || status === 401
-          ? data?.error
-          : "Something went wrong. Please try again.";
-      setPopup({ variant: "error", title: "Login failed", message: message || "Please check your details and try again." });
+      if (status === 422) return toast.error(data.error[0].msg);
+      if (status === 404) return toast.error(data.error);
+      if (status === 401) return toast.error(data.error);
+
+      toast.error("Something went wrong. Please try again.");
+      console.log(e); 
     }
 
     setValidated(true);
@@ -92,19 +179,46 @@ export default function Login() {
       style={{ "--auth-bg": `url("${signInBg}")` }}
     >
       {popup && (
-        <Box sx={{ position: "fixed", top: 24, right: 24, zIndex: 1400, maxWidth: "calc(100vw - 32px)" }}>
-          <Popup {...popup} onClose={() => setPopup(null)} style={{ maxWidth: "100%" }} />
+        <Box
+          sx={{
+            position: "fixed",
+            top: 24,
+            right: 24,
+            zIndex: 1400,
+            maxWidth: "calc(100vw - 32px)",
+          }}
+        >
+          <Popup
+            {...popup}
+            onClose={() => setPopup(null)}
+            style={{ maxWidth: "100%" }}
+          />
         </Box>
       )}
       <Box className="auth-visual-panel">
-        <Box className="auth-wordmark"><span>ODRA</span><span>OPS</span></Box>
+        <Box className="auth-wordmark">
+          <span>ODRA</span>
+          <span>OPS</span>
+        </Box>
         <Box className="auth-visual-copy">
-          <Typography component="h1">BUILDING<br /><span>SMARTER</span><br />TOMORROW</Typography>
-          <Typography><strong>ODRAOPS</strong> delivers reliable construction, <br></br> infrastructure, and <em>resource management</em> solutions.</Typography>
+          <Typography component="h1">
+            BUILDING
+            <br />
+            <span>SMARTER</span>
+            <br />
+            TOMORROW
+          </Typography>
+          <Typography>
+            <strong>ODRAOPS</strong> delivers reliable construction, <br></br>{" "}
+            infrastructure, and <em>resource management</em> solutions.
+          </Typography>
         </Box>
       </Box>
 
-      <Box className="auth-form-panel">
+      <Box
+        className="auth-form-panel"
+        style={{ "--auth-bg": `url("${signInBg}")` }}
+      >
         <Paper elevation={0} className="auth-card">
           {/* Header */}
           <Box className="auth-card-header">
@@ -112,7 +226,7 @@ export default function Login() {
               {t("auth.welcome_back")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-            {t("auth.sign_in_continue")}
+              {t("auth.sign_in_continue")}
             </Typography>
           </Box>
 
@@ -123,51 +237,45 @@ export default function Login() {
           >
             {/* Email */}
             <Box mb={2}>
-              <label className="form-label fw-semibold">{t("auth.email")}</label>
-              <input
+              <Input
+                id="login-email"
+                label={t("auth.email")}
                 name="email"
                 type="email"
-                className="form-control"
+                className="auth-input"
                 placeholder={t("auth.email_placeholder")}
                 value={formData.email}
                 onChange={handleChange}
+                onBlur={handleBlur}
                 required
+                validationState={validationStates.email}
+                validationMessage={validationMessages.email}
               />
               <div className="invalid-feedback">
-               Please enter a valid email.
+                Please enter a valid email.
               </div>
             </Box>
 
-
             {/* Password */}
             <Box mb={3}>
-              <label className="form-label fw-semibold">{t("auth.password")}</label>
-              <Box sx={{ position: "relative" }}>
-                <input
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  className="form-control"
-                  placeholder={t("auth.password_placeholder")}
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  minLength={5}
-                  style={{ paddingRight: 40 }}
-                />
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  sx={{ position: "absolute", right: 4, top: "50%", transform: "translateY(-50%)", color: "#6d7378", p: 0.5 }}
-                  tabIndex={-1}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <VisibilityOffOutlinedIcon sx={{ fontSize: 18 }} /> : <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />}
-                </IconButton>
-              </Box>
+              <Input
+                id="login-password"
+                label={t("auth.password")}
+                name="password"
+                type="password"
+                className="auth-input"
+                placeholder={t("auth.password_placeholder")}
+                value={formData.password}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                required
+                minLength={5}
+                validationState={validationStates.password}
+              />
               <div className="invalid-feedback">
                 Password must be at least 5 characters.
               </div>
             </Box>
-
 
             {/* Submit */}
             <button
@@ -184,11 +292,15 @@ export default function Login() {
 
           {/* Divider */}
           <Box className="auth-divider">
-            <Divider sx={{ flex: 1 ,backgroundColor:"text.primary"}} />
-            <Typography sx={{ px: 2, fontWeight:"bold" }} variant="body2" color="text.primary">
+            <Divider sx={{ flex: 1, backgroundColor: "text.primary" }} />
+            <Typography
+              sx={{ px: 2, fontWeight: "bold" }}
+              variant="body2"
+              color="text.primary"
+            >
               OR
             </Typography>
-            <Divider sx={{ flex: 1 ,backgroundColor:"text.primary"}} />
+            <Divider sx={{ flex: 1, backgroundColor: "text.primary" }} />
           </Box>
 
           {/* Google Login */}

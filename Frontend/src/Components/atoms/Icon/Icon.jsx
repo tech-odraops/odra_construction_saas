@@ -17,7 +17,7 @@ const iconSizeNames = {
  * @param {object} props
  * @param {import('./icon-names').IconName} props.variant
  * @param {'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'button'} [props.size]
- * @param {'primary' | 'inverted' | 'disabled'} [props.gradient]
+ * @param {'primary' | 'inverted' | 'disabled' | 'success'} [props.gradient]
  * @param {string} [props.label]      Accessible name. Omit for decorative icons.
  * @param {string} [props.className]  Use for colour: `.danger { color: … }`
  */
@@ -33,6 +33,7 @@ export function Icon({ variant, size = 'md', gradient = 'success', label, classN
     '--icon-gradient-primary': colors.iconPrimary,
     '--icon-gradient-inverted': colors.iconInverted,
     '--icon-gradient-disabled': colors.iconDisabled,
+    '--icon-gradient-success': colors.inputSuccess, 
     ...style,
   };
 

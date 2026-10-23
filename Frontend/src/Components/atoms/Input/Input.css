@@ -1,9 +1,26 @@
 .input-atom__field {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  width: var(--input-width);
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
 }
 
+.input-atom__label {
+  color: #000;
+  font-family: Inter, sans-serif;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 100%;
+}
+
+.input-atom__required {
+  color: #000;
+}
+
+/* Input wrapper */
 .input-atom {
   box-sizing: border-box;
   display: flex;
@@ -11,17 +28,21 @@
   gap: var(--input-icon-gap);
   width: 100%;
   height: var(--input-height);
-  padding: var(--input-padding-block) var(--input-padding-inline);
-  border: var(--input-border-width) solid var(--input-border-color);
-  border-radius: var(--input-border-radius);
+  border: var(--input-border-width) solid #d7dce0;
+  border-radius: 0;
   background-color: var(--input-background-color);
+  /* font-size: 0.84rem; */
+  font-family: Inter, sans-serif;
+  font-weight: var(--font-weight-regular);
+  line-height: normal;
+  letter-spacing: normal;
   transition:
     border-color var(--motion-fast-duration) var(--motion-easing),
     background-color var(--motion-fast-duration) var(--motion-easing);
 }
 
 .input-atom:focus-within {
-  border-color: var(--input-focus-border-color);
+  border-color: #F97316;
 }
 
 .input-atom--error,
@@ -32,6 +53,7 @@
 .input-atom--success,
 .input-atom--success:focus-within {
   border-color: var(--input-success-color);
+  box-shadow: none;
 }
 
 .input-atom--disabled,
@@ -40,6 +62,7 @@
   background-color: var(--input-disabled-background-color);
 }
 
+/* Leading and trailing icons */
 .input-atom__icon {
   color: inherit;
 }
@@ -50,38 +73,82 @@
 
 .input-atom .input-atom__end-icon {
   background-color: var(--input-icon-color);
+  margin-right: var(--input-icon-gap);
 }
 
-.input-atom--disabled .input-atom__icon {
-  background-color: var(--input-border-color);
-}
-
+.input-atom--disabled .input-atom__icon,
 .input-atom--disabled .input-atom__end-icon {
   background-color: var(--input-border-color);
 }
 
+/* Shared input and textarea text styles */
 .input-atom__control {
   box-sizing: border-box;
   flex: 1;
   min-width: 0;
   height: 100%;
-  padding: 0;
+  padding: var(--input-padding-block) var(--input-padding-inline);
   border: 0;
   outline: 0;
+  box-shadow: none;
   color: inherit;
   background: transparent;
-  font: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
 
 .input-atom__control::placeholder {
   color: var(--input-placeholder-color);
   opacity: 1;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
 }
 
 .input-atom__control:disabled {
   cursor: not-allowed;
 }
 
+/* Multirow textarea wrapper */
+.input-atom--textarea {
+  height: auto;
+  min-height: var(--input-height);
+  align-items: stretch;
+}
+
+.input-atom--textarea .input-atom__control {
+  height: auto;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  background: transparent;
+  appearance: none;
+}
+
+/* Align the leading icon with the first line */
+.input-atom--textarea .input-atom__icon {
+  align-self: flex-start;
+}
+
+/* Password visibility toggle */
+.input-atom__password-toggle {
+  flex: 0 0 auto;
+  margin: 0 -4px 0 0;
+  color: #6d7378;
+}
+
+.input-atom__password-toggle.Mui-disabled {
+  color: var(--color-input-eye-icon-color);
+}
+
+/* Validation message */
 .input-atom__message {
   margin-top: var(--input-message-margin-top);
   color: var(--input-error-color);
@@ -95,8 +162,56 @@
   color: var(--input-success-color);
 }
 
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .input-atom {
     transition-duration: var(--motion-reduced-duration);
   }
+}
+
+/* Force identical typography for input and textarea */
+.input-atom input.input-atom__control,
+.input-atom textarea.input-atom__control {
+  font-size: inherit;
+  font-weight: var(--font-weight-medium);
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: inherit;
+  box-sizing: border-box;
+}
+
+/* Match placeholder typography exactly */
+.input-atom input.input-atom__control::placeholder,
+.input-atom textarea.input-atom__control::placeholder {
+  font-weight: var(--input-placeholder-font-weight);
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  color: var(--input-placeholder-color);
+  opacity: 1;
+}
+
+/* Remove browser-specific textarea defaults */
+.input-atom textarea.input-atom__control {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  outline: 0;
+  box-shadow: none;
+  background: transparent;
+  margin: 0;
+}
+
+/* Preserve multiline layout */
+.input-atom--textarea {
+  height: auto;
+  min-height: var(--input-height);
+  align-items: stretch;
+}
+
+.input-atom--textarea textarea.input-atom__control {
+  height: auto;
+  min-height: var(--input-height);
+  resize: vertical;
 }

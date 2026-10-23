@@ -4,7 +4,7 @@ const dns = require('dns');
 // Fix: Force Node.js to use reliable DNS servers (Google & Cloudflare) to bypass Windows/c-ares ECONNREFUSED SRV errors
 dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
 
-const connectionString = "mongodb+srv://nitin:1730804_26@cluster0.oslwrzq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+ const connectionString = process.env.MONGODB_URI;
 
 const connectDb = () => {
     mongoose.connect(connectionString);

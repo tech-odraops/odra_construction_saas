@@ -1,4 +1,12 @@
 {
+  "validation": {
+    "success": "ठीक लग रहा है!",
+    "required": "यह फ़ील्ड आवश्यक है।",
+    "invalid_email": "कृपया एक वैध ईमेल पता दर्ज करें।",
+    "min_length": "कृपया कम से कम {{min}} वर्ण दर्ज करें।",
+    "max_length": "कृपया अधिकतम {{max}} वर्ण दर्ज करें।",
+    "password_mismatch": "पासवर्ड मेल नहीं खाते।"
+  },
   "navbar": {
     "home": "होम",
     "services": "सेवाएं",
@@ -58,6 +66,7 @@
     "end_date": "समाप्ति तिथि",
     "contractor": "ठेकेदार",
     "site_engineer": "साइट इंजीनियर",
+    "site_engineers": "साइट इंजीनियर",
     "actions": "कार्रवाई",
     "view_attendance": "उपस्थिति देखें",
     "assign_workers": "मजदूर असाइन करें",

@@ -1,4 +1,3 @@
-
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 
@@ -23,6 +22,7 @@ const ContractorWorkers = lazy(() => import("./Screen/Contractor/ContractorWorke
 const AssignWorker = lazy(() => import("./Screen/Contractor/AssignWorker"));
 const ProjectInventory = lazy(() => import("./Screen/Contractor/ProjectInventory"));
 const InventoryHistory = lazy(() => import("./Screen/Contractor/InventoryHistory"));
+import ActivateAccount from './Screen/ActivateAccount'
 
 const SiteEngineer = lazy(() => import("./Screen/SiteEngineer/SiteEngineer"));
 const MyProjects = lazy(() => import("./Screen/SiteEngineer/MyProjects"));
@@ -148,7 +148,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
-            <Route path="/Signup" element={<Signup />} />
+            {/* <Route path="/Signup" element={<Signup />} /> */}
             <Route path="/Login" element={<Login />} />
             <Route path="/contractor/home" element={<Contractor />} />
             <Route path="/engineer/home" element={<SiteEngineer />} />
@@ -158,6 +158,10 @@ function App() {
             <Route path="/contractor/view-report/:id" element={<ViewReport />} />
             <Route path="/contractor/projects/:id/inventory" element={<ProjectInventory />} />
             <Route path="/contractor/projects/:id/inventory-history" element={<InventoryHistory />} />
+            <Route
+              path="/activate-account"
+              element={<ActivateAccount />}
+            />
             {/* site engineer routes */}
             <Route path="/site-engineer/projects" element={<MyProjects></MyProjects>} />
             <Route path='/site-engineer/projects/:id' element={<ProjectWork />}></Route>
