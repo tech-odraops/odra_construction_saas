@@ -171,7 +171,8 @@
   --effect-visible-opacity: 1;
 
   /* === SHAPE & BORDER RADIUS === */
-  --shape-border-radius: 8;
+  --shape-border-radius: 8px;
+  --shape-border-radius-large: 16px;
 
   /* === FONT WEIGHT === */
   --font-weight-bold: 700;

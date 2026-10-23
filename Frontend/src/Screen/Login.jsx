@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./Login.css";
 import axiosInstance from "../utils/axiosInstance";
 import { Box, Divider, Paper, Typography } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
@@ -173,7 +174,10 @@ export default function Login() {
   }
 
   return (
-    <Box className="auth-shell auth-login">
+    <Box
+      className="auth-shell auth-login"
+      style={{ "--auth-bg": `url("${signInBg}")` }}
+    >
       {popup && (
         <Box
           sx={{

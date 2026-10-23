@@ -387,5 +387,6 @@ export const componentStyles = {
 };
 
 export const shape = {
-  borderRadius: 8,
+  borderRadius: "8px",
+  borderRadiusLarge: "16px",
 };
