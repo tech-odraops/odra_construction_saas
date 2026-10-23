@@ -75,12 +75,10 @@ export default function Login() {
     const nextValidationStates = {
       email: validateLoginField("email", formData.email) ? "success" : "error",
       password: validateLoginField("password", formData.password)
-        ? "success"
-        : "error",
-      role: validateLoginField("role", formData.role) ? "success" : "error",
+      ? "success"
+      : "error",
     };
     setValidationStates(nextValidationStates);
-
     if (Object.values(nextValidationStates).includes("error")) {
       setValidated(true);
       event.stopPropagation();
@@ -89,7 +87,6 @@ export default function Login() {
 
     try {
       const { email, password } = formData;
-
       const response = await axiosInstance.post(
         "/auth/signIn",
         { email, password },
