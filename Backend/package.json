@@ -23,6 +23,9 @@
     "razorpay": "^2.9.6",
     "resend": "^6.10.0",
     "socket.io": "^4.8.1",
-    "uuid": "^13.0.0"
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^13.0.0",
+    "yaml": "^2.9.1"
   }
 }

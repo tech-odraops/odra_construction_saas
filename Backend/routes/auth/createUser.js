@@ -10,6 +10,59 @@ const Organization = require("../../models/Organization");
 // signin
 const signin = express.Router()
 
+/**
+ * @openapi
+ * /auth/signIn:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Sign in with email and password
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email: { type: string, format: email }
+ *               password: { type: string }
+ *     responses:
+ *       '200':
+ *         description: Signed in. The JWT expires after one hour.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [success, token, User_id, role, name, organizationId]
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 token: { type: string }
+ *                 User_id: { type: string }
+ *                 role: { type: string }
+ *                 name: { type: string }
+ *                 organizationId: { type: string }
+ *       '401':
+ *         description: Email does not exist or password is incorrect.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '403':
+ *         description: Account is inactive, role is not permitted, or organization is missing or inactive.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       '422':
+ *         description: Request validation failed.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *       '500':
+ *         $ref: '#/components/responses/InternalServerError'
+ */
 signin.post(
     "/signIn",
     [
