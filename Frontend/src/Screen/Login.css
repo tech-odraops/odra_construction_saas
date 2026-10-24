@@ -77,6 +77,7 @@
   margin-top: 4px;
   border: 0;
   background: #F97316 !important;
+  color: #fff;
   font-size: .86rem;
 }
 
@@ -375,15 +376,9 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #f97316;
   font-size: .78rem;
   font-weight: 600;
   cursor: pointer;
-}
-
-.auth-recovery-link button:hover {
-  color: #e9650e;
-  text-decoration: underline;
 }
 
 .auth-reset-success {
