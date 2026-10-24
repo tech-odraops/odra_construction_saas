@@ -8,7 +8,6 @@ import AdminRoute from "./utils/AdminRoute";
 import { onForegroundMessage, resolveNotificationUrl } from "./services/notificationService";
 
 const Home = lazy(() => import("./Screen/Home"));
-const Signup = lazy(() => import("./Screen/Signup"));
 const Login = lazy(() => import("./Screen/Login"));
 
 const Contractor = lazy(() => import("./Screen/Contractor/Contractor"));
