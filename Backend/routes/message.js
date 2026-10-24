@@ -25,6 +25,55 @@ const sendEmail = async (from, to, subject, msg, html = "") => {
 
 const messagePost = express.Router();
 
+/**
+ * @openapi
+ * /contact-us:
+ *   post:
+ *     tags:
+ *       - Contact
+ *     summary: Submit a contact-us message
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - message
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               message:
+ *                 type: string
+ *     responses:
+ *       "200":
+ *         description: Message stored and notification email sent.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Message received successfully
+ *       "400":
+ *         description: Request validation failed.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ValidationErrorResponse"
+ *       "500":
+ *         $ref: "#/components/responses/InternalServerError"
+ */
 messagePost.post(
   '/contact-us',
   [
