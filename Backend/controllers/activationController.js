@@ -1,3 +1,4 @@
+
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
@@ -9,7 +10,7 @@ const Invitation = require("../models/Invitation");
 exports.activateAccount = async (req, res) => {
     const { token, password } = req.body;
 
-    // 1. Validate request
+    // 1. Validate request.
     if (!token || !password) {
         return res.status(400).json({
             success: false,
@@ -17,7 +18,7 @@ exports.activateAccount = async (req, res) => {
         });
     }
 
-    // Match the existing password policy.
+    // 2. Validate password policy.
     const passwordRegex =
         /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&^()_\-+=.]{8,}$/;
 
@@ -29,21 +30,21 @@ exports.activateAccount = async (req, res) => {
         });
     }
 
-    // 2. Hash the supplied token before looking it up.
+    // 3. Hash the activation token.
     const tokenHash = crypto
         .createHash("sha256")
         .update(token)
         .digest("hex");
 
-    const session = await mongoose.startSession();
+    let session;
 
     try {
-        let activatedUserId;
+        session = await mongoose.startSession();
 
         await session.withTransaction(async () => {
             const now = new Date();
 
-            // 3. Atomically claim a valid, unused invitation.
+            // 4. Atomically claim a valid, unused invitation.
             const invitation = await Invitation.findOneAndUpdate(
                 {
                     tokenHash,
@@ -70,7 +71,7 @@ exports.activateAccount = async (req, res) => {
                 throw error;
             }
 
-            // 4. Find the invited account in the correct organization.
+            // 5. Find the invited user in the correct organization.
             const user = await User.findOne({
                 email: invitation.email,
                 organizationId: invitation.organizationId,
@@ -86,11 +87,15 @@ exports.activateAccount = async (req, res) => {
                 throw error;
             }
 
+            // 6. Find and validate the organization.
             const organization = await Organization.findById(
                 invitation.organizationId
             ).session(session);
 
-            if (!organization || organization.status === "suspended") {
+            if (
+                !organization ||
+                organization.status === "suspended"
+            ) {
                 const error = new Error(
                     "This organization cannot be activated."
                 );
@@ -98,8 +103,7 @@ exports.activateAccount = async (req, res) => {
                 throw error;
             }
 
-            // 5. Only the actual organization owner can activate it
-            // through the Founder invitation.
+            // 7. Activate the organization only for its actual Founder.
             if (user.role === "Founder") {
                 if (
                     String(organization.ownerId) !== String(user._id)
@@ -115,13 +119,11 @@ exports.activateAccount = async (req, res) => {
                 await organization.save({ session });
             }
 
-            // 6. Set the password and activate the account.
+            // 8. Set the password and activate the user.
             user.password = await bcrypt.hash(password, 12);
             user.status = "active";
 
             await user.save({ session });
-
-            activatedUserId = user._id;
         });
 
         return res.status(200).json({
@@ -136,13 +138,15 @@ exports.activateAccount = async (req, res) => {
             });
         }
 
-        console.error("Account activation error:", error.message);
+        console.error("Account activation error:", error);
 
         return res.status(500).json({
             success: false,
             message: "Unable to activate the account. Please try again."
         });
     } finally {
-        await session.endSession();
+        if (session) {
+            await session.endSession();
+        }
     }
 };
