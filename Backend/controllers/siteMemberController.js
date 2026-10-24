@@ -1,4 +1,3 @@
-
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
@@ -32,6 +31,7 @@ const escapeHtml = (value = "") =>
 const escapeRegex = (value = "") =>
     String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+
 // GET: Search active members belonging to the authenticated Founder's organization.
 exports.searchSiteMembers = async (req, res) => {
     try {
@@ -45,16 +45,16 @@ exports.searchSiteMembers = async (req, res) => {
             });
         }
 
-        if (!mongoose.isValidObjectId(founderId) ||
-            !mongoose.isValidObjectId(organizationId)) {
+        if (
+            !mongoose.isValidObjectId(founderId) ||
+            !mongoose.isValidObjectId(organizationId)
+        ) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid authentication context.",
             });
         }
 
-        // Verify that the authenticated user is the active Founder
-        // of the organization associated with their token.
         const founder = await User.findOne({
             _id: founderId,
             organizationId,
@@ -70,6 +70,7 @@ exports.searchSiteMembers = async (req, res) => {
         }
 
         const search = String(req.query.search || "").trim();
+
         const query = {
             organizationId,
             status: "active",
@@ -112,10 +113,9 @@ exports.searchSiteMembers = async (req, res) => {
     }
 };
 
-// POST: Invite a new Site Engineer or Site Supervisor into the Founder's organization.
+// POST: Invite a new Site Engineer or Site Supervisor.
 exports.inviteSiteMember = async (req, res) => {
-    let createdUserId = null;
-    let createdInvitationId = null;
+    let session;
 
     try {
         const founderId = req.user?.User_id;
@@ -128,8 +128,10 @@ exports.inviteSiteMember = async (req, res) => {
             });
         }
 
-        if (!mongoose.isValidObjectId(founderId) ||
-            !mongoose.isValidObjectId(organizationId)) {
+        if (
+            !mongoose.isValidObjectId(founderId) ||
+            !mongoose.isValidObjectId(organizationId)
+        ) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid authentication context.",
@@ -137,13 +139,19 @@ exports.inviteSiteMember = async (req, res) => {
         }
 
         const name =
-            typeof req.body.name === "string" ? req.body.name.trim() : "";
+            typeof req.body.name === "string"
+                ? req.body.name.trim()
+                : "";
+
         const email =
             typeof req.body.email === "string"
                 ? req.body.email.trim().toLowerCase()
                 : "";
+
         const role =
-            typeof req.body.role === "string" ? req.body.role.trim() : "";
+            typeof req.body.role === "string"
+                ? req.body.role.trim()
+                : "";
 
         if (!name || !email || !role) {
             return res.status(400).json({
@@ -173,6 +181,25 @@ exports.inviteSiteMember = async (req, res) => {
             });
         }
 
+        // Validate the activation URL configuration before creating records.
+        const frontendBaseUrl = (
+            process.env.FRONTEND_URL ||
+            process.env.APP_BASE_URL ||
+            ""
+        ).replace(/\/+$/, "");
+
+        if (!frontendBaseUrl) {
+            console.error(
+                "FRONTEND_URL or APP_BASE_URL is not configured."
+            );
+
+            return res.status(500).json({
+                success: false,
+                message: "Invitation service is not configured correctly.",
+            });
+        }
+
+        // Verify the authenticated Founder.
         const founder = await User.findOne({
             _id: founderId,
             organizationId,
@@ -187,6 +214,7 @@ exports.inviteSiteMember = async (req, res) => {
             });
         }
 
+        // Verify the organization is active.
         const organization = await Organization.findById(organizationId)
             .select("_id name status");
 
@@ -203,7 +231,8 @@ exports.inviteSiteMember = async (req, res) => {
 
         if (existingUser) {
             if (
-                String(existingUser.organizationId) !== String(organizationId)
+                String(existingUser.organizationId) !==
+                String(organizationId)
             ) {
                 return res.status(409).json({
                     success: false,
@@ -230,8 +259,7 @@ exports.inviteSiteMember = async (req, res) => {
             });
         }
 
-        // Avoid issuing a second unexpired invitation for this email
-        // in the same organization.
+        // Avoid issuing a second unexpired invitation.
         const pendingInvitation = await Invitation.findOne({
             organizationId,
             email,
@@ -248,8 +276,10 @@ exports.inviteSiteMember = async (req, res) => {
             });
         }
 
-        // Store only the hash of the activation token.
+        // Generate the activation token.
+        // Only its hash is persisted in MongoDB.
         const rawToken = crypto.randomBytes(32).toString("hex");
+
         const tokenHash = crypto
             .createHash("sha256")
             .update(rawToken)
@@ -259,43 +289,88 @@ exports.inviteSiteMember = async (req, res) => {
             Date.now() + INVITATION_EXPIRY_HOURS * 60 * 60 * 1000
         );
 
+        // Generate an unusable initial password.
         const unusablePassword = crypto.randomBytes(48).toString("hex");
         const passwordHash = await bcrypt.hash(unusablePassword, 12);
 
-        const createdUser = await User.create({
-            name,
-            email,
-            password: passwordHash,
-            role,
-            organizationId,
-            status: "invited",
-        });
+        let createdUser;
+        let invitation;
 
-        createdUserId = createdUser._id;
+        // ================================================
+        // DATABASE TRANSACTION
+        // User and Invitation must succeed or fail together.
+        // ================================================
+        session = await mongoose.startSession();
 
-        const invitation = await Invitation.create({
-            organizationId,
-            email,
-            role,
-            invitedBy: founder._id,
-            tokenHash,
-            expiresAt,
-            status: "invited",
-        });
+        await session.withTransaction(async () => {
+            // Recheck inside the transaction to reduce race conditions.
+            const userExists = await User.findOne({ email })
+                .session(session)
+                .select("_id");
 
-        createdInvitationId = invitation._id;
+            if (userExists) {
+                const error = new Error(
+                    "An account with this email already exists."
+                );
+                error.code = 11000;
+                throw error;
+            }
 
-        const frontendBaseUrl = (
-            process.env.FRONTEND_URL ||
-            process.env.APP_BASE_URL ||
-            ""
-        ).replace(/\/+$/, "");
+            const invitationExists = await Invitation.findOne({
+                organizationId,
+                email,
+                status: "invited",
+                expiresAt: { $gt: new Date() },
+            })
+                .session(session)
+                .select("_id");
 
-        if (!frontendBaseUrl) {
-            throw new Error(
-                "FRONTEND_URL or APP_BASE_URL must be configured before sending invitations."
+            if (invitationExists) {
+                const error = new Error(
+                    "An unexpired invitation already exists."
+                );
+                error.statusCode = 409;
+                throw error;
+            }
+
+            // Create the user in this transaction.
+            const createdUsers = await User.create(
+                [
+                    {
+                        name,
+                        email,
+                        password: passwordHash,
+                        role,
+                        organizationId,
+                        status: "invited",
+                    },
+                ],
+                { session }
             );
-        }
+
+            createdUser = createdUsers[0];
+
+            // Create the invitation in the same transaction.
+            const createdInvitations = await Invitation.create(
+                [
+                    {
+                        organizationId,
+                        email,
+                        role,
+                        invitedBy: founder._id,
+                        tokenHash,
+                        expiresAt,
+                        status: "invited",
+                    },
+                ],
+                { session }
+            );
+
+            invitation = createdInvitations[0];
+        });
+
+        // The transaction has committed successfully at this point.
+        // Do not put email delivery inside the transaction callback.
 
         const activationUrl =
             `${frontendBaseUrl}/activate-account?token=${encodeURIComponent(rawToken)}`;
@@ -329,18 +404,42 @@ exports.inviteSiteMember = async (req, res) => {
             </div>
         `;
 
-        const emailResponse = await resend.emails.send({
-            from: "OdraOps <noreply@odraops.com>",
-            to: [email],
-            subject: `Invitation to join ${organization.name} on ODRAOPS`,
-            html: emailHtml,
-            replyTo: founder.email,
-        });
+        let emailResponse;
+
+        try {
+            emailResponse = await resend.emails.send({
+                from: "OdraOps <noreply@odraops.com>",
+                to: [email],
+                subject: `Invitation to join ${organization.name} on ODRAOPS`,
+                html: emailHtml,
+                replyTo: founder.email,
+            });
+        } catch (emailError) {
+            console.error(
+                "Invitation email delivery failed after database commit:",
+                emailError
+            );
+
+            return res.status(502).json({
+                success: false,
+                code: "INVITATION_EMAIL_DELIVERY_FAILED",
+                message:
+                    "The account and invitation were created, but the invitation email could not be delivered. Please retry sending the invitation instead of creating another account.",
+            });
+        }
 
         if (emailResponse?.error) {
-            throw new Error(
-                emailResponse.error.message || "Invitation email could not be sent."
+            console.error(
+                "Invitation email provider error:",
+                emailResponse.error
             );
+
+            return res.status(502).json({
+                success: false,
+                code: "INVITATION_EMAIL_DELIVERY_FAILED",
+                message:
+                    "The account and invitation were created, but the invitation email could not be delivered. Please retry sending the invitation instead of creating another account.",
+            });
         }
 
         return res.status(201).json({
@@ -354,27 +453,12 @@ exports.inviteSiteMember = async (req, res) => {
                 status: createdUser.status,
             },
             invitation: {
-                expiresAt,
-                status: "invited",
+                expiresAt: invitation.expiresAt,
+                status: invitation.status,
             },
         });
     } catch (error) {
         console.error("Invite Site Member Error:", error);
-
-        // Roll back the pending records if invitation creation or email delivery fails, so the Founder can safely retry.
-        if (createdInvitationId) {
-            await Invitation.deleteOne({ _id: createdInvitationId }).catch(
-                (cleanupError) =>
-                    console.error("Invitation cleanup failed:", cleanupError)
-            );
-        }
-
-        if (createdUserId) {
-            await User.deleteOne({ _id: createdUserId }).catch(
-                (cleanupError) =>
-                    console.error("User cleanup failed:", cleanupError)
-            );
-        }
 
         if (error.code === 11000) {
             return res.status(409).json({
@@ -384,16 +468,26 @@ exports.inviteSiteMember = async (req, res) => {
             });
         }
 
+        if (error.statusCode === 409) {
+            return res.status(409).json({
+                success: false,
+                message: error.message,
+            });
+        }
+
         return res.status(500).json({
             success: false,
             message:
                 "Unable to send the invitation. Please try again later.",
         });
+    } finally {
+        if (session) {
+            await session.endSession();
+        }
     }
 };
 
-
-
+// POST: Assign an active Site Engineer to a project.
 exports.assignSiteMember = async (req, res) => {
     try {
         const { projectId } = req.params;
@@ -409,7 +503,6 @@ exports.assignSiteMember = async (req, res) => {
             });
         }
 
-        // Ensure the project belongs to this Founder and organization.
         const project = await Project.findOne({
             _id: projectId,
             contractor: founderId,
@@ -423,7 +516,6 @@ exports.assignSiteMember = async (req, res) => {
             });
         }
 
-        // Only active members of this organization can be assigned.
         const member = await User.findOne({
             _id: userId,
             organizationId,
@@ -439,11 +531,11 @@ exports.assignSiteMember = async (req, res) => {
             });
         }
 
-        // Initialize the array and migrate the legacy assignment if necessary.
         if (!Array.isArray(project.siteEngineers)) {
             project.siteEngineers = [];
         }
 
+        // Preserve the legacy assignment when migrating to the array.
         if (project.siteEngineer) {
             const legacyId = project.siteEngineer.toString();
 
@@ -456,9 +548,9 @@ exports.assignSiteMember = async (req, res) => {
             }
         }
 
-        // Avoid assigning the same engineer twice.
         const alreadyAssigned = project.siteEngineers.some(
-            (engineerId) => engineerId.toString() === member._id.toString()
+            (engineerId) =>
+                engineerId.toString() === member._id.toString()
         );
 
         if (alreadyAssigned) {
@@ -468,15 +560,26 @@ exports.assignSiteMember = async (req, res) => {
             });
         }
 
-        // Add the engineer without replacing existing assignments.
         project.siteEngineers.push(member._id);
 
-        // Keep the legacy field populated for older controllers.
         if (!project.siteEngineer) {
             project.siteEngineer = member._id;
         }
 
         await project.save();
+
+        // Notify the assigned Site Engineer in real time.
+        const io = req.app.get("io");
+
+        if (io) {
+            io.to(`siteEngineer-${member._id}`).emit(
+                "project:assigned",
+                {
+                    newProject: project.toObject(),
+                    contractorName: req.user.name || "Contractor",
+                }
+            );
+        }
 
         return res.status(200).json({
             success: true,
@@ -498,4 +601,3 @@ exports.assignSiteMember = async (req, res) => {
         });
     }
 };
-

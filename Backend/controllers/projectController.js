@@ -35,6 +35,8 @@ const sendEmail = async (to, subject, html, replyToEmail) => {
 };
 
 exports.createProject = async (req, res) => {
+    let session;
+
     try {
         const { title, description, startDate, endDate } = req.body;
 
@@ -61,25 +63,62 @@ exports.createProject = async (req, res) => {
             });
         }
 
-        // Create project without assigning a site member.
-        const newProject = await Project.create({
-            title: title.trim(),
-            description: description.trim(),
-            status: "Ongoing",
-            startDate: startDate ? new Date(startDate) : new Date(),
-            endDate: endDate ? new Date(endDate) : null,
-            siteEngineer: null,
-            contractor: founderId,
-            organizationId
-        });
+        let newProject;
 
-        // Record the project under the Founder.
-        await User.findByIdAndUpdate(founderId, {
-            $addToSet: {
-                createdProjects: newProject._id
+        // Start the MongoDB transaction.
+        session = await mongoose.startSession();
+
+        await session.withTransaction(async () => {
+            // Create the project inside the transaction.
+            const createdProjects = await Project.create(
+                [
+                    {
+                        title: title.trim(),
+                        description: description.trim(),
+                        status: "Ongoing",
+                        startDate: startDate
+                            ? new Date(startDate)
+                            : new Date(),
+                        endDate: endDate
+                            ? new Date(endDate)
+                            : null,
+                        siteEngineer: null,
+                        contractor: founderId,
+                        organizationId
+                    }
+                ],
+                { session }
+            );
+
+            newProject = createdProjects[0];
+
+            // Add the project ID to the Founder's createdProjects array.
+            const updatedFounder = await User.findOneAndUpdate(
+                {
+                    _id: founderId,
+                    organizationId
+                },
+                {
+                    $addToSet: {
+                        createdProjects: newProject._id
+                    }
+                },
+                {
+                    new: true,
+                    session
+                }
+            );
+
+            // Throwing an error aborts the transaction.
+            // The project creation will also be rolled back.
+            if (!updatedFounder) {
+                throw new Error(
+                    "Founder could not be updated with the new project."
+                );
             }
         });
 
+        // The transaction has committed successfully.
         return res.status(201).json({
             success: true,
             newProject,
@@ -90,10 +129,22 @@ exports.createProject = async (req, res) => {
     } catch (error) {
         console.error("Create Project Error:", error);
 
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                error: "A conflicting record already exists."
+            });
+        }
+
         return res.status(500).json({
             success: false,
             error: "Could not create project."
         });
+
+    } finally {
+        if (session) {
+            await session.endSession();
+        }
     }
 };
 
@@ -229,88 +280,197 @@ exports.completeProject = async (req, res) => {
     }
 }
 
-// delete projects
+
 exports.deleteProject = async (req, res) => {
+    let session;
+
     try {
         const { id } = req.params;
         const organizationId = req.user.organizationId;
-        const project = await Project.findOne({ _id: id, organizationId });
 
-        if (!project) {
-            return res.status(404).json({ message: "Project not found" });
-        }
+        session = await mongoose.startSession();
 
-        const project_name = project.title;
-        const siteEngineerIds = [
-            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : []),
-            project.siteEngineer
-        ]
-            .filter(Boolean)
-            .map((siteEngineerId) => siteEngineerId.toString());
-        const uniqueSiteEngineerIds = [...new Set(siteEngineerIds)];
+        let projectName;
+        let uniqueSiteEngineerIds = [];
 
-        // 1 remove project from contractor
-        await User.findOneAndUpdate({ _id: project.contractor, organizationId: organizationId }, {
-            $pull: { createdProjects: id }
-        })
+        await session.withTransaction(async () => {
+            // 1. Find the project within the authenticated organization.
+            const project = await Project.findOne({
+                _id: id,
+                organizationId
+            }).session(session);
 
-        // 2️⃣ Remove project from Site Engineer
-        for (const siteEngineerId of uniqueSiteEngineerIds) {
-            await User.findOneAndUpdate({ _id: siteEngineerId, organizationId }, {
-                $pull: { assignedProjects: id }
-            });
-        }
+            if (!project) {
+                const error = new Error("Project not found");
+                error.statusCode = 404;
+                throw error;
+            }
 
-        // 3️⃣ Free workers (remove project reference)
-        await Worker.updateMany(
-            { currentProjectId: id, organizationId },
-            { $set: { currentProjectId: null, status: "free" } }
-        );
+            projectName = project.title;
 
-        // 4️⃣ Delete reports
-        await Report.deleteMany({ projectId: id, organizationId });
+            const siteEngineerIds = [
+                ...(Array.isArray(project.siteEngineers)
+                    ? project.siteEngineers
+                    : []),
+                project.siteEngineer
+            ]
+                .filter(Boolean)
+                .map((siteEngineerId) => siteEngineerId.toString());
 
-        // 5️⃣ Delete chats
-        await ChatMessage.deleteMany({ projectId: id, organizationId });
+            uniqueSiteEngineerIds = [
+                ...new Set(siteEngineerIds)
+            ];
 
-        // 6️⃣ Delete inventory usage logs
-        await InventoryUsage.deleteMany({ projectId: id, organizationId });
+            // 2. Remove the project from the Founder's project list.
+            await User.findOneAndUpdate(
+                {
+                    _id: project.contractor,
+                    organizationId
+                },
+                {
+                    $pull: { createdProjects: project._id }
+                },
+                { session }
+            );
 
-        // 7️⃣ Delete inventory items
-        await InventoryItem.deleteMany({ projectId: id, organizationId });
+            // 3. Remove the project from assigned Site Engineers.
+            for (const siteEngineerId of uniqueSiteEngineerIds) {
+                await User.findOneAndUpdate(
+                    {
+                        _id: siteEngineerId,
+                        organizationId
+                    },
+                    {
+                        $pull: { assignedProjects: project._id }
+                    },
+                    { session }
+                );
+            }
 
-        // 8 Delete project
-        await Project.findOneAndDelete({ _id: id, organizationId });
+            // 4. Free workers assigned to this project.
+            await Worker.updateMany(
+                {
+                    currentProjectId: project._id,
+                    organizationId
+                },
+                {
+                    $set: {
+                        currentProjectId: null,
+                        status: "free"
+                    }
+                },
+                { session }
+            );
 
-        // 9 delete attendance
-        await Project.deleteMany({ projectId: id, organizationId });
+            // 5. Delete reports.
+            await Report.deleteMany(
+                {
+                    projectId: project._id,
+                    organizationId
+                },
+                { session }
+            );
 
-        // 🔔 Real-time notify engineer
+            // 6. Delete chat messages.
+            await ChatMessage.deleteMany(
+                {
+                    projectId: project._id,
+                    organizationId
+                },
+                { session }
+            );
+
+            // 7. Delete inventory usage logs.
+            await InventoryUsage.deleteMany(
+                {
+                    projectId: project._id,
+                    organizationId
+                },
+                { session }
+            );
+
+            // 8. Delete inventory items.
+            await InventoryItem.deleteMany(
+                {
+                    projectId: project._id,
+                    organizationId
+                },
+                { session }
+            );
+
+            // 9. Delete attendance records.
+            await Attendance.deleteMany(
+                {
+                    projectId: project._id,
+                    organizationId
+                },
+                { session }
+            );
+
+            // 10. Delete the project last.
+            const deletedProject = await Project.findOneAndDelete(
+                {
+                    _id: project._id,
+                    organizationId
+                },
+                { session }
+            );
+
+            if (!deletedProject) {
+                throw new Error(
+                    "Project could not be deleted. Transaction aborted."
+                );
+            }
+        });
+
+        // The transaction has committed successfully.
+        // Notify connected clients only after the commit.
         const io = req.app.get("io");
-        const roomName2 = `project-${id}`
 
-        for (const siteEngineerId of uniqueSiteEngineerIds) {
-            io.to(`siteEngineer-${siteEngineerId}`).emit("project:deleted", {
+        if (io) {
+            for (const siteEngineerId of uniqueSiteEngineerIds) {
+                io.to(`siteEngineer-${siteEngineerId}`).emit(
+                    "project:deleted",
+                    {
+                        project_id: id,
+                        project_name: projectName
+                    }
+                );
+            }
+
+            io.to(`project-${id}`).emit("project:deleted", {
                 project_id: id,
-                project_name
+                project_name: projectName
             });
         }
-
-        io.to(roomName2).emit("project:deleted", {
-            project_id: id,
-            project_name
-        })
-
 
         return res.status(200).json({
+            success: true,
             message: "Project deleted successfully"
         });
 
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: "Internal server error" });
+        if (err.statusCode === 404) {
+            return res.status(404).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        console.error("Delete Project Error:", err);
+
+        return res.status(500).json({
+            success: false,
+            error: "Internal server error"
+        });
+
+    } finally {
+        if (session) {
+            await session.endSession();
+        }
     }
-}
+};
+
 
 // wage calculation
 exports.getProjectWages = async (req, res) => {
