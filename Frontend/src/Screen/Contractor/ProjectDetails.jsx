@@ -40,6 +40,15 @@ function getAssignedSiteEngineers(project) {
   });
 }
 
+function getAssignedSiteEngineerIds(project) {
+  return new Set(
+    getAssignedSiteEngineers(project)
+      .map((engineer) => (typeof engineer === "object" ? engineer?._id : engineer))
+      .filter(Boolean)
+      .map((id) => id.toString())
+  );
+}
+
 function OverviewBuildingIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V3.5c0-.55.45-1 1-1h9c.55 0 1 .45 1 1V21M15 9h4c.55 0 1 .45 1 1v11M2.5 21h19" /><path d="M7 6h1M11 6h1M7 9h1M11 9h1M7 12h1M11 12h1M7 15h1M11 15h1M17 12h1M17 15h1M17 18h1M9.5 21v-3h2v3" /></svg>;
 }
@@ -89,6 +98,7 @@ export default function ProjectDetails() {
   const overviewTitle = t("project.project_overview");
   const overviewTitleSplit = overviewTitle.lastIndexOf(" ");
   const assignedSiteEngineers = getAssignedSiteEngineers(project);
+  const assignedSiteEngineerIds = getAssignedSiteEngineerIds(project);
 
   const handleCompleteProject = async () => {
     const confirm = window.confirm(
@@ -171,6 +181,12 @@ export default function ProjectDetails() {
 
   const assignSiteEngineer = async (member) => {
     if (!member?._id) return;
+
+    if (assignedSiteEngineerIds.has(member._id)) {
+      toast.info("This Site Engineer is already assigned to the project.");
+      return;
+    }
+
     setAssigningMemberId(member._id);
 
     try {
@@ -404,10 +420,14 @@ export default function ProjectDetails() {
                   </Box>
                   <Button
                     variant="contained"
-                    disabled={Boolean(assigningMemberId)}
+                    disabled={Boolean(assigningMemberId) || assignedSiteEngineerIds.has(member._id)}
                     onClick={() => assignSiteEngineer(member)}
                   >
-                    {assigningMemberId === member._id ? "Assigning..." : "Assign"}
+                    {assignedSiteEngineerIds.has(member._id)
+                      ? "Assigned"
+                      : assigningMemberId === member._id
+                        ? "Assigning..."
+                        : "Assign"}
                   </Button>
                 </Box>
               )) : (
