@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express')
 const app = express();
 const port = 8080;
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger');
 const connectDb = require("./databaseConnect");
 const cors = require('cors')
 const helmet = require('helmet')
@@ -170,7 +172,26 @@ app.use(cors({
 }))
 app.use(express.json())
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // Health checkup for the server
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     tags:
+ *       - Health
+ *     summary: Health check
+ *     security: []
+ *     responses:
+ *       "200":
+ *         description: Server is healthy.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: OK
+ */
 app.get("/health", (req, res) => {
     res.status(200).send("OK");
 });
@@ -213,6 +234,23 @@ app.use("/notification", notificationRoutes);
 // app.use("/notification", testNotificationRoute);
 
 // for testing porpose
+/**
+ * @openapi
+ * /ping:
+ *   get:
+ *     tags:
+ *       - Health
+ *     summary: Ping
+ *     security: []
+ *     responses:
+ *       "200":
+ *         description: Server responded.
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: OK
+ */
 app.get("/ping", (req, res) => {
     res.status(200).send("OK");
 });
