@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Divider from "@mui/material/Divider";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
@@ -26,6 +26,17 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+
+function getOwnerInitials() {
+  const ownerName = localStorage.getItem("name")?.trim();
+  if (!ownerName) return "P";
+  return ownerName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase();
+}
 
 export default function ContractorNavbar() {
   const { t } = useTranslation();
@@ -96,16 +107,25 @@ export default function ContractorNavbar() {
 
             {/* Avatar */}
             <Avatar
+              className="contractor-profile-avatar"
+              component={Link}
+              to="/contractor/organization-profile"
+              aria-label="Edit organization profile"
               sx={{
-                bgcolor: "#F97316",
+                bgcolor: "#fff0e8",
+                color: "#F97316",
                 ml: 2.5,
                 mr: 1.5,
-                width: 28,
-                height: 28,
-                fontSize: 13,
+                width: 40,
+                height: 40,
+                fontSize: 14,
+                border: 0,
+                cursor: "pointer",
+                "&:hover": { bgcolor: "#ffe0cf" },
+                "&:focus-visible": { outline: "2px solid #F97316", outlineOffset: 2 },
               }}
             >
-              {localStorage.getItem("name")?.charAt(0)}
+              {getOwnerInitials()}
             </Avatar>
 
             {/* Logout Button */}
@@ -226,8 +246,17 @@ export default function ContractorNavbar() {
                 mb: 2,
               }}
             >
-              <Avatar sx={{ bgcolor: "#F97316" }}>
-                {localStorage.getItem("name")?.charAt(0)}
+              <Avatar
+                className="contractor-profile-avatar"
+                component={Link}
+                to="/contractor/organization-profile"
+                onClick={() => {
+                  setOpenDrawer(false);
+                }}
+                aria-label="Edit organization profile"
+                sx={{ bgcolor: "#fff0e8", color: "#F97316", border: 0, cursor: "pointer" }}
+              >
+                {getOwnerInitials()}
               </Avatar>
 
               <Button

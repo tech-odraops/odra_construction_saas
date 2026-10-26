@@ -1,0 +1,321 @@
+.organization-profile {
+  box-sizing: border-box;
+  width: min(92%, 78.5rem);
+  min-height: 36rem;
+  margin: 1.25rem auto 3rem;
+  padding: 1.75rem 1.75rem 1.25rem;
+  border: 1px solid #f1e8e1;
+  border-radius: 0.75rem;
+  background:
+    radial-gradient(ellipse 38% 31% at 22% 39%, rgba(255, 177, 124, 0.2), transparent 75%),
+    radial-gradient(ellipse 48% 38% at 87% 3%, rgba(255, 155, 91, 0.28), transparent 75%),
+    linear-gradient(160deg, #fff 24%, #fffaf7 70%, #fff 100%);
+  color: #17213f;
+}
+
+.organization-profile__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 5.5rem;
+}
+
+.organization-profile__back.MuiIconButton-root {
+  margin: -0.25rem 0 0 -0.5rem;
+  color: #17213f;
+}
+
+.organization-profile__heading h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.organization-profile__heading p,
+.organization-profile__fields p {
+  margin: 0.35rem 0 0;
+  color: #75819f;
+  font-size: 0.875rem;
+}
+
+.organization-profile__form {
+  padding: 1.75rem 0.75rem 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 30px rgba(35, 42, 61, 0.06);
+}
+
+.organization-profile__details {
+  display: grid;
+  grid-template-columns: minmax(15rem, 21rem) minmax(0, 1fr);
+  align-items: center;
+  min-height: 15rem;
+  margin-bottom: 2rem;
+}
+
+.organization-profile__logo-picker {
+  position: relative;
+  display: flex;
+  min-height: 14rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-right: 1px solid #d6dbea;
+  background: transparent;
+  color: #17213f;
+  cursor: pointer;
+}
+
+.organization-profile__logo-circle {
+  display: grid;
+  width: 8rem;
+  height: 8rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1.5px solid #ff7b35;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 52% 48%, rgba(255, 255, 255, 0.9) 0 37%, transparent 72%),
+    radial-gradient(ellipse at 28% 70%, rgba(255, 186, 143, 0.25), transparent 55%),
+    radial-gradient(ellipse at 76% 26%, rgba(255, 220, 198, 0.7), transparent 60%),
+    #fff6f0;
+}
+
+.organization-profile__upload-mark {
+  position: relative;
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border-radius: 0.4rem;
+  background: rgba(255, 153, 102, 0.2);
+}
+
+.organization-profile__upload-icon {
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+  color: #ff9a69;
+}
+
+.organization-profile__upload-plus {
+  position: absolute;
+  right: -0.5rem;
+  bottom: -0.35rem;
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+  color: #ff8b50;
+  stroke-width: 3;
+}
+
+.organization-profile__logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  padding: 0;
+}
+
+.organization-profile__preset-mark {
+  color: #f97316;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.08em;
+}
+
+.organization-profile__logo-add {
+  position: absolute;
+  top: 7.1rem;
+  left: calc(50% + 2rem);
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #ff5b0a;
+  color: #fff;
+}
+
+.organization-profile__logo-title {
+  margin-top: 0.65rem;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.organization-profile__logo-hint {
+  margin-top: 0.5rem;
+  color: #7c88a4;
+  font-size: 0.75rem;
+}
+
+.organization-profile__fields {
+  padding: 0 1.75rem 0 2.5rem;
+}
+
+.organization-profile__fields label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.organization-profile__fields .MuiOutlinedInput-root {
+  border-radius: 0.6rem;
+  color: #17213f;
+  font-weight: 600;
+}
+
+.organization-profile__fields .MuiOutlinedInput-notchedOutline {
+  border-color: #d5d9e2;
+}
+
+.organization-profile__fields .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: #ff8b50;
+}
+
+.organization-profile__save.MuiButton-root {
+  width: 100%;
+  min-height: 3.75rem;
+  border-radius: 0.6rem;
+  background: linear-gradient(100deg, #ff5b0a, #ff4f0a);
+  box-shadow: none;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.organization-profile__save.MuiButton-root:hover {
+  background: #e94c00;
+  box-shadow: none;
+}
+
+.organization-profile__file-input {
+  display: none;
+}
+
+.organization-logo-dialog.MuiPaper-root {
+  max-width: 44rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-radius: 0.9rem;
+}
+
+.organization-logo-dialog__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.25rem 1rem;
+}
+
+.organization-logo-dialog__heading h2 {
+  margin: 0;
+  color: #17213f;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.organization-logo-dialog__options.MuiDialogContent-root {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0;
+}
+
+.organization-logo-option {
+  display: flex;
+  min-height: 12rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1.25rem 0.75rem;
+  border: 1px solid #e2e5ec;
+  border-radius: 0.7rem;
+  background: #fff;
+  color: #17213f;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.organization-logo-option:hover {
+  border-color: #ff8b50;
+  background: #fffaf7;
+}
+
+.organization-logo-option__icon {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  place-items: center;
+  margin-bottom: 1rem;
+  border-radius: 1rem;
+  background: #fff0e8;
+  color: #ff5b0a;
+  font-size: 2rem;
+}
+
+.organization-logo-option strong {
+  margin-bottom: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.organization-logo-option span:last-child {
+  color: #78839d;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+  .organization-profile {
+    width: calc(100% - 1.5rem);
+    min-height: auto;
+    margin: 0.75rem auto 2rem;
+    padding: 1.25rem 0.75rem 0.75rem;
+  }
+
+  .organization-profile__heading {
+    margin-bottom: 2rem;
+  }
+
+  .organization-profile__heading h1 {
+    font-size: 1.25rem;
+  }
+
+  .organization-profile__heading p {
+    font-size: 0.8rem;
+  }
+
+  .organization-profile__form {
+    padding: 1rem 0.75rem 0.75rem;
+  }
+
+  .organization-profile__details {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .organization-profile__logo-picker {
+    min-height: 13rem;
+    border-right: 0;
+    border-bottom: 1px solid #d6dbea;
+    padding-bottom: 1.25rem;
+  }
+
+  .organization-profile__fields {
+    padding: 0 0.25rem;
+  }
+
+  .organization-logo-dialog.MuiPaper-root {
+    padding: 1rem;
+  }
+
+  .organization-logo-dialog__options.MuiDialogContent-root {
+    grid-template-columns: 1fr;
+  }
+
+  .organization-logo-option {
+    min-height: 8rem;
+  }
+}

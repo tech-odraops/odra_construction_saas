@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
 import axiosInstance from "../utils/axiosInstance";
-import { useTheme } from "@emotion/react";
 import { Divider } from "@mui/material"
 import SocialBar from "./SocialBar"
 
@@ -27,9 +26,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 export default function Navbar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const theme = useTheme()
-
-  const [login, setLogin] = React.useState(false);
   const [openDrawer, setOpenDrawer] = React.useState(false);
 
   React.useEffect(() => {
@@ -43,10 +39,6 @@ export default function Navbar() {
 
         if (response.status === 200) {
           // console.log(response.data)
-          if (response.data.role != "admin") {
-            setLogin(true);
-          }
-
           const backendRole = response.data.role;
 
           if (backendRole === "manager") {
@@ -60,7 +52,6 @@ export default function Navbar() {
 
       } catch (err) {
         console.log(err);
-        setLogin(false);
         localStorage.removeItem("token");
         localStorage.removeItem("IsLogin");
         localStorage.removeItem("User_id");
@@ -118,32 +109,29 @@ export default function Navbar() {
             </Box>
 
             {/* CTA Buttons */}
-            {!login && (
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <Button
-                  component={Link}
-                  to="/Login"
-                  variant="contained"
-                  sx={{
-                    color: "white",
-                    backgroundColor: "#F97316",
-                    boxShadow: "none",
-                    borderRadius: "3px",
-                    px: 1.7,
-                    py: 0.15,
-                    minWidth: 70,
-                    fontSize: 12,
-                    fontWeight: 600,
-                    "&:hover": {
-                      backgroundColor: "#e9540c",
-                    },
-                  }}
-                >
-                  {t("navbar.login")}
-                </Button>
-
-              </Box>
-            )}
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Button
+                component={Link}
+                to="/Login"
+                variant="contained"
+                sx={{
+                  color: "white",
+                  backgroundColor: "#F97316",
+                  boxShadow: "none",
+                  borderRadius: "3px",
+                  px: 1.7,
+                  py: 0.15,
+                  minWidth: 70,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  "&:hover": {
+                    backgroundColor: "#e9540c",
+                  },
+                }}
+              >
+                {t("navbar.login")}
+              </Button>
+            </Box>
 
             <Select
               size="small"
@@ -243,28 +231,24 @@ export default function Navbar() {
           {/* BOTTOM SECTION */}
           <Box>
             {/* CTA BUTTONS */}
-            {!login && (
-              <Box sx={{ display: "flex", flexDirection: "row", gap: 1, mb: 2 }}>
-                <Button
-
-                  component={Link}
-                  to="/Login"
-                  variant="outlined"
-                  sx={{
-                    fontWeight: 600,
-                    borderColor: "#F97316",
-                    color: "#F97316",
-                    "&:hover": {
-                      borderColor: "#e9540c",
-                      backgroundColor: "rgba(249, 115, 22, 0.08)",
-                    }
-                  }}
-                >
-                  {t("navbar.login")}
-                </Button>
-
-              </Box>
-            )}
+            <Box sx={{ display: "flex", flexDirection: "row", gap: 1, mb: 2 }}>
+              <Button
+                component={Link}
+                to="/Login"
+                variant="outlined"
+                sx={{
+                  fontWeight: 600,
+                  borderColor: "#F97316",
+                  color: "#F97316",
+                  "&:hover": {
+                    borderColor: "#e9540c",
+                    backgroundColor: "rgba(249, 115, 22, 0.08)",
+                  }
+                }}
+              >
+                {t("navbar.login")}
+              </Button>
+            </Box>
 
             {/* SOCIAL BAR */}
             <Divider sx={{ mb: 1, backgroundColor: "text.primary" }} />
