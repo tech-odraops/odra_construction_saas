@@ -1,6 +1,24 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+const normalizeSiteEngineerIds = (siteEngineer, siteEngineers = []) => {
+  const ids = [];
+
+  if (siteEngineer) {
+    ids.push(siteEngineer.toString());
+  }
+
+  if (Array.isArray(siteEngineers)) {
+    for (const engineer of siteEngineers) {
+      if (engineer) {
+        ids.push(engineer.toString());
+      }
+    }
+  }
+
+  return [...new Set(ids.filter(Boolean))];
+};
+
 const projectSchema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -90,5 +108,20 @@ const projectSchema = new Schema({
   }
 },
   { timestamps: true });
+
+projectSchema.pre('save', function (next) {
+  const uniqueSiteEngineerIds = normalizeSiteEngineerIds(this.siteEngineer, this.siteEngineers);
+
+  if (uniqueSiteEngineerIds.length) {
+    this.siteEngineers = uniqueSiteEngineerIds.map((id) => new mongoose.Types.ObjectId(id));
+    if (!this.siteEngineer) {
+      this.siteEngineer = this.siteEngineers[0];
+    }
+  } else {
+    this.siteEngineers = [];
+  }
+
+  next();
+});
 
 module.exports = mongoose.model('Project', projectSchema);

@@ -83,6 +83,7 @@ exports.createProject = async (req, res) => {
                             ? new Date(endDate)
                             : null,
                         siteEngineer: null,
+                        siteEngineers: [],
                         contractor: founderId,
                         organizationId
                     }
