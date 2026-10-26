@@ -6,6 +6,7 @@ const PasswordResetToken = require("../models/PasswordResetToken");
 const { sendPasswordResetEmail } = require("../services/emailService");
 
 exports.changePassword = async (req, res) => {
+
     try {
         const { currentPassword, newPassword } = req.body;
 
@@ -93,7 +94,6 @@ exports.changePassword = async (req, res) => {
         });
     }
 };
-
 
 exports.forgotPassword = async (req, res) => {
     try {
