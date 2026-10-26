@@ -61,6 +61,63 @@ test.describe('regular login', () => {
         }),
       });
     });
+
+    test.describe('password recovery', () => {
+      test('requests a reset link and shows email confirmation', async ({ page }) => {
+        await page.goto('/Login', { waitUntil: 'domcontentloaded' });
+        await page.getByRole('button', { name: 'Forgot password?' }).click();
+        await page.getByLabel('Email').fill('worker@example.com');
+
+        await page.route('**/auth/forgot-password', async (route) => {
+          expect(route.request().postDataJSON()).toEqual({
+            email: 'worker@example.com',
+          });
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: true }),
+          });
+        });
+        await page.getByRole('button', { name: 'Send Reset Link' }).click();
+
+        await expect(page.getByRole('heading', { name: 'Check your email' })).toBeVisible();
+        await expect(
+          page.getByText('Check your inbox and follow the link to choose a new password.'),
+        ).toBeVisible();
+        await page.getByRole('button', { name: 'Back to Sign In' }).click();
+        await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible();
+      });
+
+      test('resets the password using the emailed token', async ({ page }) => {
+        await page.goto('/reset-password?token=verified-reset-token', {
+          waitUntil: 'domcontentloaded',
+        });
+        await expect(
+          page.getByRole('heading', { name: 'Create new password' }),
+        ).toBeVisible();
+        await page.getByLabel('New password').fill('new-password-123');
+        await page.getByLabel('Confirm password').fill('new-password-123');
+
+        await page.route('**/auth/reset-password', async (route) => {
+          expect(route.request().postDataJSON()).toEqual({
+            token: 'verified-reset-token',
+            newPassword: 'new-password-123',
+          });
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify({ success: true }),
+          });
+        });
+        await page.getByRole('button', { name: 'Reset Password' }).click();
+
+        await expect(
+          page.getByRole('heading', { name: 'Password reset successfully' }),
+        ).toBeVisible();
+        await page.getByRole('button', { name: 'Go to Sign In' }).click();
+        await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible();
+      });
+    });
     await page.route('**/subscription/me', async (route) => {
       await route.fulfill({
         status: 200,

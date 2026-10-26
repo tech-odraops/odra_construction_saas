@@ -138,10 +138,12 @@ exports.forgotPassword = async (req, res) => {
             expiresAt: new Date(Date.now() + 30 * 60 * 1000)
         });
 
-
-        const resetUrl =
-            `${process.env.APP_BASE_URL}/reset-password?token=${rawToken}`;
-            await sendPasswordResetEmail(user.email, resetUrl);
+        const appBaseUrl = process.env.APP_BASE_URL?.replace(/\/+$/, "");
+        if (!appBaseUrl) {
+            throw new Error("APP_BASE_URL is missing from environment variables.");
+        }
+        const resetUrl = `${appBaseUrl}/reset-password?token=${rawToken}`;
+        await sendPasswordResetEmail(user.email, resetUrl);
 
         return res.status(200).json(genericResponse);
     } catch (error) {
@@ -153,8 +155,6 @@ exports.forgotPassword = async (req, res) => {
         });
     }
 };
-
-
 
 exports.resetPassword = async (req, res) => {
     let session;

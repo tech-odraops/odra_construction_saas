@@ -8,7 +8,6 @@ import AdminRoute from "./utils/AdminRoute";
 import { onForegroundMessage, resolveNotificationUrl } from "./services/notificationService";
 
 const Home = lazy(() => import("./Screen/Home"));
-const Signup = lazy(() => import("./Screen/Signup"));
 const Login = lazy(() => import("./Screen/Login"));
 
 const Contractor = lazy(() => import("./Screen/Contractor/Contractor"));
@@ -150,6 +149,7 @@ function App() {
             <Route path="/home" element={<Home />} />
             {/* <Route path="/Signup" element={<Signup />} /> */}
             <Route path="/Login" element={<Login />} />
+            <Route path="/reset-password" element={<Login />} />
             <Route path="/contractor/home" element={<Contractor />} />
             <Route path="/engineer/home" element={<SiteEngineer />} />
             <Route path="/contractor/project" element={<Project />} />

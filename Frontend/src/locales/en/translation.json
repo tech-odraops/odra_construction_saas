@@ -11,7 +11,6 @@
     "home": "Home",
     "services": "Services",
     "login": "Login",
-    "signup": "Sign Up",
     "logout": "Logout",
     "add_project": "Add New Project",
     "all_projects": "All Projects",
@@ -37,7 +36,6 @@
     "min_password_placeholder": "Min 6 characters",
     "name_placeholder": "Jane Doe",
     "login_success": "Logged in successfully!",
-    "signup_success": "Account created successfully!",
     "something_wrong": "Something went wrong. Please try again.",
     "validation_error": "Validation error"
   },
