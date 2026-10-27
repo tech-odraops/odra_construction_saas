@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -20,56 +20,8 @@ import ContractorNavbar from "../../Components/ContractorNavbar";
 import usePopup from "../../contexts/usePopup";
 import "./OrganizationProfile.css";
 
-const DATABASE_NAME = "odraops-profile";
-const STORE_NAME = "organization";
-const LOGO_KEY = "logo";
-const MAX_LOGO_BYTES = 5 * 1024 * 1024;
-
-function openLogoDatabase() {
-  return new Promise((resolve, reject) => {
-    const request = window.indexedDB.open(DATABASE_NAME, 1);
-    request.onupgradeneeded = () => {
-      if (!request.result.objectStoreNames.contains(STORE_NAME)) {
-        request.result.createObjectStore(STORE_NAME);
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function readSavedLogo() {
-  const database = await openLogoDatabase();
-  return new Promise((resolve, reject) => {
-    const request = database.transaction(STORE_NAME, "readonly")
-      .objectStore(STORE_NAME)
-      .get(LOGO_KEY);
-    request.onsuccess = () => {
-      database.close();
-      resolve(request.result || null);
-    };
-    request.onerror = () => {
-      database.close();
-      reject(request.error);
-    };
-  });
-}
-
-async function saveLogo(logo) {
-  const database = await openLogoDatabase();
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(STORE_NAME, "readwrite");
-    transaction.objectStore(STORE_NAME).put(logo, LOGO_KEY);
-    transaction.oncomplete = () => {
-      database.close();
-      resolve();
-    };
-    transaction.onerror = () => {
-      database.close();
-      reject(transaction.error);
-    };
-  });
-}
+const ORGANIZATION_LOGO_KEY = "organizationLogo";
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 
 export default function OrganizationProfile() {
   const navigate = useNavigate();
@@ -79,16 +31,16 @@ export default function OrganizationProfile() {
   const [organizationName, setOrganizationName] = useState(
     () => localStorage.getItem("organizationName") || localStorage.getItem("name") || "",
   );
-  const [savedLogo, setSavedLogo] = useState(null);
+  const [savedLogo, setSavedLogo] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(ORGANIZATION_LOGO_KEY) || "null");
+    } catch {
+      return null;
+    }
+  });
   const [selectedLogo, setSelectedLogo] = useState(null);
   const [logoDialogOpen, setLogoDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    readSavedLogo()
-      .then(setSavedLogo)
-      .catch(() => {});
-  }, []);
 
   const logo = selectedLogo || savedLogo;
 
@@ -99,7 +51,7 @@ export default function OrganizationProfile() {
       return;
     }
     if (file.size > MAX_LOGO_BYTES) {
-      showPopup({ variant: "error", title: "Image too large", message: "Choose an image smaller than 5MB." });
+      showPopup({ variant: "error", title: "Image too large", message: "Choose an image smaller than 2MB so it fits in browser storage." });
       return;
     }
 
@@ -126,14 +78,14 @@ export default function OrganizationProfile() {
     try {
       localStorage.setItem("organizationName", trimmedName);
       if (selectedLogo) {
-        await saveLogo(selectedLogo);
+        localStorage.setItem(ORGANIZATION_LOGO_KEY, JSON.stringify(selectedLogo));
         setSavedLogo(selectedLogo);
         setSelectedLogo(null);
       }
       setOrganizationName(trimmedName);
       showPopup({ variant: "success", title: "Changes saved", message: "Your organization profile has been updated." });
     } catch {
-      showPopup({ variant: "error", title: "Save failed", message: "Could not save the logo in this browser. Please try a smaller image." });
+      showPopup({ variant: "error", title: "Save failed", message: "Could not save the profile in browser storage. Please try a smaller image." });
     } finally {
       setSaving(false);
     }
@@ -185,7 +137,7 @@ export default function OrganizationProfile() {
               <span className="organization-profile__logo-circle">{renderLogoContent()}</span>
               <span className="organization-profile__logo-add"><AddRoundedIcon /></span>
               <span className="organization-profile__logo-title">Upload Organisation Logo</span>
-              <span className="organization-profile__logo-hint">PNG, JPG or SVG (Max 5MB)</span>
+              <span className="organization-profile__logo-hint">PNG, JPG or SVG (Max 2MB)</span>
             </button>
 
             <Box className="organization-profile__fields">

@@ -4,13 +4,13 @@
   min-height: 36rem;
   margin: 1.25rem auto 3rem;
   padding: 1.75rem 1.75rem 1.25rem;
-  border: 1px solid #f1e8e1;
+  border: 1px solid var(--palette-grey-100);
   border-radius: 0.75rem;
   background:
-    radial-gradient(ellipse 38% 31% at 22% 39%, rgba(255, 177, 124, 0.2), transparent 75%),
-    radial-gradient(ellipse 48% 38% at 87% 3%, rgba(255, 155, 91, 0.28), transparent 75%),
-    linear-gradient(160deg, #fff 24%, #fffaf7 70%, #fff 100%);
-  color: #17213f;
+    radial-gradient(ellipse 38% 31% at 22% 39%, var(--color-organization-profile-warm-glow), transparent 75%),
+    radial-gradient(ellipse 48% 38% at 87% 3%, var(--color-organization-profile-warm-glow-strong), transparent 75%),
+    linear-gradient(160deg, var(--palette-background-paper) 24%, var(--color-organization-profile-surface) 70%, var(--palette-background-paper) 100%);
+  color: var(--color-organization-profile-text);
 }
 
 .organization-profile__heading {
@@ -22,29 +22,29 @@
 
 .organization-profile__back.MuiIconButton-root {
   margin: -0.25rem 0 0 -0.5rem;
-  color: #17213f;
+  color: var(--color-organization-profile-text);
 }
 
 .organization-profile__heading h1 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: var(--font-h4-font-size);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.04em;
 }
 
 .organization-profile__heading p,
 .organization-profile__fields p {
   margin: 0.35rem 0 0;
-  color: #75819f;
-  font-size: 0.875rem;
+  color: var(--color-organization-profile-muted-text);
+  font-size: var(--font-body-font-size);
 }
 
 .organization-profile__form {
   padding: 1.75rem 0.75rem 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--color-organization-profile-form-border);
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 8px 30px rgba(35, 42, 61, 0.06);
+  background: var(--color-organization-profile-form-surface);
+  box-shadow: 0 8px 30px var(--color-organization-profile-form-shadow);
 }
 
 .organization-profile__details {
@@ -64,9 +64,9 @@
   justify-content: center;
   padding: 0.5rem 1rem;
   border: 0;
-  border-right: 1px solid #d6dbea;
+  border-right: 1px solid var(--color-organization-profile-border);
   background: transparent;
-  color: #17213f;
+  color: var(--color-organization-profile-text);
   cursor: pointer;
 }
 
@@ -76,13 +76,13 @@
   height: 8rem;
   place-items: center;
   overflow: hidden;
-  border: 1.5px solid #ff7b35;
+  border: 1.5px solid var(--palette-primary-main);
   border-radius: 50%;
   background:
-    radial-gradient(ellipse at 52% 48%, rgba(255, 255, 255, 0.9) 0 37%, transparent 72%),
-    radial-gradient(ellipse at 28% 70%, rgba(255, 186, 143, 0.25), transparent 55%),
-    radial-gradient(ellipse at 76% 26%, rgba(255, 220, 198, 0.7), transparent 60%),
-    #fff6f0;
+    radial-gradient(ellipse at 52% 48%, var(--color-organization-profile-logo-highlight-surface) 0 37%, transparent 72%),
+    radial-gradient(ellipse at 28% 70%, var(--color-organization-profile-logo-glow), transparent 55%),
+    radial-gradient(ellipse at 76% 26%, var(--color-organization-profile-logo-highlight), transparent 60%),
+    var(--color-organization-profile-logo-surface);
 }
 
 .organization-profile__upload-mark {
@@ -92,13 +92,13 @@
   height: 3.25rem;
   place-items: center;
   border-radius: 0.4rem;
-  background: rgba(255, 153, 102, 0.2);
+  background: var(--color-organization-profile-upload-surface);
 }
 
 .organization-profile__upload-icon {
   width: 2.8rem !important;
   height: 2.8rem !important;
-  color: #ff9a69;
+  color: var(--color-organization-profile-accent-light);
 }
 
 .organization-profile__upload-plus {
@@ -107,7 +107,7 @@
   bottom: -0.35rem;
   width: 1.55rem !important;
   height: 1.55rem !important;
-  color: #ff8b50;
+  color: var(--color-organization-profile-accent);
   stroke-width: 3;
 }
 
@@ -119,9 +119,9 @@
 }
 
 .organization-profile__preset-mark {
-  color: #f97316;
-  font-size: 2rem;
-  font-weight: 800;
+  color: var(--palette-primary-main);
+  font-size: var(--icon-xl);
+  font-weight: var(--font-weight-bolder);
   letter-spacing: -0.08em;
 }
 
@@ -134,20 +134,20 @@
   height: 1.9rem;
   place-items: center;
   border-radius: 50%;
-  background: #ff5b0a;
-  color: #fff;
+  background: var(--color-organization-profile-accent-strong);
+  color: var(--palette-primary-contrast-text);
 }
 
 .organization-profile__logo-title {
   margin-top: 0.65rem;
-  font-size: 1rem;
-  font-weight: 650;
+  font-size: var(--font-button-font-size);
+  font-weight: var(--font-weight-semibold);
 }
 
 .organization-profile__logo-hint {
   margin-top: 0.5rem;
-  color: #7c88a4;
-  font-size: 0.75rem;
+  color: var(--color-organization-profile-hint-text);
+  font-size: var(--font-caption-font-size);
 }
 
 .organization-profile__fields {
@@ -157,37 +157,37 @@
 .organization-profile__fields label {
   display: block;
   margin-bottom: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: var(--font-button-font-size);
+  font-weight: var(--font-weight-semibold);
 }
 
 .organization-profile__fields .MuiOutlinedInput-root {
   border-radius: 0.6rem;
-  color: #17213f;
-  font-weight: 600;
+  color: var(--color-organization-profile-text);
+  font-weight: var(--font-weight-semibold);
 }
 
 .organization-profile__fields .MuiOutlinedInput-notchedOutline {
-  border-color: #d5d9e2;
+  border-color: var(--color-organization-profile-field-border);
 }
 
 .organization-profile__fields .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
-  border-color: #ff8b50;
+  border-color: var(--color-organization-profile-accent);
 }
 
 .organization-profile__save.MuiButton-root {
   width: 100%;
   min-height: 3.75rem;
   border-radius: 0.6rem;
-  background: linear-gradient(100deg, #ff5b0a, #ff4f0a);
+  background: linear-gradient(100deg, var(--color-organization-profile-accent-strong), var(--color-organization-profile-accent-strong));
   box-shadow: none;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: var(--font-button-font-size);
+  font-weight: var(--font-weight-bold);
   text-transform: none;
 }
 
 .organization-profile__save.MuiButton-root:hover {
-  background: #e94c00;
+  background: var(--color-organization-profile-accent-hover);
   box-shadow: none;
 }
 
@@ -210,9 +210,9 @@
 
 .organization-logo-dialog__heading h2 {
   margin: 0;
-  color: #17213f;
-  font-size: 1.4rem;
-  font-weight: 700;
+  color: var(--color-organization-profile-text);
+  font-size: var(--font-h5-font-size);
+  font-weight: var(--font-weight-bold);
 }
 
 .organization-logo-dialog__options.MuiDialogContent-root {
@@ -229,18 +229,18 @@
   align-items: center;
   justify-content: flex-start;
   padding: 1.25rem 0.75rem;
-  border: 1px solid #e2e5ec;
+  border: 1px solid var(--color-organization-profile-option-border);
   border-radius: 0.7rem;
-  background: #fff;
-  color: #17213f;
+  background: var(--color-organization-profile-dialog-surface);
+  color: var(--color-organization-profile-text);
   text-align: center;
   cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease;
+  transition: border-color var(--motion-standard-duration) var(--motion-easing), background-color var(--motion-standard-duration) var(--motion-easing);
 }
 
 .organization-logo-option:hover {
-  border-color: #ff8b50;
-  background: #fffaf7;
+  border-color: var(--color-organization-profile-accent);
+  background: var(--color-organization-profile-option-hover-surface);
 }
 
 .organization-logo-option__icon {
@@ -250,19 +250,19 @@
   place-items: center;
   margin-bottom: 1rem;
   border-radius: 1rem;
-  background: #fff0e8;
-  color: #ff5b0a;
-  font-size: 2rem;
+  background: var(--color-organization-profile-avatar-surface);
+  color: var(--color-organization-profile-accent-strong);
+  font-size: var(--icon-xl);
 }
 
 .organization-logo-option strong {
   margin-bottom: 0.4rem;
-  font-size: 0.95rem;
+  font-size: var(--font-body-font-size);
 }
 
 .organization-logo-option span:last-child {
-  color: #78839d;
-  font-size: 0.75rem;
+  color: var(--color-organization-profile-hint-text);
+  font-size: var(--font-caption-font-size);
   line-height: 1.4;
 }
 
@@ -279,11 +279,11 @@
   }
 
   .organization-profile__heading h1 {
-    font-size: 1.25rem;
+    font-size: var(--font-h5-font-size);
   }
 
   .organization-profile__heading p {
-    font-size: 0.8rem;
+    font-size: var(--font-caption-font-size);
   }
 
   .organization-profile__form {
@@ -299,7 +299,7 @@
   .organization-profile__logo-picker {
     min-height: 13rem;
     border-right: 0;
-    border-bottom: 1px solid #d6dbea;
+    border-bottom: 1px solid var(--color-organization-profile-border);
     padding-bottom: 1.25rem;
   }
 
