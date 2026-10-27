@@ -389,3 +389,24 @@ export const componentStyles = {
 export const shape = {
   borderRadius: 8,
 };
+
+export const activateAccount = {
+  shellPadding: "1.5rem",
+  cardWidth: "min(100%, 27.25rem)",
+  cardPaddingTop: "1.5rem",
+  cardPaddingInline: "1.5rem",
+  cardPaddingBottom: "1.5rem",
+  iconSize: "5.75rem",
+  iconSvgSize: "3rem",
+  headerGap: "1rem",
+  alertGap: "1rem",
+  formGap: "0.9rem",
+  inputHeight: "3.15rem",
+  buttonHeight: "3.1rem",
+  buttonGap: "0.625rem",
+  titleSize: "clamp(2rem, 2vw, 2.25rem)",
+  mobileShellPadding: "1.125rem",
+  mobileCardPaddingTop: "1.875rem",
+  mobileCardPaddingInline: "1.25rem",
+  mobileCardPaddingBottom: "1.25rem",
+};

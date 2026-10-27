@@ -180,4 +180,24 @@
   --font-weight-medium: 500;
   --font-weight-regular: 400;
   --font-weight-semibold: 600;
+
+  /* === ACTIVATE ACCOUNT === */
+  --activate-account-alert-gap: 1rem;
+  --activate-account-button-gap: 0.625rem;
+  --activate-account-button-height: 3.1rem;
+  --activate-account-card-padding-bottom: 1.5rem;
+  --activate-account-card-padding-inline: 1.5rem;
+  --activate-account-card-padding-top: 1.5rem;
+  --activate-account-card-width: min(100%, 27.25rem);
+  --activate-account-form-gap: 0.9rem;
+  --activate-account-header-gap: 1rem;
+  --activate-account-icon-size: 5.75rem;
+  --activate-account-icon-svg-size: 3rem;
+  --activate-account-input-height: 3.15rem;
+  --activate-account-mobile-card-padding-bottom: 1.25rem;
+  --activate-account-mobile-card-padding-inline: 1.25rem;
+  --activate-account-mobile-card-padding-top: 1.875rem;
+  --activate-account-mobile-shell-padding: 1.125rem;
+  --activate-account-shell-padding: 1.5rem;
+  --activate-account-title-size: clamp(2rem, 2vw, 2.25rem);
 }
