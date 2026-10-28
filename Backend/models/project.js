@@ -1,24 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const normalizeSiteEngineerIds = (siteEngineer, siteEngineers = []) => {
-  const ids = [];
-
-  if (siteEngineer) {
-    ids.push(siteEngineer.toString());
-  }
-
-  if (Array.isArray(siteEngineers)) {
-    for (const engineer of siteEngineers) {
-      if (engineer) {
-        ids.push(engineer.toString());
-      }
-    }
-  }
-
-  return [...new Set(ids.filter(Boolean))];
-};
-
 const projectSchema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -30,12 +12,6 @@ const projectSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true
-  },
-
-  siteEngineer: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default:null
   },
 
   // Multiple Site Engineers assigned to this project
@@ -110,16 +86,15 @@ const projectSchema = new Schema({
   { timestamps: true });
 
 projectSchema.pre('save', function (next) {
-  const uniqueSiteEngineerIds = normalizeSiteEngineerIds(this.siteEngineer, this.siteEngineers);
+  const uniqueSiteEngineerIds = [...new Set(
+    (this.siteEngineers || [])
+      .map((engineer) => engineer?.toString())
+      .filter(Boolean)
+  )];
 
-  if (uniqueSiteEngineerIds.length) {
-    this.siteEngineers = uniqueSiteEngineerIds.map((id) => new mongoose.Types.ObjectId(id));
-    if (!this.siteEngineer) {
-      this.siteEngineer = this.siteEngineers[0];
-    }
-  } else {
-    this.siteEngineers = [];
-  }
+  this.siteEngineers = uniqueSiteEngineerIds.map(
+    (id) => new mongoose.Types.ObjectId(id)
+  );
 
   next();
 });
