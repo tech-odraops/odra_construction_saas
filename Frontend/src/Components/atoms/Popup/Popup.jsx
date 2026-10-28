@@ -4,7 +4,7 @@ import { componentStyles } from '../../../shared-theme/themePrimitives';
 const VARIANTS = ['success', 'error'];
 
 export default function Popup({
-  title = 'Success !',
+  title,
   message = 'logged in successfully',
   variant = 'success',
   onClose,
@@ -13,6 +13,7 @@ export default function Popup({
   ...props
 }) {
   const tone = VARIANTS.includes(variant) ? variant : 'success';
+  const displayTitle = title ?? (tone === 'error' ? 'Error !' : 'Success !');
 
   return (
     <div
@@ -31,7 +32,7 @@ export default function Popup({
         </svg>
       </span>
       <span className="popup__copy">
-        <span className="popup__title">{title}</span>
+        <span className="popup__title">{displayTitle}</span>
         <span className="popup__message">{message}</span>
       </span>
       <span className="popup__divider" aria-hidden="true" />

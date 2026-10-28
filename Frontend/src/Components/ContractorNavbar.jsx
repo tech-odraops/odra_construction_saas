@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Divider from "@mui/material/Divider";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
@@ -27,10 +27,31 @@ import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 
+function getOwnerInitials() {
+  const ownerName = (localStorage.getItem("organizationName") || localStorage.getItem("name"))?.trim();
+  if (!ownerName) return "P";
+  return ownerName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase();
+}
+
+function getOrganizationLogo() {
+  try {
+    const savedLogo = JSON.parse(localStorage.getItem("organizationLogo") || "null");
+    return savedLogo?.type === "image" ? savedLogo.value : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function ContractorNavbar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openDrawer, setOpenDrawer] = React.useState(false);
+  const organizationLogo = getOrganizationLogo();
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -52,7 +73,7 @@ export default function ContractorNavbar() {
   return (
     <>
       {/* TOP BAR */}
-      <AppBar position="static" className="contractor-appbar" sx={{ backgroundColor: "#fff", color: "#202326" }}>
+      <AppBar position="static" className="contractor-appbar" sx={{ backgroundColor: "var(--palette-background-paper)", color: "var(--color-organization-profile-nav-text)" }}>
         <Toolbar className="contractor-toolbar" sx={{ justifyContent: 'space-between' }}>
           {/* Mobile Menu Icon */}
           <IconButton
@@ -80,15 +101,15 @@ export default function ContractorNavbar() {
                     key={item.label}
                     onClick={() => navigate(item.path)}
                     sx={{
-                      color: "#26323d",
+                      color: "var(--color-organization-profile-nav-item-text)",
                       textDecoration: "none",
-                      fontWeight: 500,
+                      fontWeight: "var(--font-weight-medium)",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                     }}
                   >
-                    <item.icon sx={{ mr: 1, fontSize: 18, color: "#F97316" }} />{item.label}
+                    <item.icon sx={{ mr: 1, fontSize: "var(--icon-md)", color: "var(--palette-primary-main)" }} />{item.label}
 
                   </Typography>
               ))}
@@ -96,16 +117,25 @@ export default function ContractorNavbar() {
 
             {/* Avatar */}
             <Avatar
+              className="contractor-profile-avatar"
+              component={Link}
+              to="/contractor/organization-profile"
+              aria-label="Edit organization profile"
               sx={{
-                bgcolor: "#F97316",
+                bgcolor: "var(--color-organization-profile-avatar-surface)",
+                color: "var(--palette-primary-main)",
                 ml: 2.5,
                 mr: 1.5,
-                width: 28,
-                height: 28,
-                fontSize: 13,
+                width: 40,
+                height: 40,
+                fontSize: "var(--font-body-font-size)",
+                border: 0,
+                cursor: "pointer",
+                "&:hover": { bgcolor: "var(--color-organization-profile-nav-avatar-hover)" },
+                "&:focus-visible": { outline: "var(--control-focus-outline-width) solid var(--palette-primary-main)", outlineOffset: "var(--control-focus-outline-offset)" },
               }}
             >
-              {localStorage.getItem("name")?.charAt(0)}
+              {organizationLogo ? <img src={organizationLogo} alt="" /> : getOwnerInitials()}
             </Avatar>
 
             {/* Logout Button */}
@@ -113,11 +143,11 @@ export default function ContractorNavbar() {
               variant="contained"
               onClick={logout}
               sx={{
-                backgroundColor: "#F97316",
-                color: "#fff",
-                fontWeight: 600,
+                backgroundColor: "var(--palette-primary-main)",
+                color: "var(--palette-primary-contrast-text)",
+                fontWeight: "var(--font-weight-semibold)",
                 "&:hover": {
-                  backgroundColor: "#e9650e",
+                  backgroundColor: "var(--palette-primary-dark)",
                 },
               }}
             >
@@ -131,15 +161,15 @@ export default function ContractorNavbar() {
               MenuProps={{
                 PaperProps: {
                   sx: {
-                    "& .MuiMenuItem-root:hover": { backgroundColor: "rgba(249, 115, 22, .12)" },
-                    "& .MuiMenuItem-root.Mui-selected": { backgroundColor: "rgba(249, 115, 22, .16)", color: "#F97316" },
-                    "& .MuiMenuItem-root.Mui-selected:hover": { backgroundColor: "rgba(249, 115, 22, .2)" },
+                    "& .MuiMenuItem-root:hover": { backgroundColor: "var(--palette-action-hover)" },
+                    "& .MuiMenuItem-root.Mui-selected": { backgroundColor: "var(--palette-action-selected)", color: "var(--palette-primary-main)" },
+                    "& .MuiMenuItem-root.Mui-selected:hover": { backgroundColor: "var(--palette-action-selected)" },
                   },
                 },
               }}
               sx={{
                 ml: 1.5,
-                backgroundColor: "#fff",
+                backgroundColor: "var(--palette-background-paper)",
                 borderRadius: 1,
                 height: 32
               }}
@@ -206,7 +236,7 @@ export default function ContractorNavbar() {
                     <ListItemText
                       primary={item.label}
                       primaryTypographyProps={{
-                        fontWeight: 500,
+                      fontWeight: "var(--font-weight-medium)",
                       }}
                     />
 
@@ -226,8 +256,17 @@ export default function ContractorNavbar() {
                 mb: 2,
               }}
             >
-              <Avatar sx={{ bgcolor: "#F97316" }}>
-                {localStorage.getItem("name")?.charAt(0)}
+              <Avatar
+                className="contractor-profile-avatar"
+                component={Link}
+                to="/contractor/organization-profile"
+                onClick={() => {
+                  setOpenDrawer(false);
+                }}
+                aria-label="Edit organization profile"
+                sx={{ bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)", border: 0, cursor: "pointer" }}
+              >
+                {organizationLogo ? <img src={organizationLogo} alt="" /> : getOwnerInitials()}
               </Avatar>
 
               <Button
@@ -253,7 +292,7 @@ export default function ContractorNavbar() {
                 gap: 2,
               }}
             >
-              <SocialBar colourStyle={{ color: "#000" }} />
+              <SocialBar colourStyle={{ color: "var(--palette-text-primary)" }} />
             </Box>
           </Box>
         </Box>

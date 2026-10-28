@@ -1,0 +1,321 @@
+.organization-profile {
+  box-sizing: border-box;
+  width: min(92%, 78.5rem);
+  min-height: 36rem;
+  margin: 1.25rem auto 3rem;
+  padding: 1.75rem 1.75rem 1.25rem;
+  border: 1px solid var(--palette-grey-100);
+  border-radius: 0.75rem;
+  background:
+    radial-gradient(ellipse 38% 31% at 22% 39%, var(--color-organization-profile-warm-glow), transparent 75%),
+    radial-gradient(ellipse 48% 38% at 87% 3%, var(--color-organization-profile-warm-glow-strong), transparent 75%),
+    linear-gradient(160deg, var(--palette-background-paper) 24%, var(--color-organization-profile-surface) 70%, var(--palette-background-paper) 100%);
+  color: var(--color-organization-profile-text);
+}
+
+.organization-profile__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 5.5rem;
+}
+
+.organization-profile__back.MuiIconButton-root {
+  margin: -0.25rem 0 0 -0.5rem;
+  color: var(--color-organization-profile-text);
+}
+
+.organization-profile__heading h1 {
+  margin: 0;
+  font-size: var(--font-h4-font-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.04em;
+}
+
+.organization-profile__heading p,
+.organization-profile__fields p {
+  margin: 0.35rem 0 0;
+  color: var(--color-organization-profile-muted-text);
+  font-size: var(--font-body-font-size);
+}
+
+.organization-profile__form {
+  padding: 1.75rem 0.75rem 1rem;
+  border: 1px solid var(--color-organization-profile-form-border);
+  border-radius: 0.75rem;
+  background: var(--color-organization-profile-form-surface);
+  box-shadow: 0 8px 30px var(--color-organization-profile-form-shadow);
+}
+
+.organization-profile__details {
+  display: grid;
+  grid-template-columns: minmax(15rem, 21rem) minmax(0, 1fr);
+  align-items: center;
+  min-height: 15rem;
+  margin-bottom: 2rem;
+}
+
+.organization-profile__logo-picker {
+  position: relative;
+  display: flex;
+  min-height: 14rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-right: 1px solid var(--color-organization-profile-border);
+  background: transparent;
+  color: var(--color-organization-profile-text);
+  cursor: pointer;
+}
+
+.organization-profile__logo-circle {
+  display: grid;
+  width: 8rem;
+  height: 8rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1.5px solid var(--palette-primary-main);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 52% 48%, var(--color-organization-profile-logo-highlight-surface) 0 37%, transparent 72%),
+    radial-gradient(ellipse at 28% 70%, var(--color-organization-profile-logo-glow), transparent 55%),
+    radial-gradient(ellipse at 76% 26%, var(--color-organization-profile-logo-highlight), transparent 60%),
+    var(--color-organization-profile-logo-surface);
+}
+
+.organization-profile__upload-mark {
+  position: relative;
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border-radius: 0.4rem;
+  background: var(--color-organization-profile-upload-surface);
+}
+
+.organization-profile__upload-icon {
+  width: 2.8rem !important;
+  height: 2.8rem !important;
+  color: var(--color-organization-profile-accent-light);
+}
+
+.organization-profile__upload-plus {
+  position: absolute;
+  right: -0.5rem;
+  bottom: -0.35rem;
+  width: 1.55rem !important;
+  height: 1.55rem !important;
+  color: var(--color-organization-profile-accent);
+  stroke-width: 3;
+}
+
+.organization-profile__logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  padding: 0;
+}
+
+.organization-profile__preset-mark {
+  color: var(--palette-primary-main);
+  font-size: var(--icon-xl);
+  font-weight: var(--font-weight-bolder);
+  letter-spacing: -0.08em;
+}
+
+.organization-profile__logo-add {
+  position: absolute;
+  top: 7.1rem;
+  left: calc(50% + 2rem);
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-organization-profile-accent-strong);
+  color: var(--palette-primary-contrast-text);
+}
+
+.organization-profile__logo-title {
+  margin-top: 0.65rem;
+  font-size: var(--font-button-font-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+.organization-profile__logo-hint {
+  margin-top: 0.5rem;
+  color: var(--color-organization-profile-hint-text);
+  font-size: var(--font-caption-font-size);
+}
+
+.organization-profile__fields {
+  padding: 0 1.75rem 0 2.5rem;
+}
+
+.organization-profile__fields label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: var(--font-button-font-size);
+  font-weight: var(--font-weight-semibold);
+}
+
+.organization-profile__fields .MuiOutlinedInput-root {
+  border-radius: 0.6rem;
+  color: var(--color-organization-profile-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.organization-profile__fields .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-organization-profile-field-border);
+}
+
+.organization-profile__fields .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--color-organization-profile-accent);
+}
+
+.organization-profile__save.MuiButton-root {
+  width: 100%;
+  min-height: 3.75rem;
+  border-radius: 0.6rem;
+  background: linear-gradient(100deg, var(--color-organization-profile-accent-strong), var(--color-organization-profile-accent-strong));
+  box-shadow: none;
+  font-size: var(--font-button-font-size);
+  font-weight: var(--font-weight-bold);
+  text-transform: none;
+}
+
+.organization-profile__save.MuiButton-root:hover {
+  background: var(--color-organization-profile-accent-hover);
+  box-shadow: none;
+}
+
+.organization-profile__file-input {
+  display: none;
+}
+
+.organization-logo-dialog.MuiPaper-root {
+  max-width: 44rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-radius: 0.9rem;
+}
+
+.organization-logo-dialog__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.25rem 1rem;
+}
+
+.organization-logo-dialog__heading h2 {
+  margin: 0;
+  color: var(--color-organization-profile-text);
+  font-size: var(--font-h5-font-size);
+  font-weight: var(--font-weight-bold);
+}
+
+.organization-logo-dialog__options.MuiDialogContent-root {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0;
+}
+
+.organization-logo-option {
+  display: flex;
+  min-height: 12rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 1.25rem 0.75rem;
+  border: 1px solid var(--color-organization-profile-option-border);
+  border-radius: 0.7rem;
+  background: var(--color-organization-profile-dialog-surface);
+  color: var(--color-organization-profile-text);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--motion-standard-duration) var(--motion-easing), background-color var(--motion-standard-duration) var(--motion-easing);
+}
+
+.organization-logo-option:hover {
+  border-color: var(--color-organization-profile-accent);
+  background: var(--color-organization-profile-option-hover-surface);
+}
+
+.organization-logo-option__icon {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  place-items: center;
+  margin-bottom: 1rem;
+  border-radius: 1rem;
+  background: var(--color-organization-profile-avatar-surface);
+  color: var(--color-organization-profile-accent-strong);
+  font-size: var(--icon-xl);
+}
+
+.organization-logo-option strong {
+  margin-bottom: 0.4rem;
+  font-size: var(--font-body-font-size);
+}
+
+.organization-logo-option span:last-child {
+  color: var(--color-organization-profile-hint-text);
+  font-size: var(--font-caption-font-size);
+  line-height: 1.4;
+}
+
+@media (max-width: 700px) {
+  .organization-profile {
+    width: calc(100% - 1.5rem);
+    min-height: auto;
+    margin: 0.75rem auto 2rem;
+    padding: 1.25rem 0.75rem 0.75rem;
+  }
+
+  .organization-profile__heading {
+    margin-bottom: 2rem;
+  }
+
+  .organization-profile__heading h1 {
+    font-size: var(--font-h5-font-size);
+  }
+
+  .organization-profile__heading p {
+    font-size: var(--font-caption-font-size);
+  }
+
+  .organization-profile__form {
+    padding: 1rem 0.75rem 0.75rem;
+  }
+
+  .organization-profile__details {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .organization-profile__logo-picker {
+    min-height: 13rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--color-organization-profile-border);
+    padding-bottom: 1.25rem;
+  }
+
+  .organization-profile__fields {
+    padding: 0 0.25rem;
+  }
+
+  .organization-logo-dialog.MuiPaper-root {
+    padding: 1rem;
+  }
+
+  .organization-logo-dialog__options.MuiDialogContent-root {
+    grid-template-columns: 1fr;
+  }
+
+  .organization-logo-option {
+    min-height: 8rem;
+  }
+}

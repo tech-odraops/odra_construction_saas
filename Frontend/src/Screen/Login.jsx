@@ -3,7 +3,6 @@ import axiosInstance from "../utils/axiosInstance";
 import { Box, Divider, Paper, Typography } from "@mui/material";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import { getFCMToken } from "../services/notificationService";
 import Input from "../Components/atoms/Input/Input";
@@ -13,7 +12,7 @@ import {
   requiredValidator,
 } from "../utils/validation";
 import signInBg from "../assets/Sign in bg.png";
-import Popup from "../Components/atoms/Popup/Popup";
+import usePopup from "../contexts/usePopup";
 import { Icon } from "../Components/atoms/Icon/Icon";
 import "./Login.css";
 
@@ -28,7 +27,7 @@ export default function Login() {
     password: "",
   });
   const [validated, setValidated] = useState(false);
-  const [popup, setPopup] = useState(null);
+  const { showPopup, dismissPopup } = usePopup();
   const [validationStates, setValidationStates] = useState({});
   const [validationMessages, setValidationMessages] = useState({});
   const [recoveryStep, setRecoveryStep] = useState(
@@ -112,7 +111,7 @@ export default function Login() {
         localStorage.setItem("name", response.data.name);
         localStorage.setItem("organizationId",response.data.organizationId);
 
-        setPopup({
+        showPopup({
           variant: "success",
           title: "Success!",
           message: "Logged in successfully.",
@@ -139,7 +138,7 @@ export default function Login() {
           localStorage.removeItem("IsLogin");
           localStorage.removeItem("name");
 
-          setPopup({
+          showPopup({
             variant: "error",
             title: "Role not configured",
             message:
@@ -163,18 +162,13 @@ export default function Login() {
           : status === 404 || status === 401
             ? data?.error
             : "Something went wrong. Please try again.";
-      setPopup({
+      showPopup({
         variant: "error",
         title: "Login failed",
         message: message || "Please check your details and try again.",
       });
       console.log(e)
 
-      if (status === 422) return toast.error(data.error[0].msg);
-      if (status === 404) return toast.error(data.error);
-      if (status === 401) return toast.error(data.error);
-
-      toast.error("Something went wrong. Please try again.");
       console.log(e); 
     }
 
@@ -182,7 +176,7 @@ export default function Login() {
   }
 
   function beginPasswordRecovery() {
-    setPopup(null);
+    dismissPopup();
     setRecoveryStep("email");
     setValidationStates({});
     setValidated(false);
@@ -191,13 +185,13 @@ export default function Login() {
   function returnToSignIn() {
     navigate("/Login", { replace: true });
     setRecoveryStep("signin");
-    setPopup(null);
+    dismissPopup();
     setValidationStates({});
     setValidated(false);
   }
 
   function showRecoveryError(error, fallbackMessage) {
-    setPopup({
+    showPopup({
       variant: "error",
       title: "Password reset failed",
       message: error.response?.data?.message || fallbackMessage,
@@ -222,7 +216,7 @@ export default function Login() {
         email: formData.email,
       });
       setRecoveryStep("emailSent");
-      setPopup(null);
+      dismissPopup();
     } catch (error) {
       showRecoveryError(error, "Unable to send a reset link. Please try again.");
     }
@@ -237,7 +231,7 @@ export default function Login() {
       );
 
     if (!validPassword) {
-      setPopup({
+      showPopup({
         variant: "error",
         title: "Invalid password",
         message:
@@ -246,7 +240,7 @@ export default function Login() {
       return;
     }
     if (password !== confirmPassword) {
-      setPopup({
+      showPopup({
         variant: "error",
         title: "Passwords do not match",
         message: "Enter the same password in both fields.",
@@ -259,7 +253,7 @@ export default function Login() {
         token: resetToken,
         newPassword: password,
       });
-      setPopup(null);
+      dismissPopup();
       setRecoveryStep("success");
     } catch (error) {
       showRecoveryError(error, "Unable to reset your password. Please try again.");
@@ -279,23 +273,6 @@ export default function Login() {
 
   return (
     <Box className="auth-shell auth-login">
-      {popup && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: 24,
-            right: 24,
-            zIndex: 1400,
-            maxWidth: "calc(100vw - 32px)",
-          }}
-        >
-          <Popup
-            {...popup}
-            onClose={() => setPopup(null)}
-            style={{ maxWidth: "100%" }}
-          />
-        </Box>
-      )}
       <Box className="auth-visual-panel">
         <Box className="auth-wordmark">
           <span>ODRA</span>

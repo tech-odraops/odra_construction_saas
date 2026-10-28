@@ -1,3 +1,11 @@
+.popup-host {
+  position: fixed;
+  z-index: 1400;
+  top: 1.5rem;
+  right: 1.5rem;
+  max-width: calc(100vw - 2rem);
+}
+
 .popup {
   --popup-decoration: var(--popup-success-decoration);
   position: relative;
@@ -72,7 +80,7 @@
 .popup__message {
   min-width: 0;
   font-size: var(--popup-message-font-size);
-  font-weight: 400;
+  font-weight: var(--popup-message-font-weight);
   line-height: var(--popup-message-line-height);
   white-space: nowrap;
 }
