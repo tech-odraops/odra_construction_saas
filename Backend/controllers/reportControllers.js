@@ -25,8 +25,7 @@ exports.createReport = async (req, res) => {
 
         // check if this site engineer is allowed to for this project
         const assignedSiteEngineerIds = [
-            ...(Array.isArray(projectDetails.siteEngineers) ? projectDetails.siteEngineers : []),
-            projectDetails.siteEngineer
+            ...(Array.isArray(projectDetails.siteEngineers) ? projectDetails.siteEngineers : [])
         ]
             .filter(Boolean)
             .map((assignedSiteEngineerId) => assignedSiteEngineerId.toString());

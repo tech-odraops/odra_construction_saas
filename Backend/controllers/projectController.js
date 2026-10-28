@@ -82,7 +82,7 @@ exports.createProject = async (req, res) => {
                         endDate: endDate
                             ? new Date(endDate)
                             : null,
-                        siteEngineer: null,
+                        siteEngineers: [],
                         contractor: founderId,
                         organizationId
                     }
@@ -153,7 +153,6 @@ exports.getProject = async (req, res) => {
     try {
         const contractorId = req.user.User_id;
         const contratProjects = await Project.find({ organizationId: req.user.organizationId })
-            .populate('siteEngineer', 'name email')
             .populate('siteEngineers', 'name email')
             .lean();
 
@@ -180,10 +179,7 @@ exports.getProjectSE = async (req, res) => {
         // This makes queries faster and uses less memory when you only need to read data (not use Mongoose document methods).
         const allProject = await Project.find({
             organizationId: req.user.organizationId,
-            $or: [
-                { siteEngineers: siteEngineerId },
-                { siteEngineer: siteEngineerId }
-            ]
+            siteEngineers: siteEngineerId
         })
             .select("title status contractor")
             .populate('contractor', 'name')
@@ -213,7 +209,6 @@ exports.getProjectById = async (req, res) => {
         // Ensure the requester is either contractor of project or assigned Site Engineer
         const project = await Project.findOne({ _id: id, organizationId: req.user.organizationId })
             .populate('contractor', 'name email')
-            .populate('siteEngineer', 'name email')
             .populate('siteEngineers', '_id name email role')
             .populate({
                 path: 'reports',
@@ -311,8 +306,7 @@ exports.deleteProject = async (req, res) => {
             const siteEngineerIds = [
                 ...(Array.isArray(project.siteEngineers)
                     ? project.siteEngineers
-                    : []),
-                project.siteEngineer
+                    : [])
             ]
                 .filter(Boolean)
                 .map((siteEngineerId) => siteEngineerId.toString());
@@ -652,7 +646,7 @@ exports.addMiscellaneousItem = async (req, res) => {
 
         const project = await Project.findById(projectId)
             .populate("contractor", "_id name")
-            .populate("siteEngineer", "_id name");
+            .populate("siteEngineers", "_id name");
 
         if (!project) {
             return res.status(404).json({
@@ -719,7 +713,7 @@ exports.updateMiscellaneousStatus = async (req, res) => {
 
         const project = await Project.findById(projectId)
             .populate("contractor", "_id name")
-            .populate("siteEngineer", "_id name");
+            .populate("siteEngineers", "_id name");
 
         if (!project) {
             return res.status(404).json({
@@ -816,8 +810,7 @@ exports.updateProjectTitle = async (req, res) => {
         const io = req.app.get("io");
 
         const siteEngineerIds = [
-            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : []),
-            project.siteEngineer
+            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : [])
         ]
             .filter(Boolean)
             .map((siteEngineerId) => siteEngineerId.toString());

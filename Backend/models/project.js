@@ -14,12 +14,6 @@ const projectSchema = new Schema({
     required: true
   },
 
-  siteEngineer: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    default:null
-  },
-
   // Multiple Site Engineers assigned to this project
   siteEngineers: [{
     type: Schema.Types.ObjectId,
@@ -90,5 +84,19 @@ const projectSchema = new Schema({
   }
 },
   { timestamps: true });
+
+projectSchema.pre('save', function (next) {
+  const uniqueSiteEngineerIds = [...new Set(
+    (this.siteEngineers || [])
+      .map((engineer) => engineer?.toString())
+      .filter(Boolean)
+  )];
+
+  this.siteEngineers = uniqueSiteEngineerIds.map(
+    (id) => new mongoose.Types.ObjectId(id)
+  );
+
+  next();
+});
 
 module.exports = mongoose.model('Project', projectSchema);

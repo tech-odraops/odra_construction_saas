@@ -535,19 +535,6 @@ exports.assignSiteMember = async (req, res) => {
             project.siteEngineers = [];
         }
 
-        // Preserve the legacy assignment when migrating to the array.
-        if (project.siteEngineer) {
-            const legacyId = project.siteEngineer.toString();
-
-            const alreadyIncluded = project.siteEngineers.some(
-                (engineerId) => engineerId.toString() === legacyId
-            );
-
-            if (!alreadyIncluded) {
-                project.siteEngineers.push(project.siteEngineer);
-            }
-        }
-
         const alreadyAssigned = project.siteEngineers.some(
             (engineerId) =>
                 engineerId.toString() === member._id.toString()
@@ -561,11 +548,6 @@ exports.assignSiteMember = async (req, res) => {
         }
 
         project.siteEngineers.push(member._id);
-
-        if (!project.siteEngineer) {
-            project.siteEngineer = member._id;
-        }
-
         await project.save();
 
         // Notify the assigned Site Engineer in real time.
