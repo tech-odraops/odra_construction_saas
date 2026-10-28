@@ -418,17 +418,15 @@ export default function ProjectDetails() {
                     <Typography variant="body2" color="text.secondary">{member.email}</Typography>
                     <Typography variant="caption" color="text.secondary">{member.role}</Typography>
                   </Box>
-                  <Button
-                    variant="contained"
-                    disabled={Boolean(assigningMemberId) || assignedSiteEngineerIds.has(member._id)}
-                    onClick={() => assignSiteEngineer(member)}
-                  >
-                    {assignedSiteEngineerIds.has(member._id)
-                      ? "Assigned"
-                      : assigningMemberId === member._id
-                        ? "Assigning..."
-                        : "Assign"}
-                  </Button>
+                  {!assignedSiteEngineerIds.has(member._id) && (
+                    <Button
+                      variant="contained"
+                      disabled={Boolean(assigningMemberId)}
+                      onClick={() => assignSiteEngineer(member)}
+                    >
+                      {assigningMemberId === member._id ? "Assigning..." : "Assign"}
+                    </Button>
+                  )}
                 </Box>
               )) : (
                 <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
