@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   Divider,
-  Button,
   Table,
   TableHead,
   TableRow,
@@ -13,6 +12,7 @@ import {
   TableContainer,
   Paper
 } from "@mui/material";
+import Button from "./atoms/Button/Button";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useTranslation } from "react-i18next";

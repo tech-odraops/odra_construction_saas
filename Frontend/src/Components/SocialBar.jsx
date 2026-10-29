@@ -1,8 +1,8 @@
 import React from 'react'
-import { useTheme } from "@emotion/react";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import { Box, Typography, Divider, IconButton } from "@mui/material";
+import { Box, Typography, Divider } from "@mui/material";
+import Button from "./atoms/Button/Button";
 
 export default function SocialBar({colourStyle}) {
     return (
@@ -14,7 +14,9 @@ export default function SocialBar({colourStyle}) {
                 justifyContent: { xs: "center", md: "flex-start" },
             }}
         >
-            <IconButton
+            <Button
+                iconOnly
+                component="a"
                 href="https://instagram.com"
                 target="_blank"
                 sx={{
@@ -29,9 +31,11 @@ export default function SocialBar({colourStyle}) {
                 }}
             >
                 <InstagramIcon sx={{...colourStyle}}/>
-            </IconButton>
+            </Button>
 
-            <IconButton
+            <Button
+                iconOnly
+                component="a"
                 href="https://wa.me/916370627088"
                 target="_blank"
                 sx={{
@@ -46,7 +50,7 @@ export default function SocialBar({colourStyle}) {
                 }}
             >
                 <WhatsAppIcon sx={{...colourStyle}}/>
-            </IconButton>
+            </Button>
         </Box>
     )
 }

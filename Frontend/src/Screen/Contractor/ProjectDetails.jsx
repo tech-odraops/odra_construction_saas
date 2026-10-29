@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import ContractorNavbar from '../../Components/ContractorNavbar';
 import Footer from '../../Components/Footer';
 import WageModal from "../../Components/WageModal";
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress, Typography, Button } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import Button from '../../Components/atoms/Button/Button';
 import { toast } from 'react-toastify';
 import { io } from 'socket.io-client';
 import ChatModal from '../../Components/ChatModal';
@@ -324,7 +324,6 @@ export default function ProjectDetails() {
   if (!project) {
     return (
       <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-        <ContractorNavbar />
         <Box className="container py-5">
           <Typography variant="h6" color="error">
             {t("project.unable_load")}
@@ -345,7 +344,6 @@ export default function ProjectDetails() {
         backgroundColor: "#f9fafb",
       }}
     >
-      <ContractorNavbar />
 
       <Box className="project-overview-main">
         {/* HEADER */}

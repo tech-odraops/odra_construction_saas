@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import ContractorNavbar from "../../Components/ContractorNavbar";
 import Footer from "../../Components/Footer";
 import axiosInstance from "../../utils/axiosInstance";
 import {
   Box,
   Typography,
   Paper,
-  Button,
   CircularProgress
 } from "@mui/material";
+import Button from "../../Components/atoms/Button/Button";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
 import FullScreenLoader from "../../Components/FullScreenLoader";
@@ -79,7 +78,6 @@ export default function AssignWorkers() {
 
   return (
     <>
-      <ContractorNavbar />
 
       <Box
         sx={{

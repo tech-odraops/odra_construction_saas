@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+import Button from "./atoms/Button/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 

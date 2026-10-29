@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "../../utils/axiosInstance";
-import ContractorNavbar from "../../Components/ContractorNavbar";
-import { Box, Typography, Paper, TextField, MenuItem, Tabs, Tab, IconButton } from "@mui/material";
+import { Box, Typography, Paper, Tabs, Tab } from "@mui/material";
+import Button from "../../Components/atoms/Button/Button";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import { useTranslation } from "react-i18next";
+import Input from "../../Components/atoms/Input/Input";
 
 function MaterialIcon({ name = "" }) {
   const material = name.toLowerCase();
@@ -119,16 +120,15 @@ export default function InventoryHistory() {
           <p>{isPurchase ? "Purchased By" : "Used by"} : <span>{userName || "—"}</span></p>
           <time>{formatDate(recordDate)}</time>
         </div>
-        <IconButton className="inventory-date-icon" aria-label={`Record date ${formatDate(recordDate)}`} title={formatDate(recordDate)}>
+        <Button iconOnly className="inventory-date-icon" aria-label={`Record date ${formatDate(recordDate)}`} title={formatDate(recordDate)}>
           <CalendarMonthOutlinedIcon />
-        </IconButton>
+        </Button>
       </article>
     );
   };
 
   return (
     <div className="inventory-history-page">
-      <ContractorNavbar />
       <main className="inventory-history-main">
         <header className="inventory-history-heading">
           <Typography component="h1" className="inventory-history-title">
@@ -143,11 +143,11 @@ export default function InventoryHistory() {
         </Tabs>
 
         <Paper className="inventory-history-filters" elevation={0}>
-          <TextField type="date" label={t("inventory.filter_by_date")} value={filterDate} InputLabelProps={{ shrink: true }} onChange={(e) => setFilterDate(e.target.value)} />
-          <TextField select label={t("inventory.filter_by_material")} value={filterItem} onChange={(e) => setFilterItem(e.target.value)}>
-            <MenuItem value="">{t("inventory.all_materials")}</MenuItem>
-            {materialOptions.map((name) => <MenuItem key={name} value={name}>{name}</MenuItem>)}
-          </TextField>
+          <Input type="date" label={t("inventory.filter_by_date")} value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
+          <Input select label={t("inventory.filter_by_material")} value={filterItem} onChange={(e) => setFilterItem(e.target.value)}>
+            <option value="">{t("inventory.all_materials")}</option>
+            {materialOptions.map((name) => <option key={name} value={name}>{name}</option>)}
+          </Input>
         </Paper>
 
         <Paper className="inventory-history-list" elevation={0}>

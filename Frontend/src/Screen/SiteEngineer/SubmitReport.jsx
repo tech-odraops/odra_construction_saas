@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { io } from "socket.io-client";
-import { Button } from "@mui/material";
+import Button from "../../Components/atoms/Button/Button";
 
 export default function SubmitReport() {
   const navigate = useNavigate();
@@ -315,4 +315,3 @@ export default function SubmitReport() {
   );
 
 }
-

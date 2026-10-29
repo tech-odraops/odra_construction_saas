@@ -5,12 +5,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Typography,
   Box,
   CircularProgress,
   Divider
 } from "@mui/material";
+import Button from "./atoms/Button/Button";
 
 export default function WageModal({ open, onClose, projectId }) {
 

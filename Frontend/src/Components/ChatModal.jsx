@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
+import Button from './atoms/Button/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import Badge from '@mui/material/Badge';
