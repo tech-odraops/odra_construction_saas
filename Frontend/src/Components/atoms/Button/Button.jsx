@@ -1,66 +1,79 @@
-import './Button.css';
-import { componentStyles } from '../../../shared-theme/themePrimitives';
-import { Icon } from '../Icon/Icon';
+import { createElement } from "react";
+import "./Button.css";
+import { componentStyles } from "../../../shared-theme/themePrimitives";
+import { Icon } from "../Icon/Icon";
+
+const stateIcons = {
+  running: "spinner",
+  completed: "done",
+  failed: "multiply",
+};
 
 export default function Button({
   children,
-  className = '',
-  type = 'button',
+  className = "",
+  type = "button",
   style,
   icon,
-  iconOnlyButton: camelCaseIconOnly,
-  'icon-only-button': kebabCaseIconOnly,
+  iconOnly = false,
+  variant = "primary",
+  component = "button",
+  startIcon,
+  endIcon,
+  fullWidth = false,
+  size = "default",
   state,
+  border = true,
+  bgColor,
   ...props
 }) {
-  const iconOnlyVariant = camelCaseIconOnly ?? kebabCaseIconOnly;
-  const stateIcons = {
-    running: 'spinner',
-    completed: 'done',
-    failed: 'multiply',
-  };
   const stateIcon = stateIcons[state];
-  const iconVariant = iconOnlyVariant || icon;
-  const hasIcon = Boolean(iconVariant);
-  const isIconOnly = Boolean(iconOnlyVariant);
+  const hasIcon = Boolean(icon);
   const classes = [
-    'button-atom',
-    'button-atom--primary',
+    "button-atom",
+    `button-atom--${variant}`,
     stateIcon && `button-atom--${state}`,
-    isIconOnly && 'button-atom--icon-only',
+    iconOnly && "button-atom--icon-only",
+    fullWidth && "button-atom--full-width",
+    !border && "button-atom--no-border",
+    size !== "default" && `button-atom--${size}`,
     className,
-  ].filter(Boolean).join(' ');
-  const buttonStyle = { ...componentStyles.button, ...style };
+  ].filter(Boolean).join(" ");
 
-  return (
-    <button
-      className={classes}
-      type={type}
-      style={buttonStyle}
-      aria-busy={state === 'running' || undefined}
-      {...props}
-    >
+  const buttonStyle = {
+    ...componentStyles.button,
+    ...(bgColor ? { backgroundColor: bgColor } : {}),
+    ...style,
+  };
+
+  const content = (
+    <>
+      {startIcon}
       {stateIcon ? (
-        <span className="button-atom__state-icons" aria-hidden="true">
-          {Object.entries(stateIcons).map(([buttonState, variantName]) => (
-            <Icon
-              key={buttonState}
-              variant={variantName}
-              size="button"
-              gradient={null}
-              className={`button-atom__state-icon button-atom__state-icon--${buttonState}`}
-            />
-          ))}
-        </span>
+        <Icon
+          variant={stateIcon}
+          size="button"
+          gradient={null}
+          className="button-atom__state-icon"
+        />
       ) : hasIcon ? (
         <Icon
-          variant={iconVariant}
+          variant={icon}
           size="button"
           gradient={null}
           className="button-atom__icon"
         />
       ) : null}
-      {!isIconOnly && (hasIcon ? <span>{children}</span> : children)}
-    </button>
+      {children}
+      {endIcon}
+    </>
   );
+
+  return createElement(component, {
+    ...props,
+    className: classes,
+    type: component === "button" ? type : undefined,
+    style: buttonStyle,
+    "aria-busy": state === "running" || undefined,
+  }, content);
 }

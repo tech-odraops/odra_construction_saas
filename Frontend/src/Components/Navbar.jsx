@@ -11,15 +11,14 @@ import {
   MenuItem,
   AppBar,
   Toolbar,
-  IconButton,
   Typography,
   Box,
-  Button,
   Drawer,
   List,
   ListItem,
   ListItemText,
 } from "@mui/material";
+import Button from "./atoms/Button/Button";
 
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -71,14 +70,15 @@ export default function Navbar() {
       <AppBar position="static" elevation={0} sx={{ backgroundColor: "#fff", color: "#17191c", borderBottom: "1px solid #f0f0f0" }}>
         <Toolbar sx={{ position: "relative", justifyContent: 'space-between', minHeight: { xs: 58, md: 46 }, px: { xs: 1.5, md: 1.25 } }}>
           {/* Mobile Menu Icon */}
-          <IconButton
+          <Button
+            iconOnly
             edge="start"
             color="inherit"
-            sx={{ display: { md: "none" } }}
+            className="icon-button-atom--mobile-menu"
             onClick={() => setOpenDrawer(true)}
           >
             <MenuIcon />
-          </IconButton>
+          </Button>
 
           {/* Logo */}
           <Box onClick={() => navigate("/home")} sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", cursor: "pointer", fontFamily: '"IBM Plex Sans", Arial, sans-serif', fontSize: 20, lineHeight: 1, fontWeight: 800, letterSpacing: "-.045em" }} aria-label="ODRAOPS home">

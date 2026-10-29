@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ContractorNavbar from "../../Components/ContractorNavbar";
-import { Box, TextField, Button, Typography, Paper, CircularProgress } from "@mui/material";
+import { Box, Typography, Paper, CircularProgress } from "@mui/material";
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosInstance";
 import addWorkerArtwork from "../../assets/Add Worker.png";
 import { useTranslation } from "react-i18next";
+import Button from "../../Components/atoms/Button/Button";
+import Input from "../../Components/atoms/Input/Input";
 
 export default function AddWorkers() {
   const navigate = useNavigate();
@@ -53,7 +54,6 @@ export default function AddWorkers() {
 
   return (
     <div className="add-worker-page" style={{ "--add-worker-art": `url("${addWorkerArtwork}")` }}>
-      <ContractorNavbar />
       <main className="add-worker-main">
         <Paper className="add-worker-card" elevation={0}>
           <Typography component="h1" className="add-worker-title">
@@ -61,13 +61,13 @@ export default function AddWorkers() {
           </Typography>
           <Typography component="p" className="add-worker-subtitle">{t("workers.add_worker_desc")}</Typography>
           <form className="add-worker-form" onSubmit={handleSubmit}>
-            <TextField className="add-worker-field" fullWidth placeholder={`${t("workers.worker_name")} *`} value={name} onChange={(e) => setName(e.target.value)} required disabled={loading} />
-            <TextField className="add-worker-field" fullWidth placeholder={t("workers.phone_optional")} value={phone} onChange={(e) => setPhone(e.target.value)} disabled={loading} />
-            <TextField className="add-worker-field" fullWidth placeholder="Daily Wage *" type="number" value={dailyWage} onChange={(e) => setDailyWage(e.target.value)} required disabled={loading} />
-            <TextField className="add-worker-field add-worker-payout" select fullWidth label="Payout Type" value={payoutType} onChange={(e) => setPayoutType(e.target.value)} disabled={loading} SelectProps={{ native: true }}>
+            <Input className="add-worker-field" placeholder={`${t("workers.worker_name")} *`} value={name} onChange={(e) => setName(e.target.value)} required disabled={loading} />
+            <Input className="add-worker-field" placeholder={t("workers.phone_optional")} value={phone} onChange={(e) => setPhone(e.target.value)} disabled={loading} />
+            <Input className="add-worker-field" placeholder="Daily Wage *" type="number" value={dailyWage} onChange={(e) => setDailyWage(e.target.value)} required disabled={loading} />
+            <Input className="add-worker-field add-worker-payout" select label="Payout Type" value={payoutType} onChange={(e) => setPayoutType(e.target.value)} disabled={loading}>
               <option value="daily">Daily</option>
               <option value="monthly">Monthly</option>
-            </TextField>
+            </Input>
             <div className="add-worker-actions">
               <Button className="add-worker-submit" type="submit" variant="contained" disabled={loading}>
                 {loading ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : t("workers.add_worker_btn")}

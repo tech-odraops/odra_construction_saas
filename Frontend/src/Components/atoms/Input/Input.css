@@ -215,3 +215,8 @@
   min-height: var(--input-height);
   resize: vertical;
 }
+
+.input-atom--select .input-atom__control {
+  cursor: pointer;
+  appearance: auto;
+}

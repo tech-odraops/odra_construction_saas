@@ -197,6 +197,14 @@ export const typography = {
 };
 
 export const sizing = {
+  dashboardContainerRadius: "0.75rem",
+  dashboardGap: "1rem",
+  dashboardSurfaceMargin: "0.75rem",
+  dashboardButtonRadius: "0.25rem",
+  dashboardHeaderHeight: "4rem",
+  dashboardSidebarWidth: "15rem",
+  dashboardContentMinHeight: "calc(100vh - 8rem)",
+  dashboardContentMaxWidth: "106.25rem",
   buttonWidth: "10.3125rem",
   buttonHeight: "3.125rem",
   buttonBorderRadius: "0.1875rem",
@@ -264,6 +272,14 @@ export const sizing = {
 };
 
 export const colors = {
+  dashboardCanvas: "#f7f8fa",
+  dashboardSurface: "#ffffff",
+  dashboardHeaderSurface: "#ffffff",
+  dashboardSidebarSurface: "#ffffff",
+  dashboardBorder: "#e5e7eb",
+  dashboardMutedText: "#64748b",
+  dashboardNavActive: "#fff3eb",
+  dashboardNavActiveBorder: "#f97316",
   organizationProfileText: "#17213f",
   organizationProfileMutedText: "#75819f",
   organizationProfileHintText: "#7c88a4",

@@ -17,7 +17,8 @@ import ChatModal from '../../Components/ChatModal';
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import LockIcon from "@mui/icons-material/Lock";
-import { Button,TextField } from "@mui/material";
+import { TextField } from "@mui/material";
+import Button from "../../Components/atoms/Button/Button";
 import AddMiscExpenseModal from "../../Components/AddMiscExpenseModal";
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -374,7 +375,6 @@ export default function ProjectWork() {
                   <Button
                     component={Link}
                     to={`/site-engineer/projects/${id}/report`}
-                    variant="contained"
                     sx={{
                       opacity: 1,
                       display: "flex",
@@ -406,7 +406,6 @@ export default function ProjectWork() {
                   <Button
                     component={Link}
                     to={`/site-engineer/projects/${id}/attendance`}
-                    variant="outlined"
                     style={{
                       opacity: 1,
                       display: "flex",
@@ -437,7 +436,6 @@ export default function ProjectWork() {
                   {/* Log inventory Usages */}
                   <Button
                     component={Link}
-                    variant="outlined"
                     to={`/site-engineer/projects/${id}/inventory`}
                     sx={{
                       color: "black",

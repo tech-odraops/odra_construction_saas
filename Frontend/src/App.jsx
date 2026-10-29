@@ -49,6 +49,7 @@ const NotFound = lazy(() => import("./Components/NotFound"));
 // suspense loader and errorboundary
 import FullScreenLoader from "./Components/FullScreenLoader";
 import ErrorBoundary from "./Components/ErrorBoundary";
+import ContractorLayout from "./Components/ContractorLayout";
 
 function NotificationHandler() {
   const navigate = useNavigate();
@@ -168,17 +169,23 @@ function App() {
             {/* <Route path="/Signup" element={<Signup />} /> */}
             <Route path="/Login" element={<Login />} />
             <Route path="/reset-password" element={<Login />} />
-            <Route path="/contractor/home" element={<Contractor />} />
-            <Route path="/contractor/organization-profile" element={<OrganizationProfile />} />
-            <Route path="/contractor/edit-organization-profile" element={<OrganizationProfile />} />
-            <Route path="/organization-profile" element={<OrganizationProfile />} />
+            <Route element={<ContractorLayout />}>
+              <Route path="/contractor/home" element={<Contractor />} />
+              <Route path="/contractor/organization-profile" element={<OrganizationProfile />} />
+              <Route path="/contractor/edit-organization-profile" element={<OrganizationProfile />} />
+              <Route path="/organization-profile" element={<OrganizationProfile />} />
+              <Route path="/contractor/project" element={<Project />} />
+              <Route path="/contractor/project/:id" element={<ProjectDetails />} />
+              <Route path="/contractor/add-project" element={<AddProject />} />
+              <Route path="/contractor/view-report/:id" element={<ViewReport />} />
+              <Route path="/contractor/projects/:id/inventory" element={<ProjectInventory />} />
+              <Route path="/contractor/projects/:id/inventory-history" element={<InventoryHistory />} />
+              <Route path="/contractor/projects/:id/attendance" element={<ContractorAttendance />} />
+              <Route path="/contractor/workers" element={<ContractorWorkers />} />
+              <Route path="/contractor/add-worker" element={<AddWorker />} />
+              <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
+            </Route>
             <Route path="/engineer/home" element={<SiteEngineer />} />
-            <Route path="/contractor/project" element={<Project />} />
-            <Route path="/contractor/project/:id" element={<ProjectDetails />} />
-            <Route path="/contractor/add-project" element={<AddProject />} />
-            <Route path="/contractor/view-report/:id" element={<ViewReport />} />
-            <Route path="/contractor/projects/:id/inventory" element={<ProjectInventory />} />
-            <Route path="/contractor/projects/:id/inventory-history" element={<InventoryHistory />} />
             <Route
               path="/activate-account"
               element={<ActivateAccount />}
@@ -193,10 +200,6 @@ function App() {
             <Route path="/services" element={<Services />} />
 
             {/* Attendance Route */}
-            <Route path="/contractor/projects/:id/attendance" element={<ContractorAttendance />} />
-            <Route path="/contractor/workers" element={<ContractorWorkers />} />
-            <Route path="/contractor/add-worker" element={<AddWorker />} />
-            <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<SignInSide />} />

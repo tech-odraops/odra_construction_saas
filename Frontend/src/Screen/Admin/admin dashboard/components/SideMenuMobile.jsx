@@ -1,6 +1,5 @@
 import Avatar from '@mui/material/Avatar';
 import PropTypes from 'prop-types';
-import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
 import Stack from '@mui/material/Stack';
@@ -8,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import MenuContent from './MenuContent';
 import { jwtDecode } from "jwt-decode";
+import Button from '../../../../Components/atoms/Button/Button';
 
 function SideMenuMobile({ open, toggleDrawer, selectedTab, onTabSelect }) {
   const token = localStorage.getItem("token");

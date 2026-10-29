@@ -3,7 +3,6 @@ import { svgIconClasses } from '@mui/material/SvgIcon';
 import { typographyClasses } from '@mui/material/Typography';
 import { buttonBaseClasses } from '@mui/material/ButtonBase';
 import { chipClasses } from '@mui/material/Chip';
-import { iconButtonClasses } from '@mui/material/IconButton';
 import { gray} from '../themePrimitives';
 
 /* eslint-disable import/prefer-default-export */

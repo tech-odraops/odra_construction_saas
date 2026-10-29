@@ -2,13 +2,11 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
-  Button,
   Dialog,
   DialogContent,
-  IconButton,
-  TextField,
   Typography,
 } from "@mui/material";
+import Button from "../../Components/atoms/Button/Button";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined";
@@ -16,9 +14,9 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import ImageRoundedIcon from "@mui/icons-material/ImageRounded";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
-import ContractorNavbar from "../../Components/ContractorNavbar";
 import usePopup from "../../contexts/usePopup";
 import "./OrganizationProfile.css";
+import Input from "../../Components/atoms/Input/Input";
 
 const ORGANIZATION_LOGO_KEY = "organizationLogo";
 const MAX_LOGO_BYTES = 2 * 1024 * 1024;
@@ -108,16 +106,16 @@ export default function OrganizationProfile() {
 
   return (
     <>
-      <ContractorNavbar />
       <main className="organization-profile">
         <Box className="organization-profile__heading">
-          <IconButton
+          <Button
+            iconOnly
             aria-label="Back to dashboard"
             onClick={() => navigate(-1)}
             className="organization-profile__back"
           >
             <ArrowBackRoundedIcon />
-          </IconButton>
+          </Button>
           <Box>
             <Typography component="h1">Organisation Profile</Typography>
             <Typography component="p">
@@ -142,13 +140,13 @@ export default function OrganizationProfile() {
 
             <Box className="organization-profile__fields">
               <label htmlFor="organization-name">Organisation Name</label>
-              <TextField
+              <Input
                 id="organization-name"
-                fullWidth
                 value={organizationName}
                 onChange={(event) => setOrganizationName(event.target.value)}
+                label="Organisation Name"
                 placeholder="Enter organisation name"
-                inputProps={{ maxLength: 120 }}
+                maxLength={120}
               />
               <Typography component="p">This name will be displayed across your workspace.</Typography>
             </Box>
@@ -185,9 +183,9 @@ export default function OrganizationProfile() {
       >
         <Box className="organization-logo-dialog__heading">
           <Typography component="h2">Add Organisation Logo</Typography>
-          <IconButton aria-label="Close logo options" onClick={() => setLogoDialogOpen(false)}>
+          <Button iconOnly aria-label="Close logo options" onClick={() => setLogoDialogOpen(false)}>
             <CloseRoundedIcon />
-          </IconButton>
+          </Button>
         </Box>
         <DialogContent className="organization-logo-dialog__options">
           <button

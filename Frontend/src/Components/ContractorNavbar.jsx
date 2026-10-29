@@ -8,10 +8,8 @@ import SocialBar from "./SocialBar";
 import {
   AppBar,
   Toolbar,
-  IconButton,
   Typography,
   Box,
-  Button,
   Drawer,
   List,
   ListItem,
@@ -20,6 +18,7 @@ import {
   Select,
   MenuItem
 } from "@mui/material";
+import Button from "./atoms/Button/Button";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -47,7 +46,7 @@ function getOrganizationLogo() {
   }
 }
 
-export default function ContractorNavbar() {
+export default function ContractorNavbar({ dashboard = false }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openDrawer, setOpenDrawer] = React.useState(false);
@@ -73,29 +72,36 @@ export default function ContractorNavbar() {
   return (
     <>
       {/* TOP BAR */}
-      <AppBar position="static" className="contractor-appbar" sx={{ backgroundColor: "var(--palette-background-paper)", color: "var(--color-organization-profile-nav-text)" }}>
-        <Toolbar className="contractor-toolbar" sx={{ justifyContent: 'space-between' }}>
+      <AppBar position="static" className="contractor-appbar" sx={{ backgroundColor: "var(--palette-background-paper)", color: "var(--color-organization-profile-nav-text)", height: "var(--dashboard-header-height)", boxSizing: "border-box", border: dashboard ? "1px solid var(--color-dashboard-border)" : 0, borderLeft: dashboard ? 0 : undefined, borderBottom: "1px solid var(--color-dashboard-border)", borderRadius: 0, boxShadow: "none", m: 0 }}>
+        <Toolbar className="contractor-toolbar" sx={{ justifyContent: 'space-between', height: "100%", minHeight: "0 !important", boxSizing: "border-box", px: { xs: 1.5, md: 2.5 } }}>
           {/* Mobile Menu Icon */}
-          <IconButton
+          <Button
+            iconOnly
             edge="start"
             color="inherit"
-            sx={{ display: { md: "none" } }}
+            className="icon-button-atom--mobile-menu"
             onClick={() => setOpenDrawer(true)}
           >
             <MenuIcon />
-          </IconButton>
+          </Button>
 
           {/* Logo */}
-          <Box className="contractor-wordmark" sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", flexGrow: 1 }} onClick={() => navigate("/contractor/home")}>
+          <Box className="contractor-wordmark" sx={{ display: { xs: "none", md: dashboard ? "none" : "flex" }, alignItems: "center", flexGrow: 1 }} onClick={() => navigate("/contractor/home")}>
             ODRA<span>OPS</span>
           </Box>
+
+          {dashboard && (
+            <Typography sx={{ display: { xs: "none", md: "block" }, fontWeight: 700, fontSize: 20, color: "var(--color-organization-profile-nav-text)", mr: "auto" }}>
+              Dashboard
+            </Typography>
+          )}
 
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 
 
 
             {/* Desktop Menu */}
-            <Box className="contractor-desktop-menu" sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
+            <Box className="contractor-desktop-menu" sx={{ display: { xs: "none", md: dashboard ? "none" : "flex" }, gap: 3 }}>
               {menuItems.map((item) => (
                   <Typography
                     key={item.label}

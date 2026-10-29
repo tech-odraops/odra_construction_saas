@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Box, Typography, Divider , IconButton} from "@mui/material";
+import { Box, Typography, Divider } from "@mui/material";
 import logo from "../assets/Logo/lg-1.png";
 import { useTheme } from "@emotion/react";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -132,5 +132,4 @@ export default function Footer() {
     </footer>
   );
 }
-
 

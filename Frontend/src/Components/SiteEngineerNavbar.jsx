@@ -8,10 +8,8 @@ import SocialBar from "./SocialBar";
 import {
   AppBar,
   Toolbar,
-  IconButton,
   Typography,
   Box,
-  Button,
   Drawer,
   List,
   ListItem,
@@ -20,6 +18,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import Button from "./atoms/Button/Button";
 
 import MenuIcon from "@mui/icons-material/Menu";
 
@@ -51,14 +50,15 @@ export default function SiteEngineerNavbar() {
         sx={{ backgroundColor: "#fff", color: "#202326" }}
       >
         <Toolbar className="contractor-toolbar" sx={{ justifyContent: "space-between" }}>
-          <IconButton
+          <Button
+            iconOnly
             edge="start"
             color="inherit"
-            sx={{ display: { md: "none" } }}
+            className="icon-button-atom--mobile-menu"
             onClick={() => setOpenDrawer(true)}
           >
             <MenuIcon />
-          </IconButton>
+          </Button>
 
           <Box
             className="contractor-wordmark"

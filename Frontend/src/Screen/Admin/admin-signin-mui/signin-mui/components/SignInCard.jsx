@@ -1,6 +1,5 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import MuiCard from '@mui/material/Card';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
@@ -8,6 +7,7 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 import { SitemarkIcon } from './CustomIcons';
+import Button from '../../../../../Components/atoms/Button/Button';
 
 import { useEffect } from 'react';
 import axiosInstance from "../../../../../utils/axiosInstance";

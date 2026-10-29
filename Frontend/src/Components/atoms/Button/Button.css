@@ -4,7 +4,7 @@
   height: var(--button-height);
   padding: var(--button-padding-block) var(--button-padding-inline);
   border: var(--button-border-width) solid transparent;
-  border-radius: var(--button-border-radius);
+  border-radius: var(--dashboard-button-radius, var(--button-border-radius));
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -15,6 +15,7 @@
   line-height: var(--button-line-height);
   letter-spacing: var(--button-letter-spacing);
   cursor: pointer;
+  text-decoration: none;
   transition:
     color var(--motion-fast-duration) var(--motion-easing),
     background-color var(--motion-fast-duration) var(--motion-easing),
@@ -31,72 +32,91 @@
   opacity: var(--effect-disabled-opacity);
 }
 
-.button-atom--primary {
+.button-atom--primary,
+.button-atom--outlined {
   border-color: var(--button-primary-color);
   color: var(--button-primary-color);
   background-color: transparent;
 }
 
 .button-atom--primary:not(:disabled):hover,
-.button-atom--primary.storybook-force-hover {
+.button-atom--primary.storybook-force-hover,
+.button-atom--contained:not(:disabled):hover,
+.button-atom--contained.storybook-force-hover {
   border-color: var(--button-primary-hover-color);
   color: var(--button-primary-hover-text-color);
   background-color: var(--button-primary-hover-color);
 }
 
+.button-atom--contained {
+  border-color: var(--button-primary-color);
+  color: var(--button-primary-hover-text-color);
+  background-color: var(--button-primary-color);
+}
+
+.button-atom--outlined:not(:disabled):hover,
+.button-atom--outlined.storybook-force-hover {
+  border-color: var(--button-primary-hover-color);
+  color: var(--button-primary-hover-color);
+  background-color: var(--palette-action-hover);
+}
+
 .button-atom--primary:not(:disabled):hover .button-atom__icon,
-.button-atom--primary.storybook-force-hover .button-atom__icon {
+.button-atom--primary.storybook-force-hover .button-atom__icon,
+.button-atom--primary:not(:disabled):hover .button-atom__state-icon,
+.button-atom--primary.storybook-force-hover .button-atom__state-icon,
+.button-atom--contained:not(:disabled):hover .button-atom__state-icon,
+.button-atom--contained.storybook-force-hover .button-atom__state-icon {
   filter: brightness(0) invert(1);
+}
+
+.button-atom--no-border,
+.button-atom--no-border:not(:disabled):hover,
+.button-atom--no-border.storybook-force-hover {
+  border-color: transparent;
 }
 
 .button-atom--icon-only {
   width: var(--button-icon-only-width);
+  min-width: var(--button-icon-only-width);
   padding: var(--button-icon-only-padding);
+}
+
+.button-atom--full-width {
+  width: 100%;
+}
+
+.button-atom--compact {
+  width: auto;
+  min-width: 10rem;
+  height: 2.75rem;
+  padding-inline: 1.5rem;
+}
+
+.button-atom--wide {
+  width: min(100%, 15.5rem);
+  height: 2.75rem;
+}
+
+.button-atom__icon,
+.button-atom__state-icon {
+  flex: 0 0 auto;
 }
 
 .button-atom__icon {
   transition: filter var(--motion-fast-duration) var(--motion-easing);
 }
 
-.button-atom__state-icons {
-  display: inline-grid;
-  flex: 0 0 auto;
-  width: var(--button-icon-size);
-  height: var(--button-icon-size);
-}
-
-.button-atom__state-icon {
-  grid-area: 1 / 1;
-  opacity: var(--effect-hidden-opacity);
-  transform: scale(var(--effect-button-icon-initial-scale));
-  transition:
-    opacity var(--motion-standard-duration) var(--motion-easing),
-    transform var(--motion-standard-duration) var(--motion-easing);
-}
-
-.button-atom__state-icon--running {
+.button-atom--running .button-atom__state-icon {
   animation: button-atom-spin var(--motion-spin-duration) var(--motion-linear-easing) infinite;
-  animation-play-state: paused;
 }
 
-.button-atom--running .button-atom__state-icon--running,
-.button-atom--completed .button-atom__state-icon--completed,
-.button-atom--failed .button-atom__state-icon--failed {
-  opacity: var(--effect-visible-opacity);
-  transform: scale(var(--effect-active-scale));
-}
-
-.button-atom--running .button-atom__state-icon--running {
-  animation-play-state: running;
-}
-
-.button-atom--running:not(:disabled):hover .button-atom__state-icon,
-.button-atom--running.storybook-force-hover .button-atom__state-icon,
-.button-atom--completed:not(:disabled):hover .button-atom__state-icon,
-.button-atom--completed.storybook-force-hover .button-atom__state-icon,
-.button-atom--failed:not(:disabled):hover .button-atom__state-icon,
-.button-atom--failed.storybook-force-hover .button-atom__state-icon {
-  filter: brightness(0) invert(1);
+.button-atom--contained .button-atom__state-icon,
+.button-atom--primary .button-atom__state-icon,
+.button-atom--running .button-atom__state-icon,
+.button-atom--completed .button-atom__state-icon,
+.button-atom--failed .button-atom__state-icon {
+  color: inherit;
 }
 
 @keyframes button-atom-spin {
@@ -106,11 +126,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .button-atom__state-icon {
-    transition-duration: var(--motion-reduced-duration);
-  }
-
-  .button-atom__state-icon--running {
+  .button-atom--running .button-atom__state-icon {
     animation: none;
   }
 }
