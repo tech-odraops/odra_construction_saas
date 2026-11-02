@@ -46,7 +46,12 @@ function getOrganizationLogo() {
   }
 }
 
-export default function ContractorNavbar({ dashboard = false }) {
+export default function ContractorNavbar({
+  dashboard = false,
+  showMobileNavigation = true,
+  showMobileDrawer = showMobileNavigation,
+  onMobileMenuClick,
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openDrawer, setOpenDrawer] = React.useState(false);
@@ -75,15 +80,23 @@ export default function ContractorNavbar({ dashboard = false }) {
       <AppBar position="static" className="contractor-appbar" sx={{ backgroundColor: "var(--palette-background-paper)", color: "var(--color-organization-profile-nav-text)", height: "var(--dashboard-header-height)", boxSizing: "border-box", border: dashboard ? "1px solid var(--color-dashboard-border)" : 0, borderLeft: dashboard ? 0 : undefined, borderBottom: "1px solid var(--color-dashboard-border)", borderRadius: 0, boxShadow: "none", m: 0 }}>
         <Toolbar className="contractor-toolbar" sx={{ justifyContent: 'space-between', height: "100%", minHeight: "0 !important", boxSizing: "border-box", px: { xs: 1.5, md: 2.5 } }}>
           {/* Mobile Menu Icon */}
-          <Button
-            iconOnly
-            edge="start"
-            color="inherit"
-            className="icon-button-atom--mobile-menu"
-            onClick={() => setOpenDrawer(true)}
-          >
-            <MenuIcon />
-          </Button>
+          {showMobileNavigation && (
+            <Button
+              iconOnly
+              edge="start"
+              color="inherit"
+              className="icon-button-atom--mobile-menu contractor-mobile-menu"
+              onClick={() => {
+                if (onMobileMenuClick) {
+                  onMobileMenuClick();
+                } else {
+                  setOpenDrawer(true);
+                }
+              }}
+            >
+              <MenuIcon />
+            </Button>
+          )}
 
           {/* Logo */}
           <Box className="contractor-wordmark" sx={{ display: { xs: "none", md: dashboard ? "none" : "flex" }, alignItems: "center", flexGrow: 1 }} onClick={() => navigate("/contractor/home")}>
@@ -137,6 +150,7 @@ export default function ContractorNavbar({ dashboard = false }) {
                 fontSize: "var(--font-body-font-size)",
                 border: 0,
                 cursor: "pointer",
+                display: { xs: dashboard ? "none" : "flex", md: "flex" },
                 "&:hover": { bgcolor: "var(--color-organization-profile-nav-avatar-hover)" },
                 "&:focus-visible": { outline: "var(--control-focus-outline-width) solid var(--palette-primary-main)", outlineOffset: "var(--control-focus-outline-offset)" },
               }}
@@ -149,6 +163,7 @@ export default function ContractorNavbar({ dashboard = false }) {
               variant="contained"
               onClick={logout}
               sx={{
+                display: { xs: "none", md: "inline-flex" },
                 backgroundColor: "var(--palette-primary-main)",
                 color: "var(--palette-primary-contrast-text)",
                 fontWeight: "var(--font-weight-semibold)",
@@ -174,6 +189,7 @@ export default function ContractorNavbar({ dashboard = false }) {
                 },
               }}
               sx={{
+                display: { xs: "none", md: "flex" },
                 ml: 1.5,
                 backgroundColor: "var(--palette-background-paper)",
                 borderRadius: 1,
@@ -188,12 +204,12 @@ export default function ContractorNavbar({ dashboard = false }) {
         </Toolbar>
       </AppBar>
 
-      {/* MOBILE DRAWER */}
-      <Drawer
-        anchor="left"
-        open={openDrawer}
-        onClose={() => setOpenDrawer(false)}
-      >
+      {showMobileDrawer && (
+        <Drawer
+          anchor="left"
+          open={openDrawer}
+          onClose={() => setOpenDrawer(false)}
+        >
         <Box
           sx={{
             width: 260,
@@ -302,7 +318,8 @@ export default function ContractorNavbar({ dashboard = false }) {
             </Box>
           </Box>
         </Box>
-      </Drawer>
+        </Drawer>
+      )}
     </>
   );
 }

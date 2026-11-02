@@ -25,10 +25,14 @@ export default function Button({
   state,
   border = true,
   bgColor,
+  hover = true,
   ...props
 }) {
   const stateIcon = stateIcons[state];
   const hasIcon = Boolean(icon);
+  const hoverClass = typeof hover === "boolean"
+    ? (hover ? "button-atom--hover" : "")
+    : hover;
   const classes = [
     "button-atom",
     `button-atom--${variant}`,
@@ -37,6 +41,7 @@ export default function Button({
     fullWidth && "button-atom--full-width",
     !border && "button-atom--no-border",
     size !== "default" && `button-atom--${size}`,
+    hoverClass,
     className,
   ].filter(Boolean).join(" ");
 

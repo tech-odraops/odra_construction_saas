@@ -3,6 +3,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import { Box, CircularProgress, Typography, Tabs, Tab, Tooltip } from "@mui/material";
 import Button from "../../Components/atoms/Button/Button";
+import { Icon } from "../../Components/atoms/Icon/Icon";
 import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
@@ -15,16 +16,6 @@ function ProjectBuildingIcon() {
       <path d="M4 21V3.5c0-.55.45-1 1-1h9c.55 0 1 .45 1 1V21M15 9h4c.55 0 1 .45 1 1v11M2.5 21h19" />
       <path d="M7 6h1M11 6h1M7 9h1M11 9h1M7 12h1M11 12h1M7 15h1M11 15h1M17 12h1M17 15h1M17 18h1" />
       <path d="M9.5 21v-3h2v3" />
-    </svg>
-  );
-}
-
-function ProjectEditIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M13.5 5H5.25A1.25 1.25 0 0 0 4 6.25v12.5A1.25 1.25 0 0 0 5.25 20h12.5A1.25 1.25 0 0 0 19 18.75V11.5" />
-      <path d="m10 14 1-3.2L18.7 3a1.55 1.55 0 0 1 2.2 2.2l-7.8 7.7L10 14Z" />
-      <path d="M7 17h7" />
     </svg>
   );
 }
@@ -111,10 +102,10 @@ export default function Project() {
                 </div>
                 <div className="project-card-actions" onClick={(event) => event.stopPropagation()}>
                   <Tooltip title={t("project.open_project")}>
-                    <Button iconOnly aria-label="Open project" onClick={() => navigate(`/contractor/project/${project._id}`)}><ProjectEditIcon /></Button>
+                    <Button iconOnly border={false} aria-label="Open project" onClick={() => navigate(`/contractor/project/${project._id}`)}><Icon variant="pencil" size="button" gradient={null} /></Button>
                   </Tooltip>
                   <Tooltip title="Delete Project">
-                    <Button iconOnly aria-label="Delete project" className="project-delete-button" onClick={() => handleDelete(project._id)}><DeleteForeverRoundedIcon /></Button>
+                    <Button iconOnly border={false} aria-label="Delete project" className="project-delete-button" onClick={() => handleDelete(project._id)}><DeleteForeverRoundedIcon /></Button>
                   </Tooltip>
                 </div>
               </article>

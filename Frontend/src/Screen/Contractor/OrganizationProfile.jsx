@@ -110,6 +110,8 @@ export default function OrganizationProfile() {
         <Box className="organization-profile__heading">
           <Button
             iconOnly
+            border={false}
+            hover={false}
             aria-label="Back to dashboard"
             onClick={() => navigate(-1)}
             className="organization-profile__back"
@@ -139,7 +141,6 @@ export default function OrganizationProfile() {
             </button>
 
             <Box className="organization-profile__fields">
-              <label htmlFor="organization-name">Organisation Name</label>
               <Input
                 id="organization-name"
                 value={organizationName}

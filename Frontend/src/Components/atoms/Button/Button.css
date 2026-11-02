@@ -39,9 +39,9 @@
   background-color: transparent;
 }
 
-.button-atom--primary:not(:disabled):hover,
+.button-atom--primary.button-atom--hover:not(:disabled):hover,
 .button-atom--primary.storybook-force-hover,
-.button-atom--contained:not(:disabled):hover,
+.button-atom--contained.button-atom--hover:not(:disabled):hover,
 .button-atom--contained.storybook-force-hover {
   border-color: var(--button-primary-hover-color);
   color: var(--button-primary-hover-text-color);
@@ -54,18 +54,18 @@
   background-color: var(--button-primary-color);
 }
 
-.button-atom--outlined:not(:disabled):hover,
+.button-atom--outlined.button-atom--hover:not(:disabled):hover,
 .button-atom--outlined.storybook-force-hover {
   border-color: var(--button-primary-hover-color);
   color: var(--button-primary-hover-color);
   background-color: var(--palette-action-hover);
 }
 
-.button-atom--primary:not(:disabled):hover .button-atom__icon,
+.button-atom--primary.button-atom--hover:not(:disabled):hover .button-atom__icon,
 .button-atom--primary.storybook-force-hover .button-atom__icon,
-.button-atom--primary:not(:disabled):hover .button-atom__state-icon,
+.button-atom--primary.button-atom--hover:not(:disabled):hover .button-atom__state-icon,
 .button-atom--primary.storybook-force-hover .button-atom__state-icon,
-.button-atom--contained:not(:disabled):hover .button-atom__state-icon,
+.button-atom--contained.button-atom--hover:not(:disabled):hover .button-atom__state-icon,
 .button-atom--contained.storybook-force-hover .button-atom__state-icon {
   filter: brightness(0) invert(1);
 }
@@ -73,6 +73,7 @@
 .button-atom--no-border,
 .button-atom--no-border:not(:disabled):hover,
 .button-atom--no-border.storybook-force-hover {
+  border-width: 0;
   border-color: transparent;
 }
 
