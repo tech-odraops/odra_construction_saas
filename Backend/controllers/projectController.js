@@ -245,22 +245,59 @@ exports.createProject = async (req, res) => {
 // get all projects for contractor
 exports.getProject = async (req, res) => {
     try {
-        const contractorId = req.user.User_id;
-        const contratProjects = await Project.find({ organizationId: req.user.organizationId })
-            .populate('siteEngineer', 'name email')
-            .populate('siteEngineers', 'name email')
-            .lean();
+        const search = String(req.query.search || "").trim();
+        const status = String(req.query.status || "all").trim();
+        const page = Math.max(1, Number(req.query.page) || 1);
+        const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 10));
 
-        if (contratProjects.length === 0) {
+        const filter = {
+            organizationId: req.user.organizationId
+        };
+
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } },
+                { location: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        if (status && status !== "all") {
+            filter.status = status;
+        }
+
+        const skip = (page - 1) * limit;
+
+        const [projects, total] = await Promise.all([
+            Project.find(filter)
+                .populate('siteEngineers', 'name email')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Project.countDocuments(filter)
+        ]);
+
+        if (projects.length === 0) {
             return res.status(200).json({
                 success: true,
                 projects: [],
+                total: 0,
+                page,
+                limit,
                 message: "No projects created yet."
             });
         }
 
-        return res.status(200).json({ success: true, projects: contratProjects });
+        return res.status(200).json({
+            success: true,
+            projects,
+            total,
+            page,
+            limit
+        });
     } catch (error) {
+        console.error("Get project error:", error);
         return res.status(500).json({ success: false, error });
     }
 };
@@ -274,10 +311,7 @@ exports.getProjectSE = async (req, res) => {
         // This makes queries faster and uses less memory when you only need to read data (not use Mongoose document methods).
         const allProject = await Project.find({
             organizationId: req.user.organizationId,
-            $or: [
-                { siteEngineers: siteEngineerId },
-                { siteEngineer: siteEngineerId }
-            ]
+            siteEngineers: siteEngineerId
         })
             .select("title status contractor")
             .populate('contractor', 'name')
@@ -477,8 +511,7 @@ exports.deleteProject = async (req, res) => {
             const siteEngineerIds = [
                 ...(Array.isArray(project.siteEngineers)
                     ? project.siteEngineers
-                    : []),
-                project.siteEngineer
+                    : [])
             ]
                 .filter(Boolean)
                 .map((siteEngineerId) => siteEngineerId.toString());
@@ -879,7 +912,7 @@ exports.addMiscellaneousItem = async (req, res) => {
 
         const project = await Project.findById(projectId)
             .populate("contractor", "_id name")
-            .populate("siteEngineer", "_id name");
+            .populate("siteEngineers", "_id name");
 
         if (!project) {
             return res.status(404).json({
@@ -946,7 +979,7 @@ exports.updateMiscellaneousStatus = async (req, res) => {
 
         const project = await Project.findById(projectId)
             .populate("contractor", "_id name")
-            .populate("siteEngineer", "_id name");
+            .populate("siteEngineers", "_id name");
 
         if (!project) {
             return res.status(404).json({
@@ -1043,8 +1076,7 @@ exports.updateProjectTitle = async (req, res) => {
         const io = req.app.get("io");
 
         const siteEngineerIds = [
-            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : []),
-            project.siteEngineer
+            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : [])
         ]
             .filter(Boolean)
             .map((siteEngineerId) => siteEngineerId.toString());

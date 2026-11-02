@@ -1,7 +1,7 @@
 import * as React from 'react';
 import dayjs from 'dayjs';
-import Button from '@mui/material/Button';
 import CalendarTodayRoundedIcon from '@mui/icons-material/CalendarTodayRounded';
+import Button from '../../../../Components/atoms/Button/Button';
 
 export default function CustomDatePicker() {
   const today = dayjs().format('MMM DD, YYYY');
@@ -11,7 +11,7 @@ export default function CustomDatePicker() {
       variant="outlined"
       size="small"
       startIcon={<CalendarTodayRoundedIcon fontSize="small" />}
-      sx={{ minWidth: 'fit-content' }}
+      style={{ minWidth: 'fit-content' }}
     >
       {today}
     </Button>

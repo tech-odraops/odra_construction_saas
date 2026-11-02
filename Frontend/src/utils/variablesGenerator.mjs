@@ -12,6 +12,7 @@ import {
   effects,
   shape,
   fontWeight,
+  activateAccount,
 } from "../shared-theme/themePrimitives.js";
 
 const OUTPUT = "src/shared-theme/variables.css";
@@ -109,6 +110,11 @@ const sections = [
     title: "FONT WEIGHT",
     prefix: "font-weight",
     tokens: fontWeight,
+  },
+  {
+    title: "ACTIVATE ACCOUNT",
+    prefix: "activate-account",
+    tokens: activateAccount,
   }
 ];
 

@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
-import ContractorNavbar from "../../Components/ContractorNavbar";
 import Footer from "../../Components/Footer";
 import { io } from "socket.io-client";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { toast } from "react-toastify";
 import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+import Button from "../../Components/atoms/Button/Button";
 import Box from "@mui/material/Box";
 import { useTranslation } from "react-i18next";
 import FullScreenLoader from "../../Components/FullScreenLoader";
@@ -116,7 +115,6 @@ export default function ViewReport() {
         backgroundColor: "#f9fafb",
       }}
     >
-      <ContractorNavbar />
 
       {/* HEADER */}
       <Box className="container py-5">

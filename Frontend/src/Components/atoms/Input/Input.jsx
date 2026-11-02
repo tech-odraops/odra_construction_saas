@@ -1,8 +1,8 @@
 import { useId, useState } from "react";
-import { IconButton } from "@mui/material";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import { Icon } from "../Icon/Icon";
+import Button from "../Button/Button";
 import { colors, componentStyles } from "../../../shared-theme/themePrimitives";
 import "./Input.css";
 import i18n from "../../../i18n";
@@ -27,6 +27,8 @@ export default function Input({
   rows = 4,
   validationState,
   validationMessage,
+  select = false,
+  children,
   "aria-describedby": ariaDescribedBy,
   ...props
 }) {
@@ -41,12 +43,14 @@ export default function Input({
     : { ...ValidationMessages, success: undefined }[validationState];
   
   const isTextarea = type === "textarea";
+  const isSelect = select;
   const isPassword = type === "password";
   const inputType = isPassword && showPassword ? "text" : type;
 
   const classes = [
     "input-atom",
     isTextarea && "input-atom--textarea",
+    isSelect && "input-atom--select",
     disabled && "input-atom--disabled",
     validationState && `input-atom--${validationState}`,
     className,
@@ -98,6 +102,18 @@ export default function Input({
             aria-invalid={validationState === "error" || undefined}
             aria-describedby={describedBy}
           />
+        ) : isSelect ? (
+          <select
+            {...props}
+            id={inputId}
+            required={required}
+            className="input-atom__control"
+            disabled={disabled}
+            aria-invalid={validationState === "error" || undefined}
+            aria-describedby={describedBy}
+          >
+            {children}
+          </select>
         ) : (
           <input
             {...props}
@@ -112,10 +128,12 @@ export default function Input({
         )}
 
         {isPassword && (
-          <IconButton
+          <Button
+            iconOnly
+            border={false}
             className="input-atom__password-toggle"
             type="button"
-            size="small"
+            bgColor="transparent"
             aria-label={showPassword ? "Hide password" : "Show password"}
             onClick={() => setShowPassword((visible) => !visible)}
             disabled={disabled}
@@ -125,7 +143,7 @@ export default function Input({
             ) : (
               <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />
             )}
-          </IconButton>
+          </Button>
         )}
 
         {!isTextarea && (endIcon || validationState === "success") && (

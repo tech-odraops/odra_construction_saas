@@ -12,9 +12,8 @@ export default {
       control: 'select',
       options: ICON_NAMES,
     },
-    'icon-only-button': {
-      control: 'select',
-      options: ICON_NAMES,
+    iconOnly: {
+      control: 'boolean',
     },
     state: {
       control: 'select',
@@ -60,7 +59,8 @@ export const Failed = {
 
 export const IconOnly = {
   args: {
-    'icon-only-button': 'plus-math',
+    icon: 'plus-math',
+    iconOnly: true,
     'aria-label': 'Add',
   },
 };
@@ -86,7 +86,7 @@ export const Gallery = {
       <Button>Primary</Button>
       <Button className="storybook-force-hover">Primary hover</Button>
       <Button icon="check-mark">With icon</Button>
-      <Button aria-label="Add item" iconOnlyButton="plus-math" />
+      <Button aria-label="Add item" icon="plus-math" iconOnly />
       <Button disabled>Disabled</Button>
       <Button state="running">Running</Button>
       <Button state="completed">Completed</Button>

@@ -13,7 +13,7 @@ export default {
 export const Success = {};
 
 export const Error = {
-  args: { title: 'Success !', message: 'logged in successfully', variant: 'error' },
+  args: { title: 'Error !', message: 'logged in successfully', variant: 'error' },
 };
 
 export const Gallery = {

@@ -10,7 +10,6 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import {io} from "socket.io-client"
-import ContractorNavbar from "../../Components/ContractorNavbar";
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -68,7 +67,6 @@ export default function ContractorAttendance() {
 
     return (
         <>
-          <ContractorNavbar />
 
           <Box
             sx={{

@@ -2,11 +2,12 @@ import React from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import axiosInstance from "../utils/axiosInstance"
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import usePopup from "../contexts/usePopup";
 import { getFCMToken } from "../services/notificationService";
 
 export default function GoogleLoginButton() {
   const navigate = useNavigate();
+  const { showPopup } = usePopup();
 
   const login = useGoogleLogin({
     flow: "auth-code", // requests authorization code (not access token)
@@ -33,22 +34,38 @@ export default function GoogleLoginButton() {
             });
           }
 
-          toast.success("Logged in with Google successfully!");
+          showPopup({
+            variant: "success",
+            title: "Success !",
+            message: "Logged in with Google successfully!",
+          });
 
           navigate(res.data.redirect);
         }else{
           console.log("Error during google login");
-          toast.error(res.data?.error || "Error during Google login");
+          showPopup({
+            variant: "error",
+            title: "Login failed",
+            message: res.data?.error || "Error during Google login",
+          });
           navigate(res.data.redirect);
         }
       } catch (err) {
         console.error("Error during backend exchange:", err);
-        toast.error("Google login failed. Please try again.");
+        showPopup({
+          variant: "error",
+          title: "Login failed",
+          message: "Google login failed. Please try again.",
+        });
       }
     },
     onError: (error) => {
       console.error("Google Login Failed:", error);
-      toast.error("Google login failed. Please try again.");
+      showPopup({
+        variant: "error",
+        title: "Login failed",
+        message: "Google login failed. Please try again.",
+      });
       navigate("/");
     },
   });

@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "../../utils/axiosInstance";
-import ContractorNavbar from "../../Components/ContractorNavbar";
 import InventoryHistory from "./InventoryHistory";
 import Footer from "../../Components/Footer";
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import {
   Typography,
-  Paper,
-  TextField,
-  Button
+  Paper
 } from "@mui/material";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import InventoryBreakdownModal from "../../Components/InventoryBreakdownModal";
+import Button from "../../Components/atoms/Button/Button";
+import Input from "../../Components/atoms/Input/Input";
 
 
 export default function ProjectInventory() {
@@ -141,7 +139,6 @@ export default function ProjectInventory() {
 
   return (
     <>
-      <ContractorNavbar />
       <main className="project-inventory-page">
         <div className="project-inventory-main">
           <header className="project-inventory-heading">
@@ -174,13 +171,13 @@ export default function ProjectInventory() {
                   { label: t("inventory.price_per_unit"), value: pricePerUnit, change: setPricePerUnit, icon: "₹", type: "number" },
                   { label: "Purchase Date", value: purchaseDate, change: setPurchaseDate, icon: "▣", type: "date" },
                 ].map(({ label, value, change, icon, type }) => (
-                  <div className="inventory-input-row" key={label}><span className="inventory-input-icon">{icon}</span><TextField label={label} type={type || "text"} value={value} onChange={(e) => change(e.target.value)} fullWidth size="small" InputLabelProps={type === "date" ? { shrink: true } : undefined} inputProps={type === "number" ? { min: 0 } : undefined} /></div>
+                  <div className="inventory-input-row" key={label}><span className="inventory-input-icon">{icon}</span><Input label={label} type={type || "text"} value={value} onChange={(e) => change(e.target.value)} min={type === "number" ? 0 : undefined} /></div>
                 ))}
                 <Button className="inventory-submit-button" fullWidth variant="contained" onClick={addItem}>{t("inventory.add_material")}</Button>
               </div>
             </Paper>
             <Paper className="inventory-list-card" elevation={0}>
-              <div className="inventory-list-heading"><Typography component="h2" className="inventory-section-title">{t("inventory.current_inventory")}</Typography><Button className="inventory-history-button" variant="outlined" component={Link} to={`/contractor/projects/${projectId}/inventory-history`}>{t("inventory.view_history")}</Button></div>
+              <div className="inventory-list-heading"><Typography component="h2" className="inventory-section-title">{t("inventory.current_inventory")}</Typography><Button className="inventory-history-button" component={Link} to={`/contractor/projects/${projectId}/inventory-history`}>{t("inventory.view_history")}</Button></div>
               {!items.length && <Typography color="text.secondary">{t("inventory.no_materials")}</Typography>}
               <div className="inventory-items">{items.map((item) => <div className="inventory-item-row" key={item._id}><span className="inventory-item-icon">⬡</span><div className="inventory-item-name"><Typography>{item.name}</Typography><Typography>{item.unit}</Typography></div><div className="inventory-item-quantity"><Typography>{item.availableQuantity} / {item.totalQuantity}</Typography>{item.isLowStock && <Typography className="inventory-low-stock">⚠ {t("inventory.low_stock")}</Typography>}</div></div>)}</div>
             </Paper>

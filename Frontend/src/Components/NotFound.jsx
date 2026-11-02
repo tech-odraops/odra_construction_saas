@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Button, Stack } from "@mui/material";
+import { Box, Typography, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 

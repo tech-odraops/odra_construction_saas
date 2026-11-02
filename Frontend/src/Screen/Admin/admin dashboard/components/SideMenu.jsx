@@ -11,16 +11,19 @@ import MenuContent from './MenuContent';
 import OptionsMenu from './OptionsMenu';
 import { jwtDecode } from "jwt-decode";
 
-const drawerWidth = 240;
+const drawerWidth = 'var(--dashboard-sidebar-width)';
 
 const Drawer = styled(MuiDrawer)({
   width: drawerWidth,
   flexShrink: 0,
   boxSizing: 'border-box',
-  mt: 10,
+  position: 'static',
   [`& .${drawerClasses.paper}`]: {
     width: drawerWidth,
     boxSizing: 'border-box',
+    position: 'static',
+    height: 'auto',
+    minHeight: '100%',
   },
 });
 
@@ -39,15 +42,19 @@ export default function SideMenu({ selectedTab, onTabSelect }) {
       sx={{
         display: { xs: 'none', md: 'block' },
         [`& .${drawerClasses.paper}`]: {
-          backgroundColor: 'background.paper',
+          backgroundColor: 'var(--color-dashboard-sidebar-surface)',
+          border: '1px solid var(--color-dashboard-border)',
+          borderRadius: 'var(--dashboard-container-radius)',
+          overflow: 'hidden',
         },
       }}
     >
       <Box
         sx={{
           display: 'flex',
-          mt: 'calc(var(--template-frame-height, 0px) + 4px)',
-          p: 1.5,
+          minHeight: 'var(--dashboard-header-height)',
+          px: 2,
+          alignItems: 'center',
         }}
       >
         <SiteLogo />

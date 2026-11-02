@@ -3,14 +3,11 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
-import { Button, Typography } from "@mui/material";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import TextSnippetOutlinedIcon from "@mui/icons-material/TextSnippetOutlined";
-import ContractorNavbar from "../../Components/ContractorNavbar";
+import { Typography } from "@mui/material";
 import Input from "../../Components/atoms/Input/Input";
 import axiosInstance from "../../utils/axiosInstance";
-import { emailValidator, requiredValidator } from "../../utils/validation";
 import projectArtwork from "../../assets/Add New Project (2).png";
+import Button from "../../Components/atoms/Button/Button";
 
 export default function AddProject() {
   const [title, setTitle] = useState("");
@@ -53,40 +50,6 @@ export default function AddProject() {
     }
   };
 
-  const handleInputChange = (id, setValue) => (event) => {
-    setValue(event.target.value);
-    setValidationStates((prev) => ({
-      ...prev,
-      [id]: validateProjectField(id, event.target.value) ? "success" : "error",
-    }));
-  };
-
-  const handleInputBlur = (id) => (event) => {
-    setValidationStates((prev) => ({
-      ...prev,
-      [id]: validateProjectField(id, event.target.value) ? "success" : "error",
-    }));
-  };
-
-  const validateProjectField = (id, value) => {
-    if (id === "engineer-email") {
-      let required = requiredValidator(value);
-      setValidationMessages((prev) => ({
-        ...prev,
-        [id]: required ? undefined : t("validation.required"),
-      }));
-      if (!required) return required;
-      let emailValid = emailValidator(value);
-      setValidationMessages((prev) => ({
-        ...prev,
-        [id]: emailValid ? undefined : t("validation.invalid_email"),
-      }));
-      if (!emailValid) return emailValid;
-      return required && emailValid;
-    }
-    return requiredValidator(value);
-  };
-
   const fields = [
     {
       id: "project-title",
@@ -94,7 +57,6 @@ export default function AddProject() {
       placeholder: t("project.enter_title"),
       value: title,
       setValue: setTitle,
-      icon: DescriptionOutlinedIcon,
       type: "text",
     },
     {
@@ -103,7 +65,6 @@ export default function AddProject() {
       placeholder: t("project.enter_description"),
       value: description,
       setValue: setDescription,
-      icon: TextSnippetOutlinedIcon,
       multiline: true,
     },
   ];
@@ -115,7 +76,6 @@ export default function AddProject() {
         "--project-art": `url("${projectArtwork}")`,
       }}
     >
-      <ContractorNavbar />
 
       <main className="add-project-main">
         <section className="add-project-card">
@@ -142,52 +102,18 @@ export default function AddProject() {
               onSubmit={handleSubmit}
             >
               {fields.map(
-                ({
-                  id,
-                  label,
-                  placeholder,
-                  value,
-                  setValue,
-                  icon: Icon,
-                  multiline,
-                  type,
-                }) => (
-                  <div
-                    className="add-project-field"
+                ({ id, label, placeholder, value, setValue, multiline, type }) => (
+                  <Input
                     key={id}
-                  >
-                    <span className="add-project-field-icon">
-                      <Icon />
-                    </span>
-
-                    <div className="add-project-control">
-                      <label htmlFor={id}>{label}</label>
-
-                      {multiline ? (
-                        <textarea
-                          id={id}
-                          rows="4"
-                          placeholder={placeholder}
-                          required
-                          value={value}
-                          onChange={(event) =>
-                            setValue(event.target.value)
-                          }
-                        />
-                      ) : (
-                        <input
-                          id={id}
-                          type={type}
-                          placeholder={placeholder}
-                          required
-                          value={value}
-                          onChange={(event) =>
-                            setValue(event.target.value)
-                          }
-                        />
-                      )}
-                    </div>
-                  </div>
+                    id={id}
+                    label={label}
+                    type={multiline ? "textarea" : type}
+                    rows={4}
+                    placeholder={placeholder}
+                    required
+                    value={value}
+                    onChange={(event) => setValue(event.target.value)}
+                  />
                 )
               )}
 

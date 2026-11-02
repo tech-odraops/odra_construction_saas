@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../utils/axiosInstance";
-import ContractorNavbar from "../../Components/ContractorNavbar";
-import { useNavigate } from "react-router-dom";
-import { Box, CircularProgress, Typography, Button, Tabs, Tab, IconButton, Tooltip } from "@mui/material";
+import { Link, useNavigate } from "react-router-dom";
+import { Box, CircularProgress, Typography, Tabs, Tab, Tooltip } from "@mui/material";
+import Button from "../../Components/atoms/Button/Button";
 import { toast } from "react-toastify";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
@@ -77,14 +77,13 @@ export default function Project() {
 
   return (
     <div className="projects-page">
-      <ContractorNavbar />
       <main className="projects-main">
         <header className="projects-header">
           <div>
             <Typography component="h1" className="projects-title">{t("project.projects")}</Typography>
             <Typography component="p" className="projects-subtitle">{t("project.manage_projects")}</Typography>
           </div>
-          <Button className="projects-add-button" variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/contractor/add-project")}>
+          <Button className="projects-add-button" component={Link} to="/contractor/add-project" startIcon={<AddIcon />}>
             Add New Project
           </Button>
         </header>
@@ -112,10 +111,10 @@ export default function Project() {
                 </div>
                 <div className="project-card-actions" onClick={(event) => event.stopPropagation()}>
                   <Tooltip title={t("project.open_project")}>
-                    <IconButton aria-label="Open project" onClick={() => navigate(`/contractor/project/${project._id}`)}><ProjectEditIcon /></IconButton>
+                    <Button iconOnly aria-label="Open project" onClick={() => navigate(`/contractor/project/${project._id}`)}><ProjectEditIcon /></Button>
                   </Tooltip>
                   <Tooltip title="Delete Project">
-                    <IconButton aria-label="Delete project" className="project-delete-button" onClick={() => handleDelete(project._id)}><DeleteForeverRoundedIcon /></IconButton>
+                    <Button iconOnly aria-label="Delete project" className="project-delete-button" onClick={() => handleDelete(project._id)}><DeleteForeverRoundedIcon /></Button>
                   </Tooltip>
                 </div>
               </article>

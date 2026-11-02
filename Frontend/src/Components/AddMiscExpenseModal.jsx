@@ -6,11 +6,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button,
   Box,
 } from "@mui/material";
 
 import Input from "./atoms/Input/Input";
+import Button from "./atoms/Button/Button";
 import axiosInstance from "../utils/axiosInstance";
 import { requiredValidator } from "../utils/validation";
 import { toast } from "react-toastify";
@@ -120,7 +120,7 @@ export default function AddMiscExpenseModal({
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={onClose} variant="outlined">Cancel</Button>
 
         <Button variant="contained" type="submit" form="misc-expense-form">
           Add Expense

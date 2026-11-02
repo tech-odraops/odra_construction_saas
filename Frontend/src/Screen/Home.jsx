@@ -1,5 +1,6 @@
 import React from "react";
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
+import Button from "../Components/atoms/Button/Button";
 import { Link } from "react-router-dom";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
@@ -33,7 +34,7 @@ export default function Home() {
               <Typography className="home-intro">
                 <strong>ODRAOPS</strong> delivers reliable construction,<br className="home-copy-break" /> infrastructure, and <strong>resource management</strong><br className="home-copy-break" /> solutions.
               </Typography>
-              <Button component={Link} to="/Login" variant="contained" className="home-cta">Get Started</Button>
+              <Button component={Link} to="/Login" className="home-cta">Get Started</Button>
             </Box>
             <Box className="home-machine-wrap" aria-hidden="true">
               <Box className="home-brand-panel"><span>ODRAOPS</span></Box>
@@ -62,7 +63,7 @@ export default function Home() {
           <Box className="home-bottom-cta">
             <Typography component="h2">READY TO STREAMLINE YOUR <span>CONSTRUCTION WORKFLOW?</span></Typography>
             <Typography>Start managing attendance, projects, labour and inventory more efficiently today.</Typography>
-            <Button component={Link} to="/Login" variant="contained" className="home-cta">Get Started</Button>
+            <Button component={Link} to="/Login" className="home-cta">Get Started</Button>
           </Box>
         </Container>
       </main>

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
-import ContractorNavbar from "../../Components/ContractorNavbar";
-import { Box, Typography, Paper, CircularProgress, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
+import { Box, Typography, Paper, CircularProgress } from "@mui/material";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import axiosInstance from "../../utils/axiosInstance";
 import workerImage from "../../assets/Worker.png";
 import { useTranslation } from "react-i18next";
+import Button from "../../Components/atoms/Button/Button";
 
 const fallbackWorkers = [
   { _id: "fallback-1", name: "Raju Sahoo", phone: "9876543210", currentProjectId: { title: "Basudha Tower" } },
@@ -18,7 +17,6 @@ const fallbackWorkers = [
 
 export default function ContractorWorkers() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const [workers, setWorkers] = useState(fallbackWorkers);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +42,6 @@ export default function ContractorWorkers() {
 
   return (
     <div className="workers-page" style={{ "--workers-art": `url("${workerImage}")` }}>
-      <ContractorNavbar />
       <main className="workers-layout">
         <div className="workers-art-panel" role="img" aria-label="Site engineer at a construction project" />
         <section className="workers-content-panel">
@@ -88,7 +85,7 @@ export default function ContractorWorkers() {
                   </Table>
                 </TableContainer>
                 <div className="workers-footer-actions">
-                  <Button className="workers-add-button" variant="contained" startIcon={<AddIcon />} onClick={() => navigate("/contractor/add-worker")}>
+                  <Button className="workers-add-button" component={Link} to="/contractor/add-worker" startIcon={<AddIcon />}>
                     Add Worker
                   </Button>
                 </div>

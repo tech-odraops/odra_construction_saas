@@ -21,6 +21,22 @@ export default function MenuContent({ selectedTab = 'home', onTabSelect }) {
             <ListItemButton
               selected={selectedTab === item.id}
               onClick={() => onTabSelect && onTabSelect(item.id)}
+              sx={{
+                borderRadius: 1.5,
+                mb: 0.5,
+                '&.Mui-selected': {
+                  color: 'var(--color-dashboard-nav-active-border)',
+                  backgroundColor: 'var(--color-dashboard-nav-active)',
+                  borderLeft: '3px solid var(--color-dashboard-nav-active-border)',
+                  '&:hover': {
+                    backgroundColor: 'var(--color-dashboard-nav-active)',
+                  },
+                },
+                '& .MuiListItemIcon-root': {
+                  minWidth: 36,
+                  color: 'inherit',
+                },
+              }}
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />

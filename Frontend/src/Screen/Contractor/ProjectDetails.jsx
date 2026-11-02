@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import ContractorNavbar from '../../Components/ContractorNavbar';
 import Footer from '../../Components/Footer';
 import WageModal from "../../Components/WageModal";
 import { useParams, useNavigate } from 'react-router-dom';
-import { Box, CircularProgress, Typography, Button } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import Button from '../../Components/atoms/Button/Button';
 import { toast } from 'react-toastify';
 import { io } from 'socket.io-client';
 import ChatModal from '../../Components/ChatModal';
@@ -38,6 +38,15 @@ function getAssignedSiteEngineers(project) {
     seenIds.add(normalizedId);
     return true;
   });
+}
+
+function getAssignedSiteEngineerIds(project) {
+  return new Set(
+    getAssignedSiteEngineers(project)
+      .map((engineer) => (typeof engineer === "object" ? engineer?._id : engineer))
+      .filter(Boolean)
+      .map((id) => id.toString())
+  );
 }
 
 function OverviewBuildingIcon() {
@@ -89,6 +98,7 @@ export default function ProjectDetails() {
   const overviewTitle = t("project.project_overview");
   const overviewTitleSplit = overviewTitle.lastIndexOf(" ");
   const assignedSiteEngineers = getAssignedSiteEngineers(project);
+  const assignedSiteEngineerIds = getAssignedSiteEngineerIds(project);
 
   const handleCompleteProject = async () => {
     const confirm = window.confirm(
@@ -171,6 +181,12 @@ export default function ProjectDetails() {
 
   const assignSiteEngineer = async (member) => {
     if (!member?._id) return;
+
+    if (assignedSiteEngineerIds.has(member._id)) {
+      toast.info("This Site Engineer is already assigned to the project.");
+      return;
+    }
+
     setAssigningMemberId(member._id);
 
     try {
@@ -308,7 +324,6 @@ export default function ProjectDetails() {
   if (!project) {
     return (
       <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-        <ContractorNavbar />
         <Box className="container py-5">
           <Typography variant="h6" color="error">
             {t("project.unable_load")}
@@ -329,7 +344,6 @@ export default function ProjectDetails() {
         backgroundColor: "#f9fafb",
       }}
     >
-      <ContractorNavbar />
 
       <Box className="project-overview-main">
         {/* HEADER */}
@@ -402,13 +416,15 @@ export default function ProjectDetails() {
                     <Typography variant="body2" color="text.secondary">{member.email}</Typography>
                     <Typography variant="caption" color="text.secondary">{member.role}</Typography>
                   </Box>
-                  <Button
-                    variant="contained"
-                    disabled={Boolean(assigningMemberId)}
-                    onClick={() => assignSiteEngineer(member)}
-                  >
-                    {assigningMemberId === member._id ? "Assigning..." : "Assign"}
-                  </Button>
+                  {!assignedSiteEngineerIds.has(member._id) && (
+                    <Button
+                      variant="contained"
+                      disabled={Boolean(assigningMemberId)}
+                      onClick={() => assignSiteEngineer(member)}
+                    >
+                      {assigningMemberId === member._id ? "Assigning..." : "Assign"}
+                    </Button>
+                  )}
                 </Box>
               )) : (
                 <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>

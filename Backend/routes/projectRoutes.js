@@ -62,18 +62,56 @@ router.post(
     projectController.createProject
 );
 
-// get all project
+// get all project and search
 /**
  * @openapi
  * /projects:
  *   get:
  *     tags:
  *       - Projects
- *     summary: List projects for the manager's organization
- *     description: Manager only.
+ *     summary: List and search projects for the founder's organization
+ *     description: Manager only. Supports filtering by search text, status, page, and limit.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "bridge"
+ *         description: Search by project title, description, or location.
+ *       - in: query
+ *         name: status
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - Ongoing
+ *             - Completed
+ *             - all
+ *           default: all
+ *         description: Optional project status filter.
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 20
+ *           default: 10
+ *         description: Number of projects per page.
  *     responses:
  *       "200":
- *         description: Project list; projects is empty when no projects exist.
+ *         description: Project list or filtered search results.
  *         content:
  *           application/json:
  *             schema:
@@ -88,6 +126,15 @@ router.post(
  *                     $ref: "#/components/schemas/Project"
  *                 message:
  *                   type: string
+ *                 total:
+ *                   type: integer
+ *                   example: 12
+ *                 page:
+ *                   type: integer
+ *                   example: 1
+ *                 limit:
+ *                   type: integer
+ *                   example: 10
  *       "500":
  *         $ref: "#/components/responses/InternalServerError"
  */

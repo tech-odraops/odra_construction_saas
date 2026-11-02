@@ -476,6 +476,11 @@ main,
   color: #fff;
 }
 
+.contractor-appbar .MuiAvatar-root.contractor-profile-avatar {
+  color: #c2410c;
+  font-weight: 700;
+}
+
 .contractor-appbar .MuiButton-contained {
   min-height: 28px;
   padding: 4px 12px;

@@ -6,11 +6,15 @@ import "react-toastify/dist/ReactToastify.css";
 
 import AdminRoute from "./utils/AdminRoute";
 import { onForegroundMessage, resolveNotificationUrl } from "./services/notificationService";
+import PopupProvider from "./contexts/PopupProvider";
+import Popup from "./Components/atoms/Popup/Popup";
+import usePopup from "./contexts/usePopup";
 
 const Home = lazy(() => import("./Screen/Home"));
 const Login = lazy(() => import("./Screen/Login"));
 
 const Contractor = lazy(() => import("./Screen/Contractor/Contractor"));
+const OrganizationProfile = lazy(() => import("./Screen/Contractor/OrganizationProfile"));
 const Project = lazy(() => import("./Screen/Contractor/Project"));
 const ProjectDetails = lazy(() => import("./Screen/Contractor/ProjectDetails"));
 const AddProject = lazy(() => import("./Screen/Contractor/AddProject"));
@@ -45,6 +49,7 @@ const NotFound = lazy(() => import("./Components/NotFound"));
 // suspense loader and errorboundary
 import FullScreenLoader from "./Components/FullScreenLoader";
 import ErrorBoundary from "./Components/ErrorBoundary";
+import ContractorLayout from "./Components/ContractorLayout";
 
 function NotificationHandler() {
   const navigate = useNavigate();
@@ -122,9 +127,23 @@ function RouteBackground() {
   return null;
 }
 
+function GlobalPopup() {
+  const { popup, dismissPopup } = usePopup();
+
+  if (!popup) return null;
+
+  return (
+    <div className="popup-host">
+      <Popup {...popup} onClose={dismissPopup} style={{ maxWidth: "100%" }} />
+    </div>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
+      <PopupProvider>
+      <GlobalPopup />
       <RouteBackground />
       {/* Handles notification click events and foreground messages */}
       <NotificationHandler />
@@ -150,14 +169,23 @@ function App() {
             {/* <Route path="/Signup" element={<Signup />} /> */}
             <Route path="/Login" element={<Login />} />
             <Route path="/reset-password" element={<Login />} />
-            <Route path="/contractor/home" element={<Contractor />} />
+            <Route element={<ContractorLayout />}>
+              <Route path="/contractor/home" element={<Contractor />} />
+              <Route path="/contractor/organization-profile" element={<OrganizationProfile />} />
+              <Route path="/contractor/edit-organization-profile" element={<OrganizationProfile />} />
+              <Route path="/organization-profile" element={<OrganizationProfile />} />
+              <Route path="/contractor/project" element={<Project />} />
+              <Route path="/contractor/project/:id" element={<ProjectDetails />} />
+              <Route path="/contractor/add-project" element={<AddProject />} />
+              <Route path="/contractor/view-report/:id" element={<ViewReport />} />
+              <Route path="/contractor/projects/:id/inventory" element={<ProjectInventory />} />
+              <Route path="/contractor/projects/:id/inventory-history" element={<InventoryHistory />} />
+              <Route path="/contractor/projects/:id/attendance" element={<ContractorAttendance />} />
+              <Route path="/contractor/workers" element={<ContractorWorkers />} />
+              <Route path="/contractor/add-worker" element={<AddWorker />} />
+              <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
+            </Route>
             <Route path="/engineer/home" element={<SiteEngineer />} />
-            <Route path="/contractor/project" element={<Project />} />
-            <Route path="/contractor/project/:id" element={<ProjectDetails />} />
-            <Route path="/contractor/add-project" element={<AddProject />} />
-            <Route path="/contractor/view-report/:id" element={<ViewReport />} />
-            <Route path="/contractor/projects/:id/inventory" element={<ProjectInventory />} />
-            <Route path="/contractor/projects/:id/inventory-history" element={<InventoryHistory />} />
             <Route
               path="/activate-account"
               element={<ActivateAccount />}
@@ -172,10 +200,6 @@ function App() {
             <Route path="/services" element={<Services />} />
 
             {/* Attendance Route */}
-            <Route path="/contractor/projects/:id/attendance" element={<ContractorAttendance />} />
-            <Route path="/contractor/workers" element={<ContractorWorkers />} />
-            <Route path="/contractor/add-worker" element={<AddWorker />} />
-            <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<SignInSide />} />
@@ -194,6 +218,7 @@ function App() {
           </Routes>
         </Suspense>
       </ErrorBoundary>
+      </PopupProvider>
     </BrowserRouter>
   )
 }

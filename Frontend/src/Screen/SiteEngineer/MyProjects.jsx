@@ -15,7 +15,7 @@ import Tab from "@mui/material/Tab";
 import { useTranslation } from "react-i18next";
 import Tooltip from "@mui/material/Tooltip";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import IconButton from "@mui/material/IconButton";
+import Button from "../../Components/atoms/Button/Button";
 import FullScreenLoader from "../../Components/FullScreenLoader";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 
@@ -196,9 +196,9 @@ export default function MyProjects() {
                   </div>
                   <div className="project-card-actions" onClick={(event) => event.stopPropagation()}>
                     <Tooltip title={t("project.open_project")}>
-                      <IconButton aria-label="Open project" onClick={() => navigate(`/site-engineer/projects/${project._id}`)}>
+                      <Button iconOnly aria-label="Open project" onClick={() => navigate(`/site-engineer/projects/${project._id}`)}>
                           <ProjectEditIcon />
-                        </IconButton>
+                        </Button>
                     </Tooltip>
                   </div>
                 </article>

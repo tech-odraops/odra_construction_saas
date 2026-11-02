@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { alpha } from '@mui/material/styles';
 import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import AppNavbar from './components/AppNavbar';
@@ -9,38 +7,45 @@ import Header from './components/Header';
 import MainGrid from './components/MainGrid';
 import SideMenu from './components/SideMenu';
 
-export default function Dashboard(props) {
+export default function Dashboard() {
   const [selectedTab, setSelectedTab] = useState('home');
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <SideMenu selectedTab={selectedTab} onTabSelect={setSelectedTab} />
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: 'var(--color-dashboard-canvas)',
+        p: { xs: 0, md: 2 },
+      }}
+    >
       <AppNavbar selectedTab={selectedTab} onTabSelect={setSelectedTab} />
-      {/* Main content */}
+      <Header selectedTab={selectedTab} />
       <Box
-        component="main"
-        sx={(theme) => ({
-          flexGrow: 1,
-          backgroundColor: theme.vars
-            ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
-            : alpha(theme.palette.background.default, 1),
-          overflow: 'auto',
-          minHeight: '100vh',
-        })}
+        sx={{
+          display: 'flex',
+          alignItems: 'stretch',
+          gap: 'var(--dashboard-gap)',
+          mt: { xs: 'calc(var(--dashboard-header-height) + var(--dashboard-gap))', md: 'var(--dashboard-gap)' },
+          minHeight: 'var(--dashboard-content-min-height)',
+        }}
       >
-        <Stack
-          spacing={2}
+        <SideMenu selectedTab={selectedTab} onTabSelect={setSelectedTab} />
+        <Paper
+          component="main"
+          elevation={0}
           sx={{
-            alignItems: 'center',
-            mx: { xs: 1.5, sm: 2, md: 3 },
-            pb: 5,
-            mt: { xs: 8, md: 0 },
+            flexGrow: 1,
+            minWidth: 0,
+            overflow: 'auto',
+            border: '1px solid var(--color-dashboard-border)',
+            borderRadius: 'var(--dashboard-container-radius)',
+            bgcolor: 'var(--color-dashboard-surface)',
+            p: { xs: 2, sm: 3, md: 4 },
           }}
         >
-          <Header selectedTab={selectedTab} />
           {selectedTab === 'home' && <MainGrid />}
           {selectedTab === 'admins' && (
-            <Box sx={{ width: '100%', maxWidth: { sm: '100%', md: '1700px' }, mt: 2 }}>
+            <Box sx={{ width: '100%', maxWidth: 'var(--dashboard-content-max-width)' }}>
               <Paper variant="outlined" sx={{ p: 4, borderRadius: 2, textAlign: 'center' }}>
                 <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
                   Admin Management
@@ -51,7 +56,7 @@ export default function Dashboard(props) {
               </Paper>
             </Box>
           )}
-        </Stack>
+        </Paper>
       </Box>
     </Box>
   );

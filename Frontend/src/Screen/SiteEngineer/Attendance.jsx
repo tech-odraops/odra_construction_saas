@@ -6,11 +6,11 @@ import {
   Box,
   Typography,
   Paper,
-  Button,
   CircularProgress,
   TextField,
   InputAdornment
 } from "@mui/material";
+import Button from "../../Components/atoms/Button/Button";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
 import { toast } from "react-toastify";
@@ -393,4 +393,3 @@ export default function Attendance() {
     </>
   );
 }
-
