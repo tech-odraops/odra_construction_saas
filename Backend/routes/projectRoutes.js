@@ -11,9 +11,14 @@ const {authen} = require("../middleware/tokenValidatorsMiddleware");
  *   post:
  *     tags:
  *       - Projects
- *     summary: Create a project and assign a site engineer
- *     description: Manager only. If no matching site engineer exists in the
- *       organization, one is created from the supplied engineer details.
+ *     summary: Create a project
+ *     description: >
+ *       Available to the Founder and Site Engineer.
+ *       The project always belongs to the organization's Founder.
+ *       When a Site Engineer creates a project, that Site Engineer
+ *       is automatically assigned to it.
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -23,54 +28,39 @@ const {authen} = require("../middleware/tokenValidatorsMiddleware");
  *             required:
  *               - title
  *               - description
- *               - siteEngineerEmail
  *             properties:
  *               title:
  *                 type: string
+ *                 example: Residential Building Project
  *               description:
  *                 type: string
+ *                 example: Construction of a residential building.
  *               startDate:
  *                 type: string
  *                 format: date-time
  *               endDate:
  *                 type: string
  *                 format: date-time
- *               siteEngineerEmail:
- *                 type: string
- *                 format: email
- *               siteEngineerName:
- *                 type: string
  *     responses:
  *       "201":
- *         description: Project created.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 newProject:
- *                   $ref: "#/components/schemas/Project"
- *                 contractorName:
- *                   type: string
+ *         description: Project created successfully.
+ *       "400":
+ *         description: Project title or description is missing.
+ *       "401":
+ *         description: Invalid authentication context.
  *       "403":
- *         description: Site engineer belongs to a different organization.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
+ *         description: User is not authorized or organization is inactive.
  *       "404":
- *         description: Required fields missing or contractor not found.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
+ *         description: Organization Founder not found.
  *       "500":
- *         $ref: "#/components/responses/InternalServerError"
+ *         description: Could not create project.
  */
-router.post('/',authen,validateRoles("Founder"),projectController.createProject);
+router.post(
+    '/',
+    authen,
+    validateRoles(["Founder", "Site Engineer"]),
+    projectController.createProject
+);
 
 // get all project and search
 /**
@@ -560,5 +550,65 @@ router.patch(
     validateRoles("Founder"),
     projectController.updateProjectTitle
 )
+
+// site eng dashboard
+
+/**
+ * @openapi
+ * /projects/site-engineer/dashboard:
+ *   get:
+ *     tags:
+ *       - Projects
+ *     summary: Get Site Engineer dashboard
+ *     description: >
+ *       Returns project counts and the five most recent projects
+ *       assigned to the authenticated Site Engineer.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: Site Engineer dashboard data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 totalProjects:
+ *                   type: integer
+ *                   example: 4
+ *                 ongoingProjects:
+ *                   type: integer
+ *                   example: 3
+ *                 completedProjects:
+ *                   type: integer
+ *                   example: 1
+ *                 recentProjects:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       title:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *       "401":
+ *         description: Invalid authentication context.
+ *       "403":
+ *         description: User is not authorized.
+ *       "500":
+ *         description: Internal server error.
+ */
+router.get(
+    "/site-engineer/dashboard",
+    authen,
+    validateRoles("Site Engineer"),
+    projectController.getSiteEngineerDashboard
+);
 
 module.exports = router;

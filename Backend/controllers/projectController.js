@@ -14,7 +14,7 @@ const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);
 const mongoose = require("mongoose");
 const Invitation = require("../models/Invitation");
-
+const Organization = require("../models/Organization");
 
 const sendEmail = async (to, subject, html, replyToEmail) => {
     try {
@@ -34,11 +34,16 @@ const sendEmail = async (to, subject, html, replyToEmail) => {
     }
 };
 
+// create Project
 exports.createProject = async (req, res) => {
     let session;
 
     try {
         const { title, description, startDate, endDate } = req.body;
+
+        const creatorId = req.user?.User_id;
+        const organizationId = req.user?.organizationId;
+        const creatorRole = req.user?.role;
 
         if (!title?.trim() || !description?.trim()) {
             return res.status(400).json({
@@ -47,43 +52,106 @@ exports.createProject = async (req, res) => {
             });
         }
 
-        const founderId = req.user.User_id;
-        const organizationId = req.user.organizationId;
+        if (
+            !creatorId ||
+            !organizationId ||
+            !mongoose.isValidObjectId(creatorId) ||
+            !mongoose.isValidObjectId(organizationId)
+        ) {
+            return res.status(401).json({
+                success: false,
+                error: "Invalid authentication context."
+            });
+        }
 
-        // Verify the Founder belongs to this organization.
+        if (!["Founder", "Site Engineer"].includes(creatorRole)) {
+            return res.status(403).json({
+                success: false,
+                error: "You are not authorized to create projects."
+            });
+        }
+
+        // Find the organization and its actual Founder.
+        const organization = await Organization.findById(organizationId)
+            .select("_id ownerId status");
+
+        if (!organization || organization.status !== "active") {
+            return res.status(403).json({
+                success: false,
+                error: "Organization not found or inactive."
+            });
+        }
+
+        const founderId = organization.ownerId;
+
         const founder = await User.findOne({
             _id: founderId,
-            organizationId
-        });
+            organizationId,
+            role: "Founder",
+            status: "active"
+        }).select("_id name");
 
         if (!founder) {
             return res.status(404).json({
                 success: false,
-                error: "Founder or organization account not found."
+                error: "Active Founder not found for this organization."
+            });
+        }
+
+        // Verify the creator's role and organization membership.
+        const creator = await User.findOne({
+            _id: creatorId,
+            organizationId,
+            role: creatorRole,
+            status: "active"
+        }).select("_id role");
+
+        if (!creator) {
+            return res.status(403).json({
+                success: false,
+                error: "Your active organization membership could not be verified."
+            });
+        }
+
+        // A Founder can create projects only for their own organization.
+        if (
+            creatorRole === "Founder" &&
+            creator._id.toString() !== founderId.toString()
+        ) {
+            return res.status(403).json({
+                success: false,
+                error: "Only the organization's Founder can create projects as Founder."
             });
         }
 
         let newProject;
 
-        // Start the MongoDB transaction.
         session = await mongoose.startSession();
 
         await session.withTransaction(async () => {
-            // Create the project inside the transaction.
             const createdProjects = await Project.create(
                 [
                     {
                         title: title.trim(),
                         description: description.trim(),
                         status: "Ongoing",
-                        startDate: startDate
-                            ? new Date(startDate)
-                            : new Date(),
-                        endDate: endDate
-                            ? new Date(endDate)
-                            : null,
-                        siteEngineers: [],
+                        startDate: startDate ? new Date(startDate) : new Date(),
+                        endDate: endDate ? new Date(endDate) : null,
+
+                        // The Founder remains the project owner.
                         contractor: founderId,
+
+                        // Automatically assign the creating Site Engineer.
+                        siteEngineer:
+                            creatorRole === "Site Engineer"
+                                ? creatorId
+                                : null,
+
+                        siteEngineers:
+                            creatorRole === "Site Engineer"
+                                ? [creatorId]
+                                : [],
+
                         organizationId
                     }
                 ],
@@ -92,11 +160,12 @@ exports.createProject = async (req, res) => {
 
             newProject = createdProjects[0];
 
-            // Add the project ID to the Founder's createdProjects array.
+            // Every project is recorded under the organization's Founder.
             const updatedFounder = await User.findOneAndUpdate(
                 {
                     _id: founderId,
-                    organizationId
+                    organizationId,
+                    role: "Founder"
                 },
                 {
                     $addToSet: {
@@ -109,21 +178,46 @@ exports.createProject = async (req, res) => {
                 }
             );
 
-            // Throwing an error aborts the transaction.
-            // The project creation will also be rolled back.
             if (!updatedFounder) {
                 throw new Error(
                     "Founder could not be updated with the new project."
                 );
             }
+
+            // If a Site Engineer created the project, record it
+            // in their assignedProjects array as well.
+            if (creatorRole === "Site Engineer") {
+                const updatedEngineer = await User.findOneAndUpdate(
+                    {
+                        _id: creatorId,
+                        organizationId,
+                        role: "Site Engineer",
+                        status: "active"
+                    },
+                    {
+                        $addToSet: {
+                            assignedProjects: newProject._id
+                        }
+                    },
+                    {
+                        new: true,
+                        session
+                    }
+                );
+
+                if (!updatedEngineer) {
+                    throw new Error(
+                        "Site Engineer could not be updated with the new project."
+                    );
+                }
+            }
         });
 
-        // The transaction has committed successfully.
         return res.status(201).json({
             success: true,
             newProject,
             contractorName: founder.name,
-            message: "Project created successfully. You can assign site members from the project details page."
+            message: "Project created successfully."
         });
 
     } catch (error) {
@@ -240,30 +334,104 @@ exports.getProjectSE = async (req, res) => {
     }
 }
 
-// to get project by id so that both contractor and Site Engineer see the page and no other sees the page
+// Get project by ID — only the project Founder or assigned Site Engineer can access the project details and reports.
 exports.getProjectById = async (req, res) => {
     try {
         const { id } = req.params;
-        // Ensure the requester is either contractor of project or assigned Site Engineer
-        const project = await Project.findOne({ _id: id, organizationId: req.user.organizationId })
-            .populate('contractor', 'name email')
-            .populate('siteEngineers', '_id name email role')
-            .populate({
-                path: 'reports',
-                populate: { path: 'siteEngineerId', select: 'name email' },
-                options: { sort: { createdAt: -1 } }
+
+        const userId = req.user?.User_id;
+        console.log(userId);
+        const organizationId = req.user?.organizationId;
+        const role = req.user?.role;
+
+        // 1. Validate authenticated user context
+        if (!userId || !organizationId || !role) {
+            return res.status(401).json({
+                success: false,
+                message: "Authentication required"
             });
-        console.log(project)
+        }
 
-        if (!project) return res.status(404).json({ message: 'Project not found' });
+        // 2. Find the project within the authenticated organization
+        const project = await Project.findOne({
+            _id: id,
+            organizationId
+        });
 
-        // authorization
-        // WILL ADD THE authorization middleware
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                message: "Project not found"
+            });
+        }
 
-        res.json({ project });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        // 3. Founder can access projects belonging to their organization
+        const isFounder = role === "Founder";
+
+        // 4. Site Engineer must be assigned to this project
+        const isAssignedSiteEngineer =
+            role === "Site Engineer" &&
+            (
+                (
+                    Array.isArray(project.siteEngineers) &&
+                    project.siteEngineers.some(
+                        (engineerId) =>
+                            engineerId.toString() === userId.toString()
+                    )
+                ) ||
+                (
+                    project.siteEngineer &&
+                    project.siteEngineer.toString() === userId.toString()
+                )
+            );
+
+        // 5. Deny unauthorized access
+        if (!isFounder && !isAssignedSiteEngineer) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not authorized to access this project"
+            });
+        }
+
+        // 6. Populate related data only after authorization
+        await project.populate([
+            { path: "contractor", select: "name email" },
+            { path: "siteEngineer", select: "name email" },
+            { path: "siteEngineers", select: "_id name email role" },
+            {
+                path: "reports",
+                populate: {
+                    path: "siteEngineerId",
+                    select: "name email"
+                },
+                options: {
+                    sort: { createdAt: -1 }
+                }
+            }
+        ]);
+
+        // 7. Preserve the existing response structure
+        return res.status(200).json({
+            project
+        });
+
+    } catch (error) {
+        if (
+            error.name === "CastError" ||
+            error.name === "BSONError"
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid project ID"
+            });
+        }
+
+        console.error("Get Project By ID Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Server error"
+        });
     }
 };
 
@@ -312,7 +480,6 @@ exports.completeProject = async (req, res) => {
         return res.status(500).json({ success: false, error: "Internal Server Error" });
     }
 }
-
 
 exports.deleteProject = async (req, res) => {
     let session;
@@ -503,69 +670,120 @@ exports.deleteProject = async (req, res) => {
     }
 };
 
-
 // wage calculation
+// Calculate project worker wages
+// Founder: must own the project.
+// Site Engineer: must be assigned to the project.
 exports.getProjectWages = async (req, res) => {
     try {
-
         const { projectId } = req.params;
-        const organizationId = req.user.organizationId;
 
-        // 1️⃣ Get project
-        const project = await Project.findById(projectId);
+        const userId = req.user?.User_id;
+        const organizationId = req.user?.organizationId;
+        const role = req.user?.role;
 
-        if (!project) {
-            return res.status(404).json({ error: "Project not found" });
+        // 1. Validate authenticated user
+        if (!userId || !organizationId) {
+            return res.status(401).json({
+                success: false,
+                error: "Authentication required"
+            });
         }
 
-        // 2️⃣ Get workers in this project
+        // 2. Find the project within the user's organization
+        const project = await Project.findOne({
+            _id: projectId,
+            organizationId
+        });
+
+        if (!project) {
+            return res.status(404).json({
+                success: false,
+                error: "Project not found"
+            });
+        }
+
+        // 3. Check whether the Founder owns the project
+        const isFounder =
+            role === "Founder" &&
+            project.contractor?.toString() === userId.toString();
+
+        // 4. Check whether the Site Engineer is assigned to the project
+        // Supports both current and legacy assignment fields.
+        const isAssignedSiteEngineer =
+            role === "Site Engineer" &&
+            (
+                (
+                    Array.isArray(project.siteEngineers) &&
+                    project.siteEngineers.some(
+                        (engineerId) =>
+                            engineerId.toString() === userId.toString()
+                    )
+                ) ||
+                (
+                    project.siteEngineer &&
+                    project.siteEngineer.toString() === userId.toString()
+                )
+            );
+
+        // 5. Deny access if the user has no authorized relationship
+        if (!isFounder && !isAssignedSiteEngineer) {
+            return res.status(403).json({
+                success: false,
+                error: "You are not authorized to view wages for this project"
+            });
+        }
+
+        // 6. Get workers assigned to this project and organization
         const workers = await Worker.find({
             currentProjectId: projectId,
             organizationId
         });
 
-        // 3️⃣ Get attendance records
+        // 7. Get attendance records for this project and organization
         const attendanceRecords = await Attendance.find({
             projectId,
             organizationId
         });
 
-        // 4️⃣ Count present days per worker
+        // 8. Count present days per worker
         const presentCount = {};
 
-        attendanceRecords.forEach(day => {
-            day.records.forEach(rec => {
-                if (rec.status === "present") {
-                    const wid = rec.workerId.toString();
-                    presentCount[wid] = (presentCount[wid] || 0) + 1;
+        attendanceRecords.forEach((day) => {
+            day.records.forEach((record) => {
+                if (record.status === "present") {
+                    const workerId = record.workerId.toString();
+
+                    presentCount[workerId] =
+                        (presentCount[workerId] || 0) + 1;
                 }
             });
         });
 
-        // 5️⃣ Calculate months (for monthly workers)
+        // 9. Calculate project duration in months
         const startDate = new Date(project.startDate);
-        const endDate = project.status === "Completed"
-            ? new Date(project.endDate)
-            : new Date();
+
+        const endDate =
+            project.status === "Completed" && project.endDate
+                ? new Date(project.endDate)
+                : new Date();
 
         const months =
             (endDate.getFullYear() - startDate.getFullYear()) * 12 +
-            (endDate.getMonth() - startDate.getMonth()) + 1;
+            (endDate.getMonth() - startDate.getMonth()) +
+            1;
 
-        // 6️⃣ Final wage calculation
-        const result = workers.map(worker => {
-
+        // 10. Calculate wages
+        const result = workers.map((worker) => {
             let totalWage = 0;
 
             if (worker.payoutType === "daily") {
+                const days = presentCount[worker._id.toString()] || 0;
 
-                const days = presentCount[worker._id] || 0;
                 totalWage = days * worker.dailyWage;
-
             } else {
-
-                totalWage = months * worker.dailyWage; // monthly wage
-
+                // Preserve the existing monthly wage calculation.
+                totalWage = months * worker.dailyWage;
             }
 
             return {
@@ -574,14 +792,15 @@ exports.getProjectWages = async (req, res) => {
                 payoutType: worker.payoutType,
                 totalWage
             };
-
         });
 
+        // 11. Calculate total project wages
         const totalProjectWage = result.reduce(
-            (sum, w) => sum + w.totalWage,
+            (sum, worker) => sum + worker.totalWage,
             0
         );
 
+        // 12. Return the existing response structure
         return res.status(200).json({
             success: true,
             data: {
@@ -591,13 +810,22 @@ exports.getProjectWages = async (req, res) => {
         });
 
     } catch (error) {
+        if (
+            error.name === "CastError" ||
+            error.name === "BSONError"
+        ) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid project ID"
+            });
+        }
 
-        console.error("Wage calc error:", error);
+        console.error("Wage Calculation Error:", error);
 
         return res.status(500).json({
+            success: false,
             error: "Internal Server Error"
         });
-
     }
 };
 
@@ -884,3 +1112,107 @@ exports.updateProjectTitle = async (req, res) => {
         });
     }
 }
+
+// Site Engineer dashboard API
+exports.getSiteEngineerDashboard = async (req, res) => {
+    try {
+        const siteEngineerId = req.user?.User_id;
+        const organizationId = req.user?.organizationId;
+
+        if (
+            !siteEngineerId ||
+            !organizationId ||
+            !mongoose.isValidObjectId(siteEngineerId) ||
+            !mongoose.isValidObjectId(organizationId)
+        ) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid authentication context."
+            });
+        }
+
+        const engineerObjectId = new mongoose.Types.ObjectId(siteEngineerId);
+        const organizationObjectId = new mongoose.Types.ObjectId(organizationId);
+
+        const result = await Project.aggregate([
+            {
+                $match: {
+                    organizationId: organizationObjectId,
+                    $or: [
+                        { siteEngineers: engineerObjectId },
+                        { siteEngineer: engineerObjectId }
+                    ]
+                }
+            },
+            {
+                $facet: {
+                    stats: [
+                        {
+                            $group: {
+                                _id: null,
+
+                                totalProjects: {
+                                    $sum: 1
+                                },
+
+                                ongoingProjects: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "Ongoing"] },
+                                            1,
+                                            0
+                                        ]
+                                    }
+                                },
+
+                                completedProjects: {
+                                    $sum: {
+                                        $cond: [
+                                            { $eq: ["$status", "Completed"] },
+                                            1,
+                                            0
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    ],
+
+                    recentProjects: [
+                        { $sort: { createdAt: -1 } },
+                        { $limit: 5 },
+                        {
+                            $project: {
+                                title: 1,
+                                status: 1,
+                                createdAt: 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]);
+
+        const stats = result[0].stats[0] || {
+            totalProjects: 0,
+            ongoingProjects: 0,
+            completedProjects: 0
+        };
+
+        const recentProjects = result[0].recentProjects;
+
+        return res.status(200).json({
+            success: true,
+            ...stats,
+            recentProjects
+        });
+
+    } catch (error) {
+        console.error("Site Engineer Dashboard Error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch Site Engineer dashboard."
+        });
+    }
+};

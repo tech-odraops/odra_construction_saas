@@ -17,6 +17,7 @@ exports.authen = async (req, res, next) => {
         }
 
         const token = authorization.slice(7).trim();
+        // console.log("Token = ",token);
 
         if (!token) {
             return res.status(401).json({
@@ -37,6 +38,7 @@ exports.authen = async (req, res, next) => {
         const decoded = jwt.verify(token, process.env.secret_key, {
             algorithms: ["HS256"]
         });
+        console.log("userId = ", decoded.User_id);
 
         if (!decoded.User_id || !decoded.role || decoded.isLoggedIn !== true) {
             return res.status(401).json({
