@@ -151,21 +151,59 @@ exports.createProject = async (req, res) => {
 // get all projects for contractor
 exports.getProject = async (req, res) => {
     try {
-        const contractorId = req.user.User_id;
-        const contratProjects = await Project.find({ organizationId: req.user.organizationId })
-            .populate('siteEngineers', 'name email')
-            .lean();
+        const search = String(req.query.search || "").trim();
+        const status = String(req.query.status || "all").trim();
+        const page = Math.max(1, Number(req.query.page) || 1);
+        const limit = Math.min(20, Math.max(1, Number(req.query.limit) || 10));
 
-        if (contratProjects.length === 0) {
+        const filter = {
+            organizationId: req.user.organizationId
+        };
+
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } },
+                { location: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        if (status && status !== "all") {
+            filter.status = status;
+        }
+
+        const skip = (page - 1) * limit;
+
+        const [projects, total] = await Promise.all([
+            Project.find(filter)
+                .populate('siteEngineers', 'name email')
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            Project.countDocuments(filter)
+        ]);
+
+        if (projects.length === 0) {
             return res.status(200).json({
                 success: true,
                 projects: [],
+                total: 0,
+                page,
+                limit,
                 message: "No projects created yet."
             });
         }
 
-        return res.status(200).json({ success: true, projects: contratProjects });
+        return res.status(200).json({
+            success: true,
+            projects,
+            total,
+            page,
+            limit
+        });
     } catch (error) {
+        console.error("Get project error:", error);
         return res.status(500).json({ success: false, error });
     }
 };
