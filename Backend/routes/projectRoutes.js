@@ -254,37 +254,37 @@ router.get('/:id',authen,validateRoles(["Founder","Site Engineer"]),projectContr
  *   post:
  *     tags:
  *       - Projects
- *     summary: Mark a project completed
- *     description: Manager only. Request body is not used.
+ *     summary: Mark a project as completed
+ *     description: >
+ *       Available to the Founder who owns the project and Site Engineers
+ *       assigned to the project. Request body is not required.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       "200":
- *         description: Project completed.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/SuccessMessage"
+ *         description: Project completed successfully.
  *       "400":
- *         description: Project is already completed.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
+ *         description: Invalid project ID or project already completed.
  *       "403":
- *         description: Not authorized to complete this project.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
+ *         description: User is not authorized to complete this project.
  *       "404":
  *         description: Project not found.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
  *       "500":
- *         $ref: "#/components/responses/InternalServerError"
+ *         description: Internal server error.
  */
-router.post('/:projectId/complete',authen,validateRoles("Founder"),projectController.completeProject);
+router.post(
+    "/:projectId/complete",
+    authen,
+    validateRoles(["Founder", "Site Engineer"]),
+    projectController.completeProject
+);
+
 
 // get wage
 /**
@@ -345,25 +345,37 @@ router.get( "/:projectId/wages", authen,validateRoles(["Founder"]), projectContr
  *   delete:
  *     tags:
  *       - Projects
- *     summary: Delete a project and related records
- *     description: Manager only.
+ *     summary: Delete a project and its related records
+ *     description: >
+ *       Available to the Founder who owns the project and Site Engineers
+ *       assigned to the project.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       "200":
- *         description: Project deleted.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/SuccessMessage"
+ *         description: Project and related records deleted successfully.
+ *       "400":
+ *         description: Invalid project ID.
+ *       "403":
+ *         description: User is not authorized to delete this project.
  *       "404":
  *         description: Project not found.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
  *       "500":
- *         $ref: "#/components/responses/InternalServerError"
+ *         description: Internal server error.
  */
-router.delete("/:id", authen, validateRoles("Founder"), projectController.deleteProject);
+router.delete(
+    "/:id",
+    authen,
+    validateRoles(["Founder", "Site Engineer"]),
+    projectController.deleteProject
+);
+
 
 // add miscellaneous item
 /**
@@ -496,7 +508,17 @@ router.patch(
  *     tags:
  *       - Projects
  *     summary: Update project title
- *     description: Manager only.
+ *     description: >
+ *       Available to the Founder who owns the project and Site Engineers
+ *       assigned to the project.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: projectId
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -508,51 +530,28 @@ router.patch(
  *             properties:
  *               title:
  *                 type: string
+ *                 example: Updated Residential Project
  *     responses:
  *       "200":
- *         description: Project title updated.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                 project:
- *                   $ref: "#/components/schemas/Project"
+ *         description: Project title updated successfully.
  *       "400":
- *         description: Title is missing or blank.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
+ *         description: Invalid project ID or title.
  *       "403":
- *         description: Not authorized.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
+ *         description: User is not authorized to update this project.
  *       "404":
  *         description: Project not found.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/ErrorResponse"
  *       "500":
- *         $ref: "#/components/responses/InternalServerError"
+ *         description: Internal server error.
  */
 router.patch(
     "/:projectId/title",
     authen,
-    validateRoles("Founder"),
+    validateRoles(["Founder", "Site Engineer"]),
     projectController.updateProjectTitle
-)
+);
+
 
 // site eng dashboard
-
 /**
  * @openapi
  * /projects/site-engineer/dashboard:

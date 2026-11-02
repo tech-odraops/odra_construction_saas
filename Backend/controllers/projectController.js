@@ -16,23 +16,28 @@ const mongoose = require("mongoose");
 const Invitation = require("../models/Invitation");
 const Organization = require("../models/Organization");
 
-const sendEmail = async (to, subject, html, replyToEmail) => {
-    try {
-        const response = await resend.emails.send({
-            from: "OdraOps <noreply@odraops.com>",
-            to: to,
-            subject: subject,
-            html: html,
-            reply_to: replyToEmail,
-        });
+const canManageProject = (project, user) => {
+    const userId = user?.User_id?.toString();
+    const role = user?.role;
 
-        console.log("Email sent:", response);
-        return true;
-    } catch (error) {
-        console.error("RESEND ERROR:", error);
-        return false;
+    if (!userId || !role) return false;
+
+    // Founder can manage projects they own.
+    if (role === "Founder") {
+        return project.contractor?.toString() === userId;
     }
+
+    // Site Engineer can manage only projects assigned to them.
+    if (role === "Site Engineer") {
+        return Array.isArray(project.siteEngineers) &&
+            project.siteEngineers.some(
+                (engineerId) => engineerId.toString() === userId
+            );
+    }
+
+    return false;
 };
+
 
 // create Project
 exports.createProject = async (req, res) => {
@@ -142,11 +147,6 @@ exports.createProject = async (req, res) => {
                         contractor: founderId,
 
                         // Automatically assign the creating Site Engineer.
-                        siteEngineer:
-                            creatorRole === "Site Engineer"
-                                ? creatorId
-                                : null,
-
                         siteEngineers:
                             creatorRole === "Site Engineer"
                                 ? [creatorId]
@@ -244,7 +244,9 @@ exports.createProject = async (req, res) => {
 
 // get all projects for contractor
 exports.getProject = async (req, res) => {
+
     try {
+        
         const search = String(req.query.search || "").trim();
         const status = String(req.query.status || "all").trim();
         const page = Math.max(1, Number(req.query.page) || 1);
@@ -371,18 +373,10 @@ exports.getProjectById = async (req, res) => {
         // 4. Site Engineer must be assigned to this project
         const isAssignedSiteEngineer =
             role === "Site Engineer" &&
-            (
-                (
-                    Array.isArray(project.siteEngineers) &&
-                    project.siteEngineers.some(
-                        (engineerId) =>
-                            engineerId.toString() === userId.toString()
-                    )
-                ) ||
-                (
-                    project.siteEngineer &&
-                    project.siteEngineer.toString() === userId.toString()
-                )
+            Array.isArray(project.siteEngineers) &&
+            project.siteEngineers.some(
+                (engineerId) =>
+                    engineerId.toString() === userId.toString()
             );
 
         // 5. Deny unauthorized access
@@ -396,7 +390,6 @@ exports.getProjectById = async (req, res) => {
         // 6. Populate related data only after authorization
         await project.populate([
             { path: "contractor", select: "name email" },
-            { path: "siteEngineer", select: "name email" },
             { path: "siteEngineers", select: "_id name email role" },
             {
                 path: "reports",
@@ -435,58 +428,110 @@ exports.getProjectById = async (req, res) => {
     }
 };
 
+// mark project as complete
 exports.completeProject = async (req, res) => {
     try {
         const { projectId } = req.params;
+        const { User_id, organizationId } = req.user;
+
+        if (!mongoose.isValidObjectId(projectId)) {
+            return res.status(400).json({
+                success: false,
+                error: "Invalid project ID"
+            });
+        }
+
         const project = await Project.findOne({
             _id: projectId,
-            organizationId: req.user.organizationId
+            organizationId
         });
-        console.log(project)
+
         if (!project) {
-            return res.status(404).json({ success: false, error: "Project not found" });
+            return res.status(404).json({
+                success: false,
+                error: "Project not found"
+            });
         }
 
-        // ensure contractor owns the project
-        if (project.contractor.toString() !== req.user.User_id) {
-            return res.status(403).json({ success: false, error: "You are not authorized to complete this project" });
+        // Founder must own the project.
+        // Site Engineer must be assigned to the project.
+        if (!canManageProject(project, req.user)) {
+            return res.status(403).json({
+                success: false,
+                error: "You are not authorized to complete this project"
+            });
         }
 
-        // prevent double completion
         if (project.status === "Completed") {
-            return res.status(400).json({ success: false, error: "Project already completed" });
+            return res.status(400).json({
+                success: false,
+                error: "Project already completed"
+            });
         }
 
-        // mark the project as completed
         project.status = "Completed";
         project.endDate = new Date();
+
         await project.save();
 
-        // free all workers from the project
+        // Free all workers currently assigned to this project.
         await Worker.updateMany(
-            { currentProjectId: projectId, organizationId: req.user.organizationId },
-            { currentProjectId: null, status: "free" }
+            {
+                currentProjectId: projectId,
+                organizationId
+            },
+            {
+                currentProjectId: null,
+                status: "free"
+            }
         );
 
-        // notify the Site Engineer
+        // Notify connected clients.
         const io = req.app.get("io");
-        io.to(`project-${projectId}`).emit("project:completed", {
-            projectId
+
+        if (io) {
+            io.to(`project-${projectId}`).emit("project:completed", {
+                projectId
+            });
+
+            // Notify all assigned Site Engineers.
+            for (const engineerId of project.siteEngineers || []) {
+                io.to(`siteEngineer-${engineerId}`).emit(
+                    "project:completed",
+                    { projectId }
+                );
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Project completed successfully"
         });
-        return res.status(200).json({ success: true, message: "Project completed successfully" });
 
     } catch (error) {
         console.error("Complete Project Error:", error);
-        return res.status(500).json({ success: false, error: "Internal Server Error" });
-    }
-}
 
+        return res.status(500).json({
+            success: false,
+            error: "Internal Server Error"
+        });
+    }
+};
+
+// delete project
 exports.deleteProject = async (req, res) => {
     let session;
 
     try {
         const { id } = req.params;
-        const organizationId = req.user.organizationId;
+        const { organizationId } = req.user;
+
+        if (!mongoose.isValidObjectId(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid project ID"
+            });
+        }
 
         session = await mongoose.startSession();
 
@@ -494,6 +539,7 @@ exports.deleteProject = async (req, res) => {
         let uniqueSiteEngineerIds = [];
 
         await session.withTransaction(async () => {
+
             // 1. Find the project within the authenticated organization.
             const project = await Project.findOne({
                 _id: id,
@@ -506,33 +552,40 @@ exports.deleteProject = async (req, res) => {
                 throw error;
             }
 
+            // 2. Verify Founder ownership or Site Engineer assignment.
+            if (!canManageProject(project, req.user)) {
+                const error = new Error(
+                    "You are not authorized to delete this project"
+                );
+                error.statusCode = 403;
+                throw error;
+            }
+
             projectName = project.title;
 
-            const siteEngineerIds = [
-                ...(Array.isArray(project.siteEngineers)
-                    ? project.siteEngineers
-                    : [])
-            ]
-                .filter(Boolean)
-                .map((siteEngineerId) => siteEngineerId.toString());
-
             uniqueSiteEngineerIds = [
-                ...new Set(siteEngineerIds)
+                ...new Set(
+                    (project.siteEngineers || [])
+                        .filter(Boolean)
+                        .map((engineerId) => engineerId.toString())
+                )
             ];
 
-            // 2. Remove the project from the Founder's project list.
+            // 3. Remove project from the Founder's project list.
             await User.findOneAndUpdate(
                 {
                     _id: project.contractor,
                     organizationId
                 },
                 {
-                    $pull: { createdProjects: project._id }
+                    $pull: {
+                        createdProjects: project._id
+                    }
                 },
                 { session }
             );
 
-            // 3. Remove the project from assigned Site Engineers.
+            // 4. Remove project from all assigned Site Engineers.
             for (const siteEngineerId of uniqueSiteEngineerIds) {
                 await User.findOneAndUpdate(
                     {
@@ -540,13 +593,15 @@ exports.deleteProject = async (req, res) => {
                         organizationId
                     },
                     {
-                        $pull: { assignedProjects: project._id }
+                        $pull: {
+                            assignedProjects: project._id
+                        }
                     },
                     { session }
                 );
             }
 
-            // 4. Free workers assigned to this project.
+            // 5. Free workers assigned to this project.
             await Worker.updateMany(
                 {
                     currentProjectId: project._id,
@@ -561,7 +616,7 @@ exports.deleteProject = async (req, res) => {
                 { session }
             );
 
-            // 5. Delete reports.
+            // 6. Delete reports.
             await Report.deleteMany(
                 {
                     projectId: project._id,
@@ -570,7 +625,7 @@ exports.deleteProject = async (req, res) => {
                 { session }
             );
 
-            // 6. Delete chat messages.
+            // 7. Delete chat messages.
             await ChatMessage.deleteMany(
                 {
                     projectId: project._id,
@@ -579,7 +634,7 @@ exports.deleteProject = async (req, res) => {
                 { session }
             );
 
-            // 7. Delete inventory usage logs.
+            // 8. Delete inventory usage logs.
             await InventoryUsage.deleteMany(
                 {
                     projectId: project._id,
@@ -588,7 +643,7 @@ exports.deleteProject = async (req, res) => {
                 { session }
             );
 
-            // 8. Delete inventory items.
+            // 9. Delete inventory items.
             await InventoryItem.deleteMany(
                 {
                     projectId: project._id,
@@ -597,7 +652,7 @@ exports.deleteProject = async (req, res) => {
                 { session }
             );
 
-            // 9. Delete attendance records.
+            // 10. Delete attendance records.
             await Attendance.deleteMany(
                 {
                     projectId: project._id,
@@ -606,7 +661,7 @@ exports.deleteProject = async (req, res) => {
                 { session }
             );
 
-            // 10. Delete the project last.
+            // 11. Delete the project last.
             const deletedProject = await Project.findOneAndDelete(
                 {
                     _id: project._id,
@@ -622,8 +677,8 @@ exports.deleteProject = async (req, res) => {
             }
         });
 
-        // The transaction has committed successfully.
-        // Notify connected clients only after the commit.
+        // Transaction committed successfully.
+        // Notify connected clients after the commit.
         const io = req.app.get("io");
 
         if (io) {
@@ -648,15 +703,15 @@ exports.deleteProject = async (req, res) => {
             message: "Project deleted successfully"
         });
 
-    } catch (err) {
-        if (err.statusCode === 404) {
-            return res.status(404).json({
+    } catch (error) {
+        if (error.statusCode === 404 || error.statusCode === 403) {
+            return res.status(error.statusCode).json({
                 success: false,
-                message: err.message
+                message: error.message
             });
         }
 
-        console.error("Delete Project Error:", err);
+        console.error("Delete Project Error:", error);
 
         return res.status(500).json({
             success: false,
@@ -709,21 +764,12 @@ exports.getProjectWages = async (req, res) => {
             project.contractor?.toString() === userId.toString();
 
         // 4. Check whether the Site Engineer is assigned to the project
-        // Supports both current and legacy assignment fields.
         const isAssignedSiteEngineer =
             role === "Site Engineer" &&
-            (
-                (
-                    Array.isArray(project.siteEngineers) &&
-                    project.siteEngineers.some(
-                        (engineerId) =>
-                            engineerId.toString() === userId.toString()
-                    )
-                ) ||
-                (
-                    project.siteEngineer &&
-                    project.siteEngineer.toString() === userId.toString()
-                )
+            Array.isArray(project.siteEngineers) &&
+            project.siteEngineers.some(
+                (engineerId) =>
+                    engineerId.toString() === userId.toString()
             );
 
         // 5. Deny access if the user has no authorized relationship
@@ -1040,18 +1086,25 @@ exports.updateProjectTitle = async (req, res) => {
     try {
         const { projectId } = req.params;
         const { title } = req.body;
+        const { organizationId } = req.user;
 
+        if (!mongoose.isValidObjectId(projectId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid project ID"
+            });
+        }
 
-        if (!title || title.trim() == "") {
+        if (typeof title !== "string" || !title.trim()) {
             return res.status(400).json({
                 success: false,
                 message: "Project title is required"
             });
-        };
+        }
 
         const project = await Project.findOne({
             _id: projectId,
-            organizationId: req.user.organizationId
+            organizationId
         });
 
         if (!project) {
@@ -1061,39 +1114,37 @@ exports.updateProjectTitle = async (req, res) => {
             });
         }
 
-        // only contractor can edit
-        if (project.contractor.toString() !== req.user.User_id) {
+        // Founder must own the project.
+        // Site Engineer must be assigned to the project.
+        if (!canManageProject(project, req.user)) {
             return res.status(403).json({
                 success: false,
-                message: "Unauthorized"
+                message: "You are not authorized to update this project"
             });
         }
 
-        project.title = title;
+        project.title = title.trim();
+
         await project.save();
 
-        // socket realtime update
+        // Notify connected clients.
         const io = req.app.get("io");
 
-        const siteEngineerIds = [
-            ...(Array.isArray(project.siteEngineers) ? project.siteEngineers : [])
-        ]
-            .filter(Boolean)
-            .map((siteEngineerId) => siteEngineerId.toString());
-        const uniqueSiteEngineerIds = [...new Set(siteEngineerIds)];
-
-        // broadcast to project room
-        io.to(`project-${projectId}`).emit("project:titleUpdated", {
-            projectId,
-            title
-        });
-
-        // broadcast to each assigned site engineer
-        for (const siteEngineerId of uniqueSiteEngineerIds) {
-            io.to(`siteEngineer-${siteEngineerId}`).emit("project:titleUpdated", {
+        if (io) {
+            io.to(`project-${projectId}`).emit("project:titleUpdated", {
                 projectId,
-                title
+                title: project.title
             });
+
+            for (const engineerId of project.siteEngineers || []) {
+                io.to(`siteEngineer-${engineerId}`).emit(
+                    "project:titleUpdated",
+                    {
+                        projectId,
+                        title: project.title
+                    }
+                );
+            }
         }
 
         return res.status(200).json({
@@ -1102,16 +1153,16 @@ exports.updateProjectTitle = async (req, res) => {
             project
         });
 
-
-    } catch (e) {
-        console.log("Update project title error:", error);
+    } catch (error) {
+        console.error("Update project title error:", error);
 
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
     }
-}
+};
+
 
 // Site Engineer dashboard API
 exports.getSiteEngineerDashboard = async (req, res) => {
@@ -1138,10 +1189,7 @@ exports.getSiteEngineerDashboard = async (req, res) => {
             {
                 $match: {
                     organizationId: organizationObjectId,
-                    $or: [
-                        { siteEngineers: engineerObjectId },
-                        { siteEngineer: engineerObjectId }
-                    ]
+                    siteEngineers: engineerObjectId
                 }
             },
             {
