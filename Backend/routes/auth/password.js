@@ -139,4 +139,9 @@ router.post(
     passwordRecoveryLimiter,
     passwordController.resetPassword
 );
+
+router.post(
+    "/validate-reset-token",
+    validateResetToken
+);
 module.exports = { password: router };
