@@ -283,7 +283,6 @@ exports.resetPassword = async (req, res) => {
     }
 };
 
-
 exports.validateResetToken = async (req, res) => {
     try {
         const { token } = req.body;
