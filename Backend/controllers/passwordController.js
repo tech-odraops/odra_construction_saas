@@ -96,7 +96,9 @@ exports.changePassword = async (req, res) => {
 };
 
 exports.forgotPassword = async (req, res) => {
+
     try {
+
         const { email } = req.body;
 
         if (!email || typeof email !== "string") {
@@ -278,5 +280,65 @@ exports.resetPassword = async (req, res) => {
         if (session) {
             await session.endSession();
         }
+    }
+};
+
+
+exports.validateResetToken = async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        if (typeof token !== "string" || !token.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Reset token is required."
+            });
+        }
+
+        // Hash the incoming raw token
+        const tokenHash = crypto
+            .createHash("sha256")
+            .update(token)
+            .digest("hex");
+
+        // Check token validity
+        const resetRecord = await PasswordResetToken.findOne({
+            tokenHash,
+            expiresAt: { $gt: new Date() },
+            usedAt: null
+        });
+
+        if (!resetRecord) {
+            return res.status(400).json({
+                success: false,
+                message: "This password reset link is invalid or has expired."
+            });
+        }
+
+        // Verify that the associated account is still active
+        const user = await User.findOne({
+            _id: resetRecord.userId,
+            status: "active"
+        });
+
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "This password reset link is no longer valid."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Reset token is valid."
+        });
+
+    } catch (error) {
+        console.error("Token validation error:", error.message);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to validate reset link. Please try again."
+        });
     }
 };
