@@ -28,6 +28,7 @@ const InventoryHistory = lazy(() => import("./Screen/Contractor/InventoryHistory
 import ActivateAccount from './Screen/ActivateAccount'
 
 const SiteEngineer = lazy(() => import("./Screen/SiteEngineer/SiteEngineer"));
+const SiteEngineerProfile = lazy(() => import("./Screen/SiteEngineer/Profile"));
 const MyProjects = lazy(() => import("./Screen/SiteEngineer/MyProjects"));
 const ProjectWork = lazy(() => import("./Screen/SiteEngineer/ProjectWork"));
 const SubmitReport = lazy(() => import("./Screen/SiteEngineer/SubmitReport"));
@@ -186,6 +187,7 @@ function App() {
               <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
             </Route>
             <Route path="/engineer/home" element={<SiteEngineer />} />
+            <Route path="/site-engineer/profile" element={<SiteEngineerProfile />} />
             <Route
               path="/activate-account"
               element={<ActivateAccount />}
