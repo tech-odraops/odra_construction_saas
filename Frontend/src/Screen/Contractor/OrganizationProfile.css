@@ -195,6 +195,10 @@
   display: none;
 }
 
+.organization-profile__camera-canvas {
+  display: none;
+}
+
 .organization-logo-dialog.MuiPaper-root {
   max-width: 44rem;
   padding: 1.25rem 1.5rem 1.5rem;
@@ -264,6 +268,59 @@
   color: var(--color-organization-profile-hint-text);
   font-size: var(--font-caption-font-size);
   line-height: 1.4;
+}
+
+.organization-logo-dialog__camera-panel.MuiDialogContent-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0;
+}
+
+.organization-camera__viewer {
+  overflow: hidden;
+  border: 1px solid var(--color-organization-profile-option-border);
+  border-radius: 0.9rem;
+  background: #000;
+}
+
+.organization-camera__video {
+  display: block;
+  width: 100%;
+  min-height: 21rem;
+  max-height: 24rem;
+  object-fit: cover;
+  background: #000;
+}
+
+.organization-camera__status {
+  margin: 0;
+  color: var(--color-organization-profile-hint-text);
+  font-size: var(--font-body-font-size);
+}
+
+.organization-camera__actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.organization-camera__action.MuiButton-root {
+  min-width: 9rem;
+  border-radius: 0.6rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: none;
+}
+
+.organization-camera__action--primary.MuiButton-root {
+  background: var(--color-organization-profile-accent-strong);
+  color: var(--palette-primary-contrast-text);
+}
+
+.organization-camera__action--secondary.MuiButton-root {
+  border: 1px solid var(--color-organization-profile-option-border);
+  background: transparent;
+  color: var(--color-organization-profile-text);
 }
 
 @media (max-width: 700px) {

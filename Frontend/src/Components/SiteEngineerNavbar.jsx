@@ -26,6 +26,8 @@ export default function SiteEngineerNavbar() {
   const navigate = useNavigate();
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const { t } = useTranslation();
+  const savedProfileImage = localStorage.getItem("siteEngineerProfileImage") || "";
+  const userInitial = localStorage.getItem("name")?.charAt(0)?.toUpperCase() || "S";
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -90,16 +92,22 @@ export default function SiteEngineerNavbar() {
             </Box>
 
             <Avatar
+              onClick={() => navigate("/site-engineer/profile")}
+              src={savedProfileImage || undefined}
+              alt="Profile"
               sx={{
-                bgcolor: "#F97316",
+                bgcolor: savedProfileImage ? "transparent" : "#F97316",
                 ml: 2.5,
                 mr: 1.5,
                 width: 28,
                 height: 28,
                 fontSize: 13,
+                cursor: "pointer",
+                objectFit: "cover",
+                border: savedProfileImage ? "1px solid rgba(15, 23, 42, 0.08)" : "none",
               }}
             >
-              {localStorage.getItem("name")?.charAt(0)}
+              {!savedProfileImage && userInitial}
             </Avatar>
 
             <Button
@@ -201,8 +209,16 @@ export default function SiteEngineerNavbar() {
 
           <Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-              <Avatar sx={{ bgcolor: "#F97316" }}>
-                {localStorage.getItem("name")?.charAt(0)}
+              <Avatar
+                src={savedProfileImage || undefined}
+                alt="Profile"
+                sx={{
+                  bgcolor: savedProfileImage ? "transparent" : "#F97316",
+                  border: savedProfileImage ? "1px solid rgba(15, 23, 42, 0.08)" : "none",
+                  objectFit: "cover",
+                }}
+              >
+                {!savedProfileImage && userInitial}
               </Avatar>
 
               <Button

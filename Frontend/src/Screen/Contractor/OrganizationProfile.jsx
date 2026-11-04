@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -25,7 +25,9 @@ export default function OrganizationProfile() {
   const navigate = useNavigate();
   const { showPopup } = usePopup();
   const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const cameraStreamRef = useRef(null);
   const [organizationName, setOrganizationName] = useState(
     () => localStorage.getItem("organizationName") || localStorage.getItem("name") || "",
   );
@@ -38,9 +40,94 @@ export default function OrganizationProfile() {
   });
   const [selectedLogo, setSelectedLogo] = useState(null);
   const [logoDialogOpen, setLogoDialogOpen] = useState(false);
+  const [cameraCaptureOpen, setCameraCaptureOpen] = useState(false);
+  const [cameraError, setCameraError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    return () => {
+      if (cameraStreamRef.current) {
+        cameraStreamRef.current.getTracks().forEach((track) => track.stop());
+        cameraStreamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!cameraCaptureOpen) {
+      return;
+    }
+
+    let active = true;
+
+    async function startCameraStream() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setCameraError("Camera is not supported on this device or browser.");
+        return;
+      }
+
+      try {
+        stopCameraStream();
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        });
+
+        if (!active) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        cameraStreamRef.current = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          await videoRef.current.play();
+        }
+      } catch (error) {
+        if (!active) {
+          return;
+        }
+        console.error("Camera capture failed", error);
+        setCameraError("Unable to access your camera. Please allow camera permissions or choose a photo from the gallery.");
+        showPopup({
+          variant: "error",
+          title: "Camera access denied",
+          message: "Allow camera access to take a live photo, or choose an image from the gallery.",
+        });
+      }
+    }
+
+    startCameraStream();
+
+    return () => {
+      active = false;
+    };
+  }, [cameraCaptureOpen, showPopup]);
+
   const logo = selectedLogo || savedLogo;
+
+  function stopCameraStream() {
+    if (cameraStreamRef.current) {
+      cameraStreamRef.current.getTracks().forEach((track) => track.stop());
+      cameraStreamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }
+
+  function closeLogoDialog() {
+    stopCameraStream();
+    setCameraCaptureOpen(false);
+    setCameraError("");
+    setLogoDialogOpen(false);
+  }
 
   function selectImage(file) {
     if (!file) return;
@@ -62,6 +149,44 @@ export default function OrganizationProfile() {
       showPopup({ variant: "error", title: "Upload failed", message: "Could not read this image. Please try another file." });
     };
     reader.readAsDataURL(file);
+  }
+
+  async function openCameraCapture() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showPopup({ variant: "error", title: "Camera unavailable", message: "This browser does not support live camera capture. Please choose an image from your gallery instead." });
+      return;
+    }
+
+    setCameraError("");
+    setCameraCaptureOpen(true);
+    setLogoDialogOpen(true);
+  }
+
+  function captureCameraPhoto() {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    if (!video || !canvas) {
+      showPopup({ variant: "error", title: "Camera not ready", message: "The camera is still initializing. Please try again." });
+      return;
+    }
+
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 720;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      showPopup({ variant: "error", title: "Photo capture failed", message: "Could not process the live photo. Please try again." });
+      return;
+    }
+
+    context.drawImage(video, 0, 0, width, height);
+    const imageData = canvas.toDataURL("image/jpeg", 0.9);
+    setSelectedLogo({ type: "image", value: imageData });
+    closeLogoDialog();
   }
 
   async function handleSave(event) {
@@ -166,52 +291,73 @@ export default function OrganizationProfile() {
         accept="image/png,image/jpeg,image/svg+xml"
         onChange={(event) => selectImage(event.target.files?.[0])}
       />
-      <input
-        ref={cameraInputRef}
-        className="organization-profile__file-input"
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={(event) => selectImage(event.target.files?.[0])}
-      />
+      <canvas ref={canvasRef} className="organization-profile__camera-canvas" />
 
       <Dialog
         open={logoDialogOpen}
-        onClose={() => setLogoDialogOpen(false)}
+        onClose={closeLogoDialog}
         maxWidth="md"
         fullWidth
         PaperProps={{ className: "organization-logo-dialog" }}
       >
         <Box className="organization-logo-dialog__heading">
           <Typography component="h2">Add Organisation Logo</Typography>
-          <Button iconOnly aria-label="Close logo options" onClick={() => setLogoDialogOpen(false)}>
+          <Button iconOnly aria-label="Close logo options" onClick={closeLogoDialog}>
             <CloseRoundedIcon />
           </Button>
         </Box>
-        <DialogContent className="organization-logo-dialog__options">
-          <button
-            type="button"
-            className="organization-logo-option"
-            onClick={() => {
-              setSelectedLogo({ type: "preset", value: "OD" });
-              setLogoDialogOpen(false);
-            }}
-          >
-            <span className="organization-logo-option__icon"><AddPhotoAlternateOutlinedIcon /></span>
-            <strong>ODRAOPS Gallery</strong>
-            <span>Choose a logo from ODRAOPS</span>
-          </button>
-          <button type="button" className="organization-logo-option" onClick={() => fileInputRef.current?.click()}>
-            <span className="organization-logo-option__icon"><ImageOutlinedIcon /></span>
-            <strong>Choose from Gallery</strong>
-            <span>Upload an image from your device</span>
-          </button>
-          <button type="button" className="organization-logo-option" onClick={() => cameraInputRef.current?.click()}>
-            <span className="organization-logo-option__icon"><PhotoCameraOutlinedIcon /></span>
-            <strong>Take Photo</strong>
-            <span>Capture a new photo</span>
-          </button>
-        </DialogContent>
+
+        {cameraCaptureOpen ? (
+          <DialogContent className="organization-logo-dialog__camera-panel">
+            <Box className="organization-camera__viewer">
+              <video ref={videoRef} autoPlay playsInline muted className="organization-camera__video" />
+            </Box>
+
+            {cameraError ? (
+              <Typography component="p" className="organization-camera__status">
+                {cameraError}
+              </Typography>
+            ) : null}
+
+            <Box className="organization-camera__actions">
+              <Button type="button" variant="contained" className="organization-camera__action organization-camera__action--primary" onClick={captureCameraPhoto}>
+                Capture Photo
+              </Button>
+              <Button type="button" className="organization-camera__action organization-camera__action--secondary" onClick={() => {
+                stopCameraStream();
+                setCameraCaptureOpen(false);
+                setCameraError("");
+              }}>
+                Back
+              </Button>
+            </Box>
+          </DialogContent>
+        ) : (
+          <DialogContent className="organization-logo-dialog__options">
+            <button
+              type="button"
+              className="organization-logo-option"
+              onClick={() => {
+                setSelectedLogo({ type: "preset", value: "OD" });
+                closeLogoDialog();
+              }}
+            >
+              <span className="organization-logo-option__icon"><AddPhotoAlternateOutlinedIcon /></span>
+              <strong>ODRAOPS Gallery</strong>
+              <span>Choose a logo from ODRAOPS</span>
+            </button>
+            <button type="button" className="organization-logo-option" onClick={() => fileInputRef.current?.click()}>
+              <span className="organization-logo-option__icon"><ImageOutlinedIcon /></span>
+              <strong>Choose from Gallery</strong>
+              <span>Upload an image from your device</span>
+            </button>
+            <button type="button" className="organization-logo-option" onClick={openCameraCapture}>
+              <span className="organization-logo-option__icon"><PhotoCameraOutlinedIcon /></span>
+              <strong>Take Photo</strong>
+              <span>Capture a new photo</span>
+            </button>
+          </DialogContent>
+        )}
       </Dialog>
     </>
   );
