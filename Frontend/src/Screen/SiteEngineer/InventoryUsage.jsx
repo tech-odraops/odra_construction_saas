@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import axios from "../../utils/axiosInstance";
 import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
-import SiteEngineerNavbar from "../../Components/SiteEngineerNavbar";
 import Footer from "../../Components/Footer";
 import {
   Box,
@@ -167,8 +166,6 @@ export default function InventoryUsage() {
 
   return (
     <>
-      <SiteEngineerNavbar />
-  
       <Box
         sx={{
           minHeight: "100vh",

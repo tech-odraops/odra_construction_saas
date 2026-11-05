@@ -15,7 +15,7 @@ import heroMachine from "../assets/Home Hero image.png";
 const features = [
   { title: "ATTENDANCE MANAGEMENT", description: "Track worker attendance digitally with real-time reporting and accurate records.", icon: CalendarMonthOutlinedIcon },
   { title: "PROJECT MANAGEMENT", description: "Assign tasks, track progress, manage reports and keep projects on schedule.", icon: AssignmentOutlinedIcon },
-  { title: "REAL-TIME CHAT", description: "Instant communication between contractors and site engineers to reduce delays.", icon: ForumOutlinedIcon },
+  { title: "REAL-TIME CHAT", description: "Instant communication between founders and site engineers to reduce delays.", icon: ForumOutlinedIcon },
   { title: "LABOUR MANAGEMENT", description: "Add workers, assign them to projects and optimize workforce utilization.", icon: EngineeringOutlinedIcon },
   { title: "INVENTORY MANAGEMENT", description: "Add materials, track usage, monitor stock levels and control project costs.", icon: Inventory2OutlinedIcon },
 ];

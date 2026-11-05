@@ -177,7 +177,7 @@ export default function ProjectInventory() {
               </div>
             </Paper>
             <Paper className="inventory-list-card" elevation={0}>
-              <div className="inventory-list-heading"><Typography component="h2" className="inventory-section-title">{t("inventory.current_inventory")}</Typography><Button className="inventory-history-button" component={Link} to={`/contractor/projects/${projectId}/inventory-history`}>{t("inventory.view_history")}</Button></div>
+              <div className="inventory-list-heading"><Typography component="h2" className="inventory-section-title">{t("inventory.current_inventory")}</Typography><Button className="inventory-history-button" component={Link} to={`/founder/projects/${projectId}/inventory-history`}>{t("inventory.view_history")}</Button></div>
               {!items.length && <Typography color="text.secondary">{t("inventory.no_materials")}</Typography>}
               <div className="inventory-items">{items.map((item) => <div className="inventory-item-row" key={item._id}><span className="inventory-item-icon">⬡</span><div className="inventory-item-name"><Typography>{item.name}</Typography><Typography>{item.unit}</Typography></div><div className="inventory-item-quantity"><Typography>{item.availableQuantity} / {item.totalQuantity}</Typography>{item.isLowStock && <Typography className="inventory-low-stock">⚠ {t("inventory.low_stock")}</Typography>}</div></div>)}</div>
             </Paper>

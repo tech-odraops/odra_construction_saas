@@ -110,6 +110,7 @@ export default function Login() {
         localStorage.setItem("IsLogin", true);
         localStorage.setItem("name", response.data.name);
         localStorage.setItem("organizationId",response.data.organizationId);
+        localStorage.setItem("role", response.data.role);
 
         showPopup({
           variant: "success",
@@ -126,8 +127,8 @@ export default function Login() {
         }
 
         const roleDestinations = {
-          Founder: "/contractor/home",
-          "Site Engineer": "/engineer/home",
+          Founder: "/founder/home",
+          "Site Engineer": "/site-engineer/home",
         };
 
         const destination = roleDestinations[response.data.role];
@@ -148,8 +149,19 @@ export default function Login() {
           return;
         }
 
-        window.setTimeout(() => navigate(destination), 1200);
-        
+        const requestedPath = searchParams.get("redirect");
+        const canReturnToRequestedPath =
+          typeof requestedPath === "string" &&
+          requestedPath.startsWith("/") &&
+          !requestedPath.startsWith("//") &&
+          (response.data.role === "Founder"
+            ? requestedPath.startsWith("/founder/")
+            : requestedPath.startsWith("/site-engineer/"));
+
+        window.setTimeout(
+          () => navigate(canReturnToRequestedPath ? requestedPath : destination, { replace: true }),
+          1200,
+        );
       }
     } catch (e) {
       const status = e.response?.status;

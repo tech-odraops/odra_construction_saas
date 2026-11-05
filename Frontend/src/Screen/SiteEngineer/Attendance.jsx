@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import SiteEngineerNavbar from "../../Components/SiteEngineerNavbar";
 import Footer from "../../Components/Footer";
 import {
   Box,
@@ -147,8 +146,6 @@ export default function Attendance() {
 
   return (
     <>
-      <SiteEngineerNavbar />
-
       <Box
         sx={{
           position: "relative",

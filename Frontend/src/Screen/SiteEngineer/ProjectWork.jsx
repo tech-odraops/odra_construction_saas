@@ -1,7 +1,6 @@
 // import React from 'react'
 import React, { useEffect, useState } from "react";
 import Footer from '../../Components/Footer';
-import SiteEngineerNavbar from '../../Components/SiteEngineerNavbar';
 import { Link, useParams, useNavigate } from "react-router-dom";
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
@@ -191,8 +190,6 @@ export default function ProjectWork() {
 
   return (
     <div>
-      <SiteEngineerNavbar />
-
       <Box
         sx={{
           minHeight: "100vh",

@@ -1,7 +1,6 @@
 import React, { useState, useRef } from "react";
 import axiosInstance from "../../utils/axiosInstance";
 import { useParams, useNavigate } from "react-router-dom";
-import SiteEngineerNavbar from "../../Components/SiteEngineerNavbar";
 import Footer from "../../Components/Footer";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -157,8 +156,6 @@ export default function SubmitReport() {
 
   return (
     <div>
-      <SiteEngineerNavbar />
-
       <Box
         sx={{
           minHeight: "100vh",

@@ -131,7 +131,7 @@ test.describe('regular login', () => {
     await page.locator('input[name="password"]').fill('correct-password');
     await page.getByRole('button', { name: 'Sign In' }).click();
 
-    await expect(page).toHaveURL(/\/contractor\/home$/);
+    await expect(page).toHaveURL(/\/founder\/home$/);
     await expect(page).toHaveTitle(/ODRAOPS - Construction Management Software/);
     await expect.poll(() => page.evaluate(() => localStorage.getItem('token')))
       .toBe('eyJhbGciOiJub25lIn0.eyJVc2VyX2lkIjoiY29udHJhY3Rvci0xIiwicm9sZSI6Im1hbmFnZXIifQ.');
