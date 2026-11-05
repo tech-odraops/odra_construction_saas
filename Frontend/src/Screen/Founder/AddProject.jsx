@@ -38,7 +38,7 @@ export default function AddProject() {
 
       toast.success("Project created successfully");
 
-      navigate(`/contractor/project/${projectId}`);
+      navigate(`/founder/project/${projectId}`);
     } catch (err) {
       console.error("Error creating project:", err);
 

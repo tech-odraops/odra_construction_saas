@@ -15,7 +15,7 @@ const fallbackWorkers = [
   { _id: "fallback-4", name: "Mohan Nayak", phone: "9765432109", currentProjectId: null },
 ];
 
-export default function ContractorWorkers() {
+export default function FounderWorkers() {
   const { t } = useTranslation();
   const [workers, setWorkers] = useState(fallbackWorkers);
   const [loading, setLoading] = useState(true);
@@ -85,7 +85,7 @@ export default function ContractorWorkers() {
                   </Table>
                 </TableContainer>
                 <div className="workers-footer-actions">
-                  <Button className="workers-add-button" component={Link} to="/contractor/add-worker" startIcon={<AddIcon />}>
+                  <Button className="workers-add-button" component={Link} to="/founder/add-worker" startIcon={<AddIcon />}>
                     Add Worker
                   </Button>
                 </div>

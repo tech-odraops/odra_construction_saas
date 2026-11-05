@@ -433,6 +433,12 @@ main,
 }
 
 /* ODRAOPS contractor navigation and add project screen */
+@keyframes dashboard-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .contractor-appbar.MuiAppBar-root {
   position: relative;
   z-index: 30;

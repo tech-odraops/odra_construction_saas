@@ -14,7 +14,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
-export default function ContractorAttendance() {
+export default function FounderAttendance() {
     const { id: projectId } = useParams();
     const [date, setDate] = useState("");
     const [attendance, setAttendance] = useState({});

@@ -8,7 +8,7 @@ const accounts = [
     email: process.env.E2E_MANAGER_EMAIL,
     password: process.env.E2E_MANAGER_PASSWORD,
     role: 'manager',
-    destination: '/contractor/home',
+    destination: '/founder/home',
   },
   {
     name: 'site engineer',

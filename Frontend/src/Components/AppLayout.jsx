@@ -1,28 +1,47 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Box, Drawer, Typography } from "@mui/material";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
-import ContractorNavbar from "./ContractorNavbar";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import AppNavbar from "./AppNavbar";
 
-const menuItems = [
-  { label: "Projects", path: "/contractor/project", Icon: FolderOpenOutlinedIcon },
-  { label: "Team", path: "/contractor/workers", Icon: GroupsOutlinedIcon },
-  { label: "Add New Project", path: "/contractor/add-project", Icon: AddCircleRoundedIcon },
+const contractorMenuItems = [
+  { label: "Home", path: "/founder/home", Icon: HomeOutlinedIcon },
+  { label: "Projects", path: "/founder/project", Icon: FolderOpenOutlinedIcon },
+  { label: "Team", path: "/founder/workers", Icon: GroupsOutlinedIcon },
+  { label: "Add New Project", path: "/founder/add-project", Icon: AddCircleRoundedIcon },
+  { label: "Add Worker", path: "/founder/add-worker", Icon: PersonAddAltOutlinedIcon },
 ];
 
-export default function ContractorLayout() {
+function PageLoader() {
+  return (
+    <Box sx={{ minHeight: "calc(100vh - var(--dashboard-header-height))", display: "grid", placeItems: "center", color: "var(--color-dashboard-muted-text)" }}>
+      Loading...
+    </Box>
+  );
+}
+
+export default function AppLayout() {
   const { pathname } = useLocation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false);
+  const isSiteEngineer = pathname.startsWith("/site-engineer");
+  const menuItems = isSiteEngineer
+    ? [
+      { label: "Home", path: "/site-engineer/home", Icon: HomeOutlinedIcon },
+      { label: "Projects", path: "/site-engineer/projects", Icon: FolderOpenOutlinedIcon },
+    ]
+    : contractorMenuItems;
 
   const sidebar = (
     <>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, height: "var(--dashboard-header-height)", minHeight: 0, boxSizing: "border-box", p: 1.5, borderBottom: "1px solid var(--color-dashboard-border)" }}>
         <Box sx={{ width: 36, height: 36, display: "grid", placeItems: "center", borderRadius: 1, bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)", fontWeight: 700, fontSize: 20 }}>
-          B
+          {isSiteEngineer ? "S" : "B"}
         </Box>
-        <Typography sx={{ fontWeight: 700, fontSize: 14 }}>My Organisation</Typography>
+        <Typography sx={{ fontWeight: 700, fontSize: 14 }}>{isSiteEngineer ? "Site Engineer" : "Founder"}</Typography>
       </Box>
       <Box component="nav" sx={{ p: 1.5 }}>
         {menuItems.map(({ label, path, Icon }) => {
@@ -78,13 +97,16 @@ export default function ContractorLayout() {
         </Box>
 
         <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minWidth: 0 }}>
-          <ContractorNavbar
+          <AppNavbar
             dashboard
+            siteEngineer={isSiteEngineer}
             onMobileMenuClick={() => setMobileSidebarOpen(true)}
             showMobileDrawer={false}
           />
           <Box component="main" sx={{ flex: 1, minWidth: 0, borderLeft: "1px solid var(--color-dashboard-border)" }}>
-            <Outlet />
+            <Suspense fallback={<PageLoader />}>
+              <Outlet />
+            </Suspense>
           </Box>
         </Box>
       </Box>
