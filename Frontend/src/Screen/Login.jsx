@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Box, Divider, Paper, Typography } from "@mui/material";
+import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -31,13 +32,48 @@ export default function Login() {
   const [validationStates, setValidationStates] = useState({});
   const [validationMessages, setValidationMessages] = useState({});
   const [recoveryStep, setRecoveryStep] = useState(
-    initialResetToken ? "password" : "signin",
+    initialResetToken ? "verifying" : "signin",
   );
-  const [resetToken] = useState(initialResetToken);
+  const [resetToken, setResetToken] = useState(initialResetToken);
   const [passwordData, setPasswordData] = useState({
     password: "",
     confirmPassword: "",
   });
+
+  useEffect(() => {
+    const currentToken = searchParams.get("token") || "";
+    setResetToken(currentToken);
+
+    if (!currentToken) {
+      setRecoveryStep("signin");
+      return;
+    }
+
+    let isMounted = true;
+
+    const validateResetLink = async () => {
+      try {
+        await axiosInstance.post("/auth/validate-reset-token", {
+          token: currentToken,
+        });
+
+        if (isMounted) {
+          setRecoveryStep("password");
+        }
+      } catch {
+        if (isMounted) {
+          setRecoveryStep("expired");
+        }
+      }
+    };
+
+    setRecoveryStep("verifying");
+    validateResetLink();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [searchParams]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -262,12 +298,14 @@ export default function Login() {
 
   const recoveryHeaders = {
     signin: [t("auth.welcome_back"), t("auth.sign_in_continue")],
+    verifying: ["Checking reset link", "Please wait while we verify your password reset link."],
     email: ["Forgot password?", "Enter your email address to receive a reset link."],
     emailSent: [
       "Check your email",
       `If an account exists for ${formData.email}, a password reset link has been sent.`,
     ],
     password: ["Create new password", "Choose a new password for your account."],
+    expired: ["Link Expired", "This password reset link has expired. Please request a new link to reset your password."],
     success: ["Password reset successfully", "Your password has been updated."],
   };
 
@@ -298,14 +336,16 @@ export default function Login() {
         style={{ "--auth-bg": `url("${signInBg}")` }}
       >
         <Paper elevation={0} className="auth-card">
-          <Box className="auth-card-header">
-            <Typography variant="h5" fontWeight={700}>
-              {recoveryHeaders[recoveryStep][0]}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {recoveryHeaders[recoveryStep][1]}
-            </Typography>
-          </Box>
+          {recoveryStep !== "expired" && (
+            <Box className="auth-card-header">
+              <Typography variant="h5" fontWeight={700}>
+                {recoveryHeaders[recoveryStep][0]}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {recoveryHeaders[recoveryStep][1]}
+              </Typography>
+            </Box>
+          )}
 
           {recoveryStep === "signin" && (
             <>
@@ -428,6 +468,14 @@ export default function Login() {
             </Box>
           )}
 
+          {recoveryStep === "verifying" && (
+            <Box className="auth-reset-status">
+              <Typography variant="body2" color="text.secondary" align="center">
+                Checking your reset link...
+              </Typography>
+            </Box>
+          )}
+
           {recoveryStep === "password" && (
             <form onSubmit={resetPassword}>
               <Box mb={2}>
@@ -468,6 +516,28 @@ export default function Login() {
                 Reset Password
               </button>
             </form>
+          )}
+
+          {recoveryStep === "expired" && (
+            <Box className="auth-reset-expired">
+              <Box className="auth-expired-icon" aria-label="Link expired">
+                <LinkOffOutlinedIcon sx={{ fontSize: 54, color: "#F97316" }} />
+              </Box>
+              <Typography variant="h5" className="auth-expired-title">
+                Link Expired
+              </Typography>
+              <Typography variant="body1" className="auth-expired-message">
+                This password reset link has expired. Please request a new link to
+                reset your password.
+              </Typography>
+              <button
+                type="button"
+                className="btn w-100 fw-semibold auth-submit"
+                onClick={beginPasswordRecovery}
+              >
+                Request New Reset Link
+              </button>
+            </Box>
           )}
 
           {recoveryStep === "success" && (
