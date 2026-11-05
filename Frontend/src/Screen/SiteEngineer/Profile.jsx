@@ -73,25 +73,26 @@ export default function SiteEngineerProfile() {
       <SiteEngineerNavbar />
 
       <Box className="site-engineer-profile-shell">
-        <Box className="site-engineer-profile-header">
-          <ArrowBackRoundedIcon className="site-engineer-profile-header__back" onClick={() => navigate(-1)} />
-          <Box className="site-engineer-profile-header__content">
-            <Typography variant="h4">Edit Profile</Typography>
-            <Typography className="site-engineer-profile-header__subtitle">
-              Update your personal information and account details.
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box component="form" className="site-engineer-profile-grid" onSubmit={handleSubmit}>
-          <Box className="site-engineer-profile-photo-card">
-            <Box className="site-engineer-profile-avatar-wrap">
-              {profileImage ? (
-                <img src={profileImage} alt="Profile" className="site-engineer-profile-avatar" />
-              ) : (
-                <Box className="site-engineer-profile-avatar site-engineer-profile-avatar--fallback">{initials}</Box>
-              )}
+        <Box className="site-engineer-profile-outer-card">
+          <Box className="site-engineer-profile-header">
+            <ArrowBackRoundedIcon className="site-engineer-profile-header__back" onClick={() => navigate(-1)} />
+            <Box className="site-engineer-profile-header__content">
+              <Typography variant="h4">Edit Profile</Typography>
+              <Typography className="site-engineer-profile-header__subtitle">
+                Update your personal information and account details.
+              </Typography>
             </Box>
+          </Box>
+
+          <Box component="form" className="site-engineer-profile-grid" onSubmit={handleSubmit}>
+            <Box className="site-engineer-profile-photo-card">
+              <Box className="site-engineer-profile-avatar-wrap">
+                {profileImage ? (
+                  <img src={profileImage} alt="Profile" className="site-engineer-profile-avatar" />
+                ) : (
+                  <Box className="site-engineer-profile-avatar site-engineer-profile-avatar--fallback">{initials}</Box>
+                )}
+              </Box>
 
             <Button
               type="button"
@@ -102,70 +103,71 @@ export default function SiteEngineerProfile() {
               startIcon={<PhotoCameraOutlinedIcon sx={{ fontSize: 20 }} />}
             />
 
-            <Typography className="site-engineer-profile-upload__label">Upload Profile Photo</Typography>
-            <Typography className="site-engineer-profile-upload__hint">JPG, PNG up to 5MB</Typography>
-            <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageUpload} />
-          </Box>
+              <Typography className="site-engineer-profile-upload__label">Upload Profile Photo</Typography>
+              <Typography className="site-engineer-profile-upload__hint">JPG, PNG up to 5MB</Typography>
+              <input ref={fileInputRef} type="file" accept="image/*" hidden onChange={handleImageUpload} />
+            </Box>
 
-          <Box className="site-engineer-profile-form-card">
-            <Input
-              id="name"
-              label="Name"
-              name="name"
-              type="text"
-              required
-              value={formData.name}
-              className="site-engineer-profile-input"
-              onChange={handleChange}
-            />
+            <Box className="site-engineer-profile-form-card">
+              <Input
+                id="name"
+                label="Name"
+                name="name"
+                type="text"
+                required
+                value={formData.name}
+                className="site-engineer-profile-input"
+                onChange={handleChange}
+              />
 
-            <Input
-              id="role"
-              label="Current role"
-              name="role"
-              select
-              value={formData.role}
-              className="site-engineer-profile-input"
-              onChange={handleChange}
-            >
-              <option value="Site Engineer">Site Engineer</option>
-              <option value="Project Engineer">Site Supervisor</option>
-            </Input>
+              <Input
+                id="role"
+                label="Current role"
+                name="role"
+                select
+                value={formData.role}
+                className="site-engineer-profile-input"
+                onChange={handleChange}
+              >
+                <option value="Site Engineer">Site Engineer</option>
+                <option value="Project Engineer">Site Supervisor</option>
+              </Input>
 
-            <Input
-              id="email"
-              label="Email address"
-              name="email"
-              type="email"
-              value={formData.email}
-              placeholder="Add email address"
-              icon="plus-math"
-              iconColor={formData.email ? "#9aa3b2" : "var(--color-profile-accent, #f97316)"}
-              className={`site-engineer-profile-input site-engineer-profile-input--email ${formData.email ? "site-engineer-profile-input--filled" : ""} ${isEmailFocused ? "site-engineer-profile-input--focused" : ""}`}
-              onChange={handleChange}
-              onFocus={() => setIsEmailFocused(true)}
-              onBlur={() => setIsEmailFocused(false)}
-            />
+              <Input
+                id="email"
+                label="Email address"
+                name="email"
+                type="email"
+                value={formData.email}
+                placeholder="Add email address"
+                icon="plus-math"
+                iconColor={formData.email ? "#9aa3b2" : "var(--color-profile-accent, #f97316)"}
+                className={`site-engineer-profile-input site-engineer-profile-input--email ${formData.email ? "site-engineer-profile-input--filled" : ""} ${isEmailFocused ? "site-engineer-profile-input--focused" : ""}`}
+                onChange={handleChange}
+                onFocus={() => setIsEmailFocused(true)}
+                onBlur={() => setIsEmailFocused(false)}
+              />
 
-            <Input
-              id="phone"
-              label="Phone number"
-              name="phone"
-              type="tel"
-              value={formData.phone}
-              className="site-engineer-profile-input site-engineer-profile-input--phone"
-              validationState={formData.phone ? "success" : undefined}
-              endIcon="check-mark"
-              onChange={handleChange}
-            />
+              <Input
+                id="phone"
+                label="Phone number"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                className="site-engineer-profile-input site-engineer-profile-input--phone"
+                validationState={formData.phone ? "success" : undefined}
+                endIcon="check-mark"
+                onChange={handleChange}
+              />
 
-            <Box className="site-engineer-profile-actions">
-              <Button type="button" variant="outlined" className="site-engineer-profile-cancel" onClick={() => navigate(-1)}>
-                Cancel
-              </Button>
-              <Button type="submit" variant="contained" className="site-engineer-profile-submit">
-                Update Profile
-              </Button>
+              <Box className="site-engineer-profile-actions">
+                <Button type="button" variant="outlined" className="site-engineer-profile-cancel" onClick={() => navigate(-1)}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="contained" className="site-engineer-profile-submit">
+                  Update Profile
+                </Button>
+              </Box>
             </Box>
           </Box>
         </Box>
