@@ -55,13 +55,34 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          cache-dependency-path: Frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
           cache-dependency-path: |
             package-lock.json
             Backend/package-lock.json
             Frontend/package-lock.json
 
       - name: Install root dependencies
-        working-directory: .
         run: npm ci
 
       - name: Install backend dependencies
@@ -69,16 +90,12 @@ jobs:
         run: npm ci
 
       - name: Install frontend dependencies
+        working-directory: Frontend
         run: npm ci
 
       - name: Install Playwright browsers
-        working-directory: .
         run: npx playwright install --with-deps chromium
 
-      - name: Run tests
-        working-directory: .
+      - name: Run E2E tests
         run: npm run test:e2e
-
-      - name: Build frontend
-        run: npm run build
         
