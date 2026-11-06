@@ -227,7 +227,6 @@ export default function MyProjects() {
         )}
       </main>
 
-      <Footer />
     </div>
   );
 }

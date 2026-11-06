@@ -386,7 +386,6 @@ export default function Attendance() {
         </Box>
       </Box>
 
-      <Footer />
     </>
   );
 }

@@ -38,6 +38,81 @@ main,
   overflow: visible;
 }
 
+.generic-rail-wrap {
+  position: relative;
+  z-index: 2;
+  background: #ffffff;
+  padding: 0;
+}
+
+.generic-rail {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  align-items: stretch;
+  background: rgba(247, 248, 250, 0.95);
+  border: 1px solid #f0f1f3;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.generic-rail-item {
+  flex: 1 1 0;
+  min-width: 0;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 10px 16px;
+  color: #5d6872;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.generic-rail-item:hover {
+  background: rgba(249, 115, 22, 0.04);
+}
+
+.generic-rail-item.active {
+  color: #111827;
+  background: rgba(255, 255, 255, 0.65);
+  border-bottom-color: #f97316;
+}
+
+.generic-rail-icon {
+  font-size: 1.2rem !important;
+}
+
+.generic-rail-chat {
+  flex: 0 0 auto;
+  margin: 8px 12px 8px 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, #ff9d2b 0%, #f97316 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 10px 22px rgba(249, 115, 22, 0.28);
+}
+
+.generic-rail-chat:hover {
+  background: linear-gradient(180deg, #ff8b1b 0%, #ea580c 100%) !important;
+}
+
+.generic-rail-chat .MuiSvgIcon-root {
+  font-size: 1.5rem;
+}
+
 .home-hero {
   position: relative;
   overflow: hidden;
@@ -698,7 +773,7 @@ main,
   isolation: isolate;
   min-height: calc(100vh - 52px);
   overflow: visible;
-  padding: 39px 30px 48px;
+  padding: 0 0 30px;
 }
 
 .projects-main::before,
@@ -895,9 +970,9 @@ main,
   position: relative;
   z-index: 1;
   isolation: isolate;
-  width: min(calc(100% - 64px), 1100px);
-  margin: 0 auto;
-  padding: 21px 0 42px;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 42px;
 }
 
 .project-overview-main::before,
@@ -911,6 +986,95 @@ main,
 
 .project-overview-heading {
   margin-bottom: 15px !important;
+}
+
+.project-overview-rail-wrap {
+  margin-bottom: 0;
+  padding-top: 0;
+}
+
+.project-overview-rail {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 56px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0;
+  box-shadow: 0 1px 0 rgba(17, 24, 39, 0.04);
+  overflow: hidden;
+}
+
+.project-overview-rail-item {
+  flex: 1 1 0;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 14px 11px;
+  color: #374151;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.project-overview-rail-item.active {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.08);
+  border-bottom-color: #f97316;
+}
+
+.project-overview-rail-item.active .project-overview-rail-icon,
+.project-overview-rail-item.active svg {
+  color: #f97316;
+  fill: currentColor;
+}
+
+.project-overview-rail-item:hover {
+  background: rgba(17, 24, 39, 0.02);
+}
+
+.project-overview-rail-item span {
+  display: inline-block;
+  line-height: 1.2;
+}
+
+.project-overview-rail-icon {
+  font-size: 1.08rem !important;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.project-overview-rail-chat {
+  flex: 0 0 auto;
+  align-self: center;
+  margin: 8px 10px 8px 8px;
+  padding: 0 18px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ff9d2b 0%, #f97316 100%);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 8px 18px rgba(249, 115, 22, 0.25);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.project-overview-rail-chat svg {
+  font-size: 1.05rem;
 }
 
 .project-overview-title.MuiTypography-root {
@@ -2124,9 +2288,9 @@ main,
 .project-inventory-main {
   position: relative;
   isolation: isolate;
-  width: min(calc(100% - 64px), 910px);
-  margin: 0 auto;
-  padding: 14px 0 42px;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 42px;
 }
 
 .project-inventory-main::before,

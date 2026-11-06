@@ -307,7 +307,6 @@ export default function SubmitReport() {
         </Paper>
       </Box>
 
-      <Footer />
     </div>
   );
 

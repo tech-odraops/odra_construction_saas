@@ -190,7 +190,6 @@ export default function ProjectInventory() {
         items={items}
       />
 
-      <Footer />
     </>
   );
 
