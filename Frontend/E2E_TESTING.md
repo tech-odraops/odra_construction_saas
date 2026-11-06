@@ -1,11 +1,11 @@
 # Frontend E2E Testing
 
-End-to-end tests use Playwright Test with Chromium. The configuration is in
-`playwright.config.js`, and test files live in `e2e/`.
+End-to-end tests use Playwright Test with Chromium. The configuration is in the
+repository root at `playwright.config.js`, and test files live in `e2e/`.
 
 ## Setup
 
-From the `Frontend` directory, install dependencies and the Chromium browser:
+From the repository root, install dependencies and the Chromium browser:
 
 ```powershell
 npm install
@@ -13,8 +13,9 @@ npx playwright install chromium
 ```
 
 Playwright starts the Vite development server automatically at
-`http://127.0.0.1:5173`. Do not start a separate server unless you change the
-Playwright web-server configuration.
+`http://localhost:5173`, and the backend at `http://localhost:8080`. Do not
+start either server separately unless you change the Playwright web-server
+configuration.
 
 ## Run Tests
 
@@ -67,6 +68,27 @@ account variables are present. Keep credentials in local environment settings
 or a secret manager; do not put real credentials in specs, documentation, or
 committed `.env` files. The tests perform real sign-ins and may trigger backend
 login activity.
+
+## GitHub Actions environment
+
+The `E2E Tests` GitHub Actions job reads its environment from repository
+Actions Secrets. Add these secrets under **Settings > Secrets and variables >
+Actions** before enabling live authentication:
+
+- `BACKEND_SECRET_KEY`, `BACKEND_GMAIL_USER`, `BACKEND_GMAIL_PASS`
+- `RESEND_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `OPENROUTER_API_KEY`
+- `SARVAM_API_KEY`, `FIREBASE_SERVICE_ACCOUNT`, `MONGODB_URI`
+- `VITE_GOOGLE_CLIENT_ID`, `VITE_FIREBASE_API_KEY`
+- `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`
+- `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`
+- `VITE_FIREBASE_APP_ID`, `VITE_FIREBASE_VAPID_KEY`
+- `E2E_LIVE_AUTH`, `E2E_MANAGER_EMAIL`, `E2E_MANAGER_PASSWORD`
+- `E2E_ENGINEER_EMAIL`, `E2E_ENGINEER_PASSWORD`
+
+The workflow supplies local service URLs for `APP_BASE_URL`, `VITE_API_URL`,
+and starts both services before running Playwright. Use a dedicated test
+database and test accounts rather than production credentials.
 
 Playwright is configured with one worker, so tests run one at a time. The
 headed command uses the same configuration and worker limit.
