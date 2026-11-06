@@ -1,11 +1,11 @@
 # Frontend E2E Testing
 
-End-to-end tests use Playwright Test with Chromium. The configuration is in
-`playwright.config.js`, and test files live in `e2e/`.
+End-to-end tests use Playwright Test with Chromium. The configuration is in the
+repository root at `playwright.config.js`, and test files live in `e2e/`.
 
 ## Setup
 
-From the `Frontend` directory, install dependencies and the Chromium browser:
+From the repository root, install dependencies and the Chromium browser:
 
 ```powershell
 npm install
@@ -13,8 +13,9 @@ npx playwright install chromium
 ```
 
 Playwright starts the Vite development server automatically at
-`http://127.0.0.1:5173`. Do not start a separate server unless you change the
-Playwright web-server configuration.
+`http://localhost:5173`, and the backend at `http://localhost:8080`. Do not
+start either server separately unless you change the Playwright web-server
+configuration.
 
 ## Run Tests
 
