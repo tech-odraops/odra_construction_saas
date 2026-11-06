@@ -3,14 +3,14 @@ import { expect, test } from '@playwright/test';
 const accounts = [
   {
     name: 'manager',
-    email: 'amiyamaity7105@gmail.com',
-    password: 'asdf1212',
+    email: process.env.E2E_MANAGER_EMAIL,
+    password: process.env.E2E_MANAGER_PASSWORD,
     destination: '/founder/home',
   },
   {
     name: 'site engineer',
-    email: "amiyamaity.13051@gmail.com",
-    password: 'asdf1212',
+    email: process.env.E2E_ENGINEER_EMAIL,
+    password: process.env.E2E_ENGINEER_PASSWORD,
     destination: '/site-engineer/home',
   }
 ];
@@ -18,7 +18,7 @@ const accounts = [
 for (const account of accounts) {
   test(`live login redirects ${account.name} to the correct dashboard`, async ({ page }) => {
     test.skip(
-      !account.email || !account.password,
+      process.env.E2E_LIVE_AUTH !== 'true' || !account.email || !account.password,
       'Set the account email/password environment variables to enable this test.'
     );
 
