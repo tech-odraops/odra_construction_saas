@@ -27,6 +27,7 @@ const testNotificationRoute = require("./routes/testNotification");
 const { sendToUser } = require("./services/notification.service");
 const { password } = require("./routes/auth/password");
 const User = require("./models/user");
+const profileRoutes = require("./routes/profileRoutes");
 
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
     ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
@@ -231,7 +232,9 @@ app.use('/token', tokenValidation);
 
 // using the notification routes
 app.use("/notification", notificationRoutes);
-// app.use("/notification", testNotificationRoute);
+
+// Profile management
+app.use("/profile", profileRoutes);
 
 // for testing porpose
 /**
@@ -254,8 +257,6 @@ app.use("/notification", notificationRoutes);
 app.get("/ping", (req, res) => {
     res.status(200).send("OK");
 });
-
-
 
 httpServer.listen(port, () => {
     console.log("Connection to backend established")

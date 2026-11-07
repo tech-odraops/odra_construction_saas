@@ -9,6 +9,13 @@ const organizationSchema = new mongoose.Schema(
             trim: true
         },
 
+
+        // S3 object key for the organisation logo
+        logoKey: {
+            type: String,
+            default: null
+        },
+
         // Unique customer subdomain, e.g. "abc" for abc.yourdomain.com.
         // Optional for now so existing organizations remain compatible.
         slug: {
