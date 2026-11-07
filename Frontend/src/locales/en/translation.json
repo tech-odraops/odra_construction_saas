@@ -64,7 +64,7 @@
     "status": "Status",
     "start_date": "Start Date",
     "end_date": "End Date",
-    "contractor": "Contractor",
+    "contractor": "Founder",
     "site_engineer": "Site Engineer",
     "site_engineers": "Site Engineers",
     "actions": "Actions",
@@ -84,7 +84,7 @@
     "my_projects": "My Projects",
     "track_projects": "Track all projects assigned to you.",
     "no_assigned_projects": "No projects assigned yet.",
-    "contractor_label": "Contractor",
+    "contractor_label": "Founder",
     "untitled_project": "Untitled Project",
     "previous_reports": "Previous Reports",
     "no_reports_submitted": "No reports have been submitted yet.",
@@ -99,7 +99,7 @@
     "log_inventory": "Log Inventory Usage",
     "project_completed_locked": "This project is completed. No further actions allowed.",
     "report_date_label": "Report Date: {{date}}",
-    "contractor_with_name": "Contractor: {{name}}",
+    "contractor_with_name": "Founder: {{name}}",
     "na": "N/A"
   },
   "inventory": {
@@ -146,7 +146,7 @@
     "export_pdf": "Export as PDF",
     "close": "Close",
     "project_label": "Project: {{name}}",
-    "contractor_label": "Contractor: {{name}}",
+    "contractor_label": "Founder: {{name}}",
     "generated_on": "Generated On: {{date}}"
   },
   "attendance": {
@@ -180,7 +180,7 @@
     "issues_found": "Issues Found",
     "uploaded_images": "Uploaded Images",
     "no_images": "No images uploaded.",
-    "contractor_review": "Contractor Review",
+    "contractor_review": "Founder Review",
     "comment": "Comment",
     "approve": "Approve",
     "decline": "Decline",
@@ -220,7 +220,7 @@
       "mission_short": "Digitising Indian Construction"
     },
     "contractor": {
-      "title": "Contractor Dashboard",
+      "title": "Founder Dashboard",
       "subtitle": "Overview of your projects, progress, and quick actions",
       "total_projects": "Total Projects",
       "ongoing_projects": "Ongoing Projects",
@@ -231,6 +231,12 @@
       "no_projects": "No projects available."
     },
     "engineer": {
+      "subtitle": "Overview of your assigned projects, progress, and quick actions",
+      "total_projects": "Total Projects",
+      "ongoing_projects": "Ongoing Projects",
+      "completed_projects": "Completed Projects",
+      "recent_projects": "Recent Projects",
+      "no_projects": "No projects assigned yet.",
       "hero_title": "Built for Site Engineers",
       "hero_desc": "A dedicated platform designed to help site engineers manage projects efficiently with real-time updates, reporting tools, and seamless communication.",
       "feature_1": "✔ Live project assignment updates",
@@ -240,10 +246,10 @@
       "features_title": "Filling The Gaps",
       "features_desc": "Everything you need to manage site-level operations effectively",
       "real_time_title": "Real-Time Project Updates",
-      "real_time_desc": "Instantly receive notifications when projects are assigned or updated by the contractor—no delays, no manual refresh.",
+      "real_time_desc": "Instantly receive notifications when projects are assigned or updated by the founder—no delays, no manual refresh.",
       "project_mgmt_title": "Project Management",
       "pm_1": "Submit daily & progress reports",
-      "pm_2": "Chat with contractor in real time",
+      "pm_2": "Chat with founder in real time",
       "pm_3": "Mark and manage attendance",
       "ui_title": "Clean & User-Friendly UI",
       "ui_desc": "Designed to be simple, fast, and mobile-friendly so site engineers can focus on work—not learning software."

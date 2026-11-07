@@ -77,7 +77,7 @@ export default function InventoryBreakdownModal({open,handleClose,items}) {
     doc.setFont("helvetica", "normal");
 
     doc.text(`Project: ${projectName}`, 14, 35);
-    doc.text(`Contractor: ${contractorName}`, 14, 42);
+    doc.text(`Founder: ${contractorName}`, 14, 42);
     doc.text(`Generated On: ${today}`, 14, 49);
 
     // ===== TABLE =====

@@ -46,8 +46,9 @@ function getOrganizationLogo() {
   }
 }
 
-export default function ContractorNavbar({
+export default function AppNavbar({
   dashboard = false,
+  siteEngineer = false,
   showMobileNavigation = true,
   showMobileDrawer = showMobileNavigation,
   onMobileMenuClick,
@@ -55,7 +56,7 @@ export default function ContractorNavbar({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openDrawer, setOpenDrawer] = React.useState(false);
-  const organizationLogo = getOrganizationLogo();
+  const organizationLogo = siteEngineer ? null : getOrganizationLogo();
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -67,12 +68,15 @@ export default function ContractorNavbar({
     navigate("/home");
   };
 
-  const menuItems = [
-    { label: t("navbar.add_project"), path: "/contractor/add-project", icon: AddCircleOutlineIcon },
-    { label: t("navbar.all_projects"), path: "/contractor/project", icon: FolderOpenOutlinedIcon },
-    { label: t("navbar.workers"), path: "/contractor/workers", icon: GroupsOutlinedIcon },
-    { label: t("navbar.add_worker"), path: "/contractor/add-worker", icon: PersonAddAltOutlinedIcon },
-  ];
+  const menuItems = siteEngineer
+    ? [{ label: t("navbar.all_projects"), path: "/site-engineer/projects", icon: FolderOpenOutlinedIcon }]
+    : [
+      { label: t("navbar.add_project"), path: "/founder/add-project", icon: AddCircleOutlineIcon },
+      { label: t("navbar.all_projects"), path: "/founder/project", icon: FolderOpenOutlinedIcon },
+      { label: t("navbar.workers"), path: "/founder/workers", icon: GroupsOutlinedIcon },
+      { label: t("navbar.add_worker"), path: "/founder/add-worker", icon: PersonAddAltOutlinedIcon },
+    ];
+  const homePath = siteEngineer ? "/site-engineer/home" : "/founder/home";
 
   return (
     <>
@@ -86,6 +90,7 @@ export default function ContractorNavbar({
               edge="start"
               color="inherit"
               className="icon-button-atom--mobile-menu contractor-mobile-menu"
+              sx={{ display: { xs: "inline-flex", md: "none" } }}
               onClick={() => {
                 if (onMobileMenuClick) {
                   onMobileMenuClick();
@@ -99,7 +104,7 @@ export default function ContractorNavbar({
           )}
 
           {/* Logo */}
-          <Box className="contractor-wordmark" sx={{ display: { xs: "none", md: dashboard ? "none" : "flex" }, alignItems: "center", flexGrow: 1 }} onClick={() => navigate("/contractor/home")}>
+          <Box className="contractor-wordmark" sx={{ display: { xs: "none", md: dashboard ? "none" : "flex" }, alignItems: "center", flexGrow: 1 }} onClick={() => navigate(homePath)}>
             ODRA<span>OPS</span>
           </Box>
 
@@ -137,9 +142,9 @@ export default function ContractorNavbar({
             {/* Avatar */}
             <Avatar
               className="contractor-profile-avatar"
-              component={Link}
-              to="/contractor/organization-profile"
-              aria-label="Edit organization profile"
+              component={siteEngineer ? "div" : Link}
+              to={siteEngineer ? undefined : "/founder/organization-profile"}
+              aria-label={siteEngineer ? "User profile" : "Edit organization profile"}
               sx={{
                 bgcolor: "var(--color-organization-profile-avatar-surface)",
                 color: "var(--palette-primary-main)",
@@ -149,7 +154,7 @@ export default function ContractorNavbar({
                 height: 40,
                 fontSize: "var(--font-body-font-size)",
                 border: 0,
-                cursor: "pointer",
+                cursor: siteEngineer ? "default" : "pointer",
                 display: { xs: dashboard ? "none" : "flex", md: "flex" },
                 "&:hover": { bgcolor: "var(--color-organization-profile-nav-avatar-hover)" },
                 "&:focus-visible": { outline: "var(--control-focus-outline-width) solid var(--palette-primary-main)", outlineOffset: "var(--control-focus-outline-offset)" },
@@ -226,7 +231,7 @@ export default function ContractorNavbar({
             <Box sx={{ textAlign: "start", mb: 2 }}>
               <div className="contractor-wordmark drawer-wordmark"
                 onClick={() => {
-                  navigate("/contractor/home");
+                  navigate("/founder/home");
                   setOpenDrawer(false);
                 }}
               >ODRA<span>OPS</span></div>
@@ -281,7 +286,7 @@ export default function ContractorNavbar({
               <Avatar
                 className="contractor-profile-avatar"
                 component={Link}
-                to="/contractor/organization-profile"
+                to="/founder/organization-profile"
                 onClick={() => {
                   setOpenDrawer(false);
                 }}

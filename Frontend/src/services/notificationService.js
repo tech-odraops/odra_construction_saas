@@ -1,28 +1,31 @@
 import { getToken, onMessage } from "firebase/messaging";
 import { messaging } from "../firebase";
 
-export const resolveNotificationUrl = (data = {}) => {
-  if (!data) return "/contractor/home";
+const normalizeNotificationUrl = (url) =>
+  typeof url === "string" ? url.replace(/^\/contractor(?=\/|$)/, "/founder") : url;
 
-  if (data.url) return data.url;
-  if (data.link) return data.link;
-  if (data.click_action) return data.click_action;
+export const resolveNotificationUrl = (data = {}) => {
+  if (!data) return "/founder/home";
+
+  if (data.url) return normalizeNotificationUrl(data.url);
+  if (data.link) return normalizeNotificationUrl(data.link);
+  if (data.click_action) return normalizeNotificationUrl(data.click_action);
 
   if (data.type === "chat" && data.projectId) {
-    return `/contractor/project/${data.projectId}`;
+    return `/founder/project/${data.projectId}`;
   }
   // Context-based routing fallbacks
   if (data.type === "dpr" || data.reportId) {
-    return `/contractor/view-report/${data.reportId}`;
+    return `/founder/view-report/${data.reportId}`;
   }
   if (data.type === "project" || data.projectId) {
-    return `/contractor/project/${data.projectId}`;
+    return `/founder/project/${data.projectId}`;
   }
   if (data.type === "attendance" && data.projectId) {
-    return `/contractor/projects/${data.projectId}/attendance`;
+    return `/founder/projects/${data.projectId}/attendance`;
   }
   if (data.type === "inventory" && data.projectId) {
-    return `/contractor/projects/${data.projectId}/inventory`;
+    return `/founder/projects/${data.projectId}/inventory`;
   }
   if (data.type === "site-engineer-report" && data.projectId) {
     return `/site-engineer/projects/${data.projectId}/report`;
@@ -31,7 +34,7 @@ export const resolveNotificationUrl = (data = {}) => {
     return `/site-engineer/projects/${data.projectId}`;
   }
 
-  return "/contractor/home";
+  return "/founder/home";
 };
 
 export const onForegroundMessage = (callback) => {

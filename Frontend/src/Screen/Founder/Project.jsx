@@ -74,7 +74,7 @@ export default function Project() {
             <Typography component="h1" className="projects-title">{t("project.projects")}</Typography>
             <Typography component="p" className="projects-subtitle">{t("project.manage_projects")}</Typography>
           </div>
-          <Button className="projects-add-button" component={Link} to="/contractor/add-project" startIcon={<AddIcon />}>
+          <Button className="projects-add-button" component={Link} to="/founder/add-project" startIcon={<AddIcon />}>
             Add New Project
           </Button>
         </header>
@@ -90,7 +90,7 @@ export default function Project() {
         ) : visibleProjects.length ? (
           <section className="projects-grid">
             {visibleProjects.map((project) => (
-              <article className="project-card" key={project._id} onClick={() => navigate(`/contractor/project/${project._id}`)}>
+              <article className="project-card" key={project._id} onClick={() => navigate(`/founder/project/${project._id}`)}>
                 <div className="project-card-icon"><ProjectBuildingIcon /></div>
                 <div className="project-card-copy">
                   <Typography component="h2" title={project.title}>{project.title}</Typography>
@@ -102,7 +102,7 @@ export default function Project() {
                 </div>
                 <div className="project-card-actions" onClick={(event) => event.stopPropagation()}>
                   <Tooltip title={t("project.open_project")}>
-                    <Button iconOnly border={false} aria-label="Open project" onClick={() => navigate(`/contractor/project/${project._id}`)}><Icon variant="pencil" size="button" gradient={null} /></Button>
+                    <Button iconOnly border={false} aria-label="Open project" onClick={() => navigate(`/founder/project/${project._id}`)}><Icon variant="pencil" size="button" gradient={null} /></Button>
                   </Tooltip>
                   <Tooltip title="Delete Project">
                     <Button iconOnly border={false} aria-label="Delete project" className="project-delete-button" onClick={() => handleDelete(project._id)}><DeleteForeverRoundedIcon /></Button>

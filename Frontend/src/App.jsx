@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -13,22 +13,20 @@ import usePopup from "./contexts/usePopup";
 const Home = lazy(() => import("./Screen/Home"));
 const Login = lazy(() => import("./Screen/Login"));
 
-const Contractor = lazy(() => import("./Screen/Contractor/Contractor"));
-const OrganizationProfile = lazy(() => import("./Screen/Contractor/OrganizationProfile"));
-const Project = lazy(() => import("./Screen/Contractor/Project"));
-const ProjectDetails = lazy(() => import("./Screen/Contractor/ProjectDetails"));
-const AddProject = lazy(() => import("./Screen/Contractor/AddProject"));
-const ViewReport = lazy(() => import("./Screen/Contractor/ViewReport"));
-const ContractorAttendance = lazy(() => import("./Screen/Contractor/ContractorAttendance"));
-const AddWorker = lazy(() => import("./Screen/Contractor/AddWorkers"));
-const ContractorWorkers = lazy(() => import("./Screen/Contractor/ContractorWorkers"));
-const AssignWorker = lazy(() => import("./Screen/Contractor/AssignWorker"));
-const ProjectInventory = lazy(() => import("./Screen/Contractor/ProjectInventory"));
-const InventoryHistory = lazy(() => import("./Screen/Contractor/InventoryHistory"));
+const OrganizationProfile = lazy(() => import("./Screen/Founder/OrganizationProfile"));
+const Project = lazy(() => import("./Screen/Founder/Project"));
+const ProjectDetails = lazy(() => import("./Screen/Founder/ProjectDetails"));
+const AddProject = lazy(() => import("./Screen/Founder/AddProject"));
+const ViewReport = lazy(() => import("./Screen/Founder/ViewReport"));
+const FounderAttendance = lazy(() => import("./Screen/Founder/FounderAttendance"));
+const AddWorker = lazy(() => import("./Screen/Founder/AddWorkers"));
+const FounderWorkers = lazy(() => import("./Screen/Founder/FounderWorkers"));
+const AssignWorker = lazy(() => import("./Screen/Founder/AssignWorker"));
+const ProjectInventory = lazy(() => import("./Screen/Founder/ProjectInventory"));
+const InventoryHistory = lazy(() => import("./Screen/Founder/InventoryHistory"));
 import ActivateAccount from './Screen/ActivateAccount'
 
 const SiteEngineer = lazy(() => import("./Screen/SiteEngineer/SiteEngineer"));
-const SiteEngineerProfile = lazy(() => import("./Screen/SiteEngineer/Profile"));
 const MyProjects = lazy(() => import("./Screen/SiteEngineer/MyProjects"));
 const ProjectWork = lazy(() => import("./Screen/SiteEngineer/ProjectWork"));
 const SubmitReport = lazy(() => import("./Screen/SiteEngineer/SubmitReport"));
@@ -50,7 +48,7 @@ const NotFound = lazy(() => import("./Components/NotFound"));
 // suspense loader and errorboundary
 import FullScreenLoader from "./Components/FullScreenLoader";
 import ErrorBoundary from "./Components/ErrorBoundary";
-import ContractorLayout from "./Components/ContractorLayout";
+import AppLayout from "./Components/AppLayout";
 
 function NotificationHandler() {
   const navigate = useNavigate();
@@ -116,9 +114,9 @@ function RouteBackground() {
 
   useEffect(() => {
     const isDashboardRoute =
-      pathname.startsWith("/contractor/") ||
-      pathname === "/contractor" ||
-      pathname === "/engineer/home" ||
+      pathname.startsWith("/founder/") ||
+      pathname === "/founder" ||
+      pathname === "/site-engineer/home" ||
       pathname.startsWith("/site-engineer/");
 
     document.body.classList.toggle("has-dashboard-background", isDashboardRoute);
@@ -138,6 +136,20 @@ function GlobalPopup() {
       <Popup {...popup} onClose={dismissPopup} style={{ maxWidth: "100%" }} />
     </div>
   );
+}
+
+function ProtectedRoleLayout() {
+  const { pathname, search, hash } = useLocation();
+  const hasToken = Boolean(localStorage.getItem("token"));
+  const role = localStorage.getItem("role");
+  const expectedRole = pathname.startsWith("/site-engineer") ? "Site Engineer" : "Founder";
+
+  if (!hasToken || role !== expectedRole) {
+    const requestedPath = `${pathname}${search}${hash}`;
+    return <Navigate to={`/Login?redirect=${encodeURIComponent(requestedPath)}`} replace />;
+  }
+
+  return <AppLayout />;
 }
 
 function App() {
@@ -170,34 +182,34 @@ function App() {
             {/* <Route path="/Signup" element={<Signup />} /> */}
             <Route path="/Login" element={<Login />} />
             <Route path="/reset-password" element={<Login />} />
-            <Route element={<ContractorLayout />}>
-              <Route path="/contractor/home" element={<Contractor />} />
-              <Route path="/contractor/organization-profile" element={<OrganizationProfile />} />
-              <Route path="/contractor/edit-organization-profile" element={<OrganizationProfile />} />
+            <Route element={<ProtectedRoleLayout />}>
+              <Route path="/founder/home" element={<Dashboard />} />
+              <Route path="/founder/organization-profile" element={<OrganizationProfile />} />
+              <Route path="/founder/edit-organization-profile" element={<OrganizationProfile />} />
               <Route path="/organization-profile" element={<OrganizationProfile />} />
-              <Route path="/contractor/project" element={<Project />} />
-              <Route path="/contractor/project/:id" element={<ProjectDetails />} />
-              <Route path="/contractor/add-project" element={<AddProject />} />
-              <Route path="/contractor/view-report/:id" element={<ViewReport />} />
-              <Route path="/contractor/projects/:id/inventory" element={<ProjectInventory />} />
-              <Route path="/contractor/projects/:id/inventory-history" element={<InventoryHistory />} />
-              <Route path="/contractor/projects/:id/attendance" element={<ContractorAttendance />} />
-              <Route path="/contractor/workers" element={<ContractorWorkers />} />
-              <Route path="/contractor/add-worker" element={<AddWorker />} />
-              <Route path="/contractor/projects/:id/assign-workers" element={<AssignWorker />} />
+              <Route path="/founder/project" element={<Project />} />
+              <Route path="/founder/project/:id" element={<ProjectDetails />} />
+              <Route path="/founder/add-project" element={<AddProject />} />
+              <Route path="/founder/view-report/:id" element={<ViewReport />} />
+              <Route path="/founder/projects/:id/inventory" element={<ProjectInventory />} />
+              <Route path="/founder/projects/:id/inventory-history" element={<InventoryHistory />} />
+              <Route path="/founder/projects/:id/attendance" element={<FounderAttendance />} />
+              <Route path="/founder/workers" element={<FounderWorkers />} />
+              <Route path="/founder/add-worker" element={<AddWorker />} />
+              <Route path="/founder/projects/:id/assign-workers" element={<AssignWorker />} />
+              <Route path="/site-engineer/home" element={<Dashboard />} />
+              <Route path="/site-engineer/projects" element={<MyProjects></MyProjects>} />
+              <Route path='/site-engineer/projects/:id' element={<ProjectWork />}></Route>
+              <Route path='/site-engineer/projects/:id/report' element={<SubmitReport />}></Route>
+              <Route path="/site-engineer/projects/:id/attendance" element={<Attendance />} />
+              <Route path="/site-engineer/projects/:id/inventory" element={<InventoryUsage />} />
             </Route>
             <Route path="/engineer/home" element={<SiteEngineer />} />
-            <Route path="/site-engineer/profile" element={<SiteEngineerProfile />} />
             <Route
               path="/activate-account"
               element={<ActivateAccount />}
             />
             {/* site engineer routes */}
-            <Route path="/site-engineer/projects" element={<MyProjects></MyProjects>} />
-            <Route path='/site-engineer/projects/:id' element={<ProjectWork />}></Route>
-            <Route path='/site-engineer/projects/:id/report' element={<SubmitReport />}></Route>
-            <Route path="/site-engineer/projects/:id/attendance" element={<Attendance />} />
-            <Route path="/site-engineer/projects/:id/inventory" element={<InventoryUsage />} />
             {/* common pages routes */}
             <Route path="/services" element={<Services />} />
 

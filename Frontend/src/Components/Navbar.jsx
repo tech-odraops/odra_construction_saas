@@ -39,11 +39,12 @@ export default function Navbar() {
         if (response.status === 200) {
           // console.log(response.data)
           const backendRole = response.data.role;
+          localStorage.setItem("role", backendRole);
 
           if (backendRole === "manager") {
-            navigate("/contractor/home");
+            navigate("/founder/home");
           } else if (backendRole === "site engineer") {
-            navigate("/engineer/home");
+            navigate("/site-engineer/home");
           } else {
             navigate("/");
           }

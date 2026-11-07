@@ -294,7 +294,7 @@ export default function ProjectDetails() {
       toast.info(`New report received: ${data.projectTitle}`, {
         onClick: () => {
           if (data.newReport?._id) {
-            navigate(`/contractor/view-report/${data.newReport._id}`);
+            navigate(`/founder/view-report/${data.newReport._id}`);
           }
         }
       });
@@ -556,7 +556,7 @@ export default function ProjectDetails() {
               variant="contained"
               onClick={() => {
 
-                navigate(`/contractor/projects/${id}/attendance`);
+                navigate(`/founder/projects/${id}/attendance`);
               }}
               sx={{
                 position: "relative",
@@ -627,7 +627,7 @@ export default function ProjectDetails() {
                   color="secondary"
                   onClick={() => {
 
-                    navigate(`/contractor/projects/${id}/assign-workers`);
+                    navigate(`/founder/projects/${id}/assign-workers`);
                   }}
                   sx={{
                     position: "relative",
@@ -671,7 +671,7 @@ export default function ProjectDetails() {
               startIcon={<InventoryCubeIcon />}
               variant="outlined"
               onClick={() =>
-                navigate(`/contractor/projects/${id}/inventory`)
+                navigate(`/founder/projects/${id}/inventory`)
               }
             >
               {t("project.view_inventory")}
@@ -837,7 +837,7 @@ export default function ProjectDetails() {
                     }}
                     onClick={() => {
 
-                      navigate(`/contractor/view-report/${report._id}`);
+                      navigate(`/founder/view-report/${report._id}`);
                     }}
                   >
                     {t("project.view_report")}

@@ -177,8 +177,8 @@
 }
 
 .auth-login .auth-card.MuiPaper-root {
-  width: min(100%, 342px);
-  padding: 24px 16px 20px;
+  width: min(100%, 360px);
+  padding: 20px 18px 18px;
   border: 1px solid rgba(211, 215, 218, .9);
   border-radius: 16px;
   background: rgba(255, 255, 255, .96);
@@ -391,4 +391,49 @@
 .auth-reset-success .icon {
   width: 64px;
   height: 64px;
+}
+
+.auth-reset-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+}
+
+.auth-reset-expired {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 330px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.auth-expired-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 110px;
+  height: 110px;
+  margin: 6px auto 0;
+  border: 4px solid #f97316;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.auth-expired-title {
+  margin: 0;
+  color: #17191c;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 2.3vw, 2.3rem) !important;
+  line-height: 1.1;
+}
+
+.auth-expired-message {
+  max-width: 290px;
+  color: #4a5157;
+  font-size: 1rem !important;
+  line-height: 1.5;
 }

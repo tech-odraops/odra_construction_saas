@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Footer from "../../Components/Footer";
 import { useNavigate } from "react-router-dom";
-import SiteEngineerNavbar from "../../Components/SiteEngineerNavbar";
 import axiosInstance from "../../utils/axiosInstance";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
@@ -17,7 +16,6 @@ import Tooltip from "@mui/material/Tooltip";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Button from "../../Components/atoms/Button/Button";
 import { Icon } from "../../Components/atoms/Icon/Icon";
-import FullScreenLoader from "../../Components/FullScreenLoader";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 
 function ProjectBuildingIcon() {
@@ -53,6 +51,8 @@ export default function MyProjects() {
       } catch (e) {
         setError("Error fetching projects.");
         console.log(e);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
@@ -70,7 +70,7 @@ export default function MyProjects() {
     socketRef.current.on("project:assigned", (data) => {
       setProjects((prev) => [...prev, data.newProject]);
       toast.info(
-        `New project assigned: ${data.newProject.title} by ${data.contractorName}`,
+        `New project assigned: ${data.newProject.title} by Founder`,
         {
           onClick: () => {
             if (data.newProject?._id) {
@@ -84,7 +84,7 @@ export default function MyProjects() {
     socketRef.current.on("project:deleted", (data) => {
       setProjects((prev) => prev.filter((pro) => pro._id !== data.project_id));
 
-      toast.info(`Contractor deleted the project ${data.project_name}`);
+      toast.info(`Founder deleted the project ${data.project_name}`);
     });
 
     socketRef.current.on("project:titleUpdated", (data) => {
@@ -121,11 +121,8 @@ export default function MyProjects() {
         })}`;
   };
 
-  if (loading) return <FullScreenLoader />;
-
   return (
     <div className="projects-page">
-      <SiteEngineerNavbar />
       <main className="projects-main">
         <header className="projects-header">
           <div>
@@ -155,7 +152,9 @@ export default function MyProjects() {
           </Typography>
         )}
 
-        {projects.filter((project) => {
+        {loading ? (
+          <Box className="projects-loading"><CircularProgress sx={{ color: "#F97316" }} /></Box>
+        ) : projects.filter((project) => {
           if (tab === 1) return project.status === "Ongoing";
           if (tab === 2) return project.status === "Completed";
           return true;

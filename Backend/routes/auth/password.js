@@ -139,4 +139,48 @@ router.post(
     passwordRecoveryLimiter,
     passwordController.resetPassword
 );
+
+/**
+ * @openapi
+ * /auth/validate-reset-token:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Validate password reset token
+ *     description: Checks whether a password reset token is valid, has not expired, and has not already been used.
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Raw password reset token received through the email link.
+ *     responses:
+ *       "200":
+ *         description: Reset token is valid.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/SuccessMessage"
+ *       "400":
+ *         description: Token is missing, invalid, expired, or already used.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/ErrorResponse"
+ *       "500":
+ *         $ref: "#/components/responses/InternalServerError"
+ */
+router.post(
+    "/validate-reset-token",
+    passwordRecoveryLimiter,
+    passwordController.validateResetToken
+);
+
 module.exports = { password: router };
