@@ -624,7 +624,6 @@ export default function ProjectWork() {
         </DialogActions>
       </Dialog>
 
-      <Footer />
     </div>
   );
 

@@ -179,7 +179,6 @@ export default function FounderAttendance() {
             </Box>
           </Box>
 
-          <Footer />
         </>
       );
 

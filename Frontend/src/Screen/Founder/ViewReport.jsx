@@ -336,7 +336,6 @@ export default function ViewReport() {
         </Box>
       </Box>
 
-      <Footer />
     </Box>
   );
 
