@@ -29,7 +29,7 @@
   width: 100%;
   height: var(--input-height);
   border: var(--input-border-width) solid #d7dce0;
-  border-radius: 0;
+  border-radius: 5px;
   background-color: var(--input-background-color);
   /* font-size: 0.84rem; */
   font-family: Inter, sans-serif;
