@@ -157,7 +157,9 @@
   --radio-border-radius: 50%;
   --radio-border-width: 0.15625rem;
   --radio-control-size: 2.25rem;
+  --radio-control-size-md: 1.375rem;
   --radio-dot-size: 1.125rem;
+  --radio-dot-size-md: 0.625rem;
   --radio-gap: 0.875rem;
   --radio-padding: 0.25rem;
   --status-chip-dot-size: 0.75rem;

@@ -28,6 +28,7 @@ export default function AppLayout() {
   const { pathname } = useLocation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false);
   const isSiteEngineer = pathname.startsWith("/site-engineer");
+  const isProjectDetails = pathname.startsWith("/founder/project/");
   const menuItems = isSiteEngineer
     ? [
       { label: "Home", path: "/site-engineer/home", Icon: HomeOutlinedIcon },
@@ -100,10 +101,11 @@ export default function AppLayout() {
           <AppNavbar
             dashboard
             siteEngineer={isSiteEngineer}
+            sticky={isProjectDetails}
             onMobileMenuClick={() => setMobileSidebarOpen(true)}
             showMobileDrawer={false}
           />
-          <Box component="main" sx={{ flex: 1, minWidth: 0, borderLeft: "1px solid var(--color-dashboard-border)" }}>
+          <Box component="main" sx={{ flex: 1, minWidth: 0, minHeight: 0, borderLeft: "1px solid var(--color-dashboard-border)" }}>
             <Suspense fallback={<PageLoader />}>
               <Outlet />
             </Suspense>

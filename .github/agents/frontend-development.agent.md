@@ -16,6 +16,8 @@ You are the repository's frontend development agent. Implement complete, maintai
 4. Reuse existing abstractions and implement the change.
 5. Format changed files and run relevant validation using the repository's documented conventions.
 6. Review the final diff and report actual results.
+7. Avaoid to override the atoms through CSS classes, unless very necessary
+8. Avoid the PX values, instead use the variables already defined in variables.css, If not there, you can add them using guidelines
 
 ## Architecture & Components
 

@@ -19,7 +19,6 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import Groups2OutlinedIcon from "@mui/icons-material/Groups2Outlined";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
@@ -30,6 +29,7 @@ import ImportExportOutlinedIcon from "@mui/icons-material/ImportExportOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
+import Reports from "./Reports";
 
 function getAssignedSiteEngineers(project) {
   const engineers = [
@@ -725,7 +725,8 @@ export default function ProjectDetails() {
     <Box
       className="project-overview-page"
       sx={{
-        minHeight: "100vh",
+        height: "calc(100dvh - var(--dashboard-header-height))",
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         backgroundColor: "#f9fafb",
@@ -754,6 +755,7 @@ export default function ProjectDetails() {
           </Box>
         </Box>
 
+        <Box className="project-overview-content">
         {activeTab === "More" && (
           <>
             {/* HEADER */}
@@ -1151,13 +1153,23 @@ export default function ProjectDetails() {
           </>
         )}
 
-        {/* REPORTS SECTION */}
-
-        {activeTab === "Task" ? (
-          <Box sx={{ mt: 1.5 }}>{renderTasksSection()}</Box>
+        {activeTab === "Report" ? (
+          <Box className="project-reports-panel">
+            <Reports
+              projectId={id}
+              projectTitle={project.title}
+              onClose={() => setActiveTab("More")}
+              onProjectSelect={(selectedProject) => {
+                navigate(`/founder/project/${selectedProject._id}`);
+              }}
+            />
+          </Box>
+        ) : activeTab === "Task" ? (
+          renderTasksSection()
         ) : activeTab !== "More" ? (
-          <Box sx={{ mt: 2 }}>{renderComingSoonSection()}</Box>
+          renderComingSoonSection()
         ) : null}
+        </Box>
 
       </Box>
 

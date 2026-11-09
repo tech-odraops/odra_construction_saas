@@ -523,6 +523,11 @@ main,
   border-bottom: 1px solid #eceeef;
 }
 
+.contractor-appbar--sticky.MuiAppBar-root {
+  position: sticky;
+  top: 0;
+}
+
 .contractor-toolbar.MuiToolbar-root {
   min-height: 52px;
   padding: 0 20px 0 34px;
@@ -963,16 +968,23 @@ main,
 
 .project-overview-page {
   position: relative;
+  min-height: 0;
+  overflow: hidden;
   background: #f8f9fb !important;
 }
 
 .project-overview-main {
   position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   z-index: 1;
   isolation: isolate;
   width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
   margin: 0;
-  padding: 0 0 42px;
+  padding: 0;
 }
 
 .project-overview-main::before,
@@ -989,8 +1001,22 @@ main,
 }
 
 .project-overview-rail-wrap {
+  position: sticky;
+  top: var(--dashboard-header-height);
+  z-index: 20;
   margin-bottom: 0;
-  padding-top: 0;
+  background: #f8f9fb;
+}
+
+.project-overview-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(100dvh - var(--dashboard-header-height) - 56px);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 22px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .project-overview-rail {
@@ -1505,6 +1531,49 @@ main,
 
 .project-reports-section .view-report-button.MuiButton-root:hover {
   background: #e9650e !important;
+}
+
+.project-reports-panel {
+  height: 100%;
+  min-height: 0;
+}
+
+.project-reports-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.project-reports-panel-heading h2 {
+  margin: 0;
+  color: #202b42;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.project-reports-panel-heading p {
+  margin: 5px 0 0;
+  color: #687386;
+  font-size: .9rem;
+}
+
+.project-reports-create-button.button-atom {
+  flex-shrink: 0;
+  background: #f97316;
+  color: #fff;
+}
+
+.project-reports-create-button.button-atom:hover {
+  background: #e9650e;
+}
+
+@media (max-width: 680px) {
+  .project-reports-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 .workers-page {
@@ -2048,8 +2117,7 @@ main,
 
 @media (max-width: 700px) {
   .project-overview-main {
-    width: calc(100% - 28px);
-    padding-top: 20px;
+    width: 100%;
   }
 
   .project-overview-grid.MuiBox-root {
