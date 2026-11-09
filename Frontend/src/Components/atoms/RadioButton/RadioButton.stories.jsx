@@ -13,3 +13,4 @@ export default {
 export const Unselected = { args: { checked: false } };
 export const Selected = { args: { checked: true } };
 export const Disabled = { args: { checked: true, disabled: true } };
+export const Medium = { args: { checked: false, size: 'md' } };
