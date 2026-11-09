@@ -17,6 +17,18 @@ const userSchema = new Schema(
             lowercase: true
         },
 
+        // S3 object key for user's profile picture
+        profilePictureKey: {
+            type: String,
+            default: null
+        },
+
+        phoneNumber: {
+            type: String,
+            trim: true,
+            default: null
+        },
+
         password: {
             type: String,
             required: true

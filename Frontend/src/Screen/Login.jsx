@@ -141,6 +141,7 @@ export default function Login() {
       );
 
       if (response.status === 200) {
+        console.log("JWT token:", response.data.token);
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("User_id", response.data.User_id);
         localStorage.setItem("IsLogin", true);
