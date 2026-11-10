@@ -1438,13 +1438,6 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
               projectId={id}
               projectTitle={project.title}
               onClose={() => setActiveTab("Overview")}
-              onProjectSelect={(selectedProject) => {
-                navigate(
-                  isSiteEngineer
-                    ? `/site-engineer/projects/${selectedProject._id}`
-                    : `/founder/project/${selectedProject._id}`,
-                );
-              }}
             />
           </Box>
         ) : activeTab !== "Overview" ? (

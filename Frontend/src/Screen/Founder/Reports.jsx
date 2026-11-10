@@ -10,7 +10,7 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import AddIcon from "@mui/icons-material/Add";
 import StopOutlinedIcon from "@mui/icons-material/StopOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Dialog, DialogActions, DialogContent, Menu, MenuItem } from "@mui/material";
+import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import { toast } from "react-toastify";
 import Button from "../../Components/atoms/Button/Button";
 import RadioButton from "../../Components/atoms/RadioButton/RadioButton";
@@ -55,13 +55,9 @@ function getDateRange(days) {
   };
 }
 
-export default function Reports({ projectId, projectTitle, onClose, onProjectSelect }) {
+export default function Reports({ projectId, projectTitle, onClose }) {
   const [reportType, setReportType] = useState("detailed");
   const [duration, setDuration] = useState("today");
-  const [projectMenuAnchor, setProjectMenuAnchor] = useState(null);
-  const [projects, setProjects] = useState([]);
-  const [projectsLoading, setProjectsLoading] = useState(false);
-  const [projectsLoadError, setProjectsLoadError] = useState("");
   const initialRange = getDateRange(0);
   const [fromDate, setFromDate] = useState(initialRange.from);
   const [toDate, setToDate] = useState(initialRange.to);
@@ -215,34 +211,6 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
     Boolean(toDate) &&
     !invalidDateRange;
 
-  const handleProjectMenuOpen = async (event) => {
-    setProjectMenuAnchor(event.currentTarget);
-    if (projects.length || projectsLoading) return;
-
-    setProjectsLoading(true);
-    setProjectsLoadError("");
-    try {
-      const response = await axiosInstance.get("/projects");
-      if (!Array.isArray(response.data.projects)) {
-        throw new Error("Projects response did not contain a project list.");
-      }
-      setProjects(response.data.projects);
-    } catch (error) {
-      console.error("Could not load projects for report selection:", error);
-      setProjectsLoadError("Unable to load projects.");
-      toast.error("Unable to load projects.");
-    } finally {
-      setProjectsLoading(false);
-    }
-  };
-
-  const handleProjectSelect = (selectedProject) => {
-    setProjectMenuAnchor(null);
-    if (selectedProject._id !== projectId) {
-      onProjectSelect(selectedProject);
-    }
-  };
-
   return (
     <main className="reports-page reports-page--embedded">
       <div className="report-page-heading">
@@ -259,40 +227,7 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
             </button>
             <h1>Create Report</h1>
           </div>
-          <button
-            className="report-project-name"
-            type="button"
-            aria-haspopup="menu"
-            aria-expanded={Boolean(projectMenuAnchor)}
-            onClick={handleProjectMenuOpen}
-          >
-            <span>{projectTitle}</span>
-            <KeyboardArrowDownIcon aria-hidden="true" />
-          </button>
-          <Menu
-            anchorEl={projectMenuAnchor}
-            open={Boolean(projectMenuAnchor)}
-            onClose={() => setProjectMenuAnchor(null)}
-            slotProps={{ list: { "aria-label": "Select project" } }}
-          >
-            {projectsLoading ? (
-              <MenuItem disabled>Loading projects...</MenuItem>
-            ) : projectsLoadError ? (
-              <MenuItem disabled>{projectsLoadError}</MenuItem>
-            ) : projects.length ? (
-              projects.map((availableProject) => (
-                <MenuItem
-                  key={availableProject._id}
-                  selected={availableProject._id === projectId}
-                  onClick={() => handleProjectSelect(availableProject)}
-                >
-                  {availableProject.title}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem disabled>No projects available</MenuItem>
-            )}
-          </Menu>
+          <p className="report-project-name">{projectTitle}</p>
         </div>
       </div>
 
