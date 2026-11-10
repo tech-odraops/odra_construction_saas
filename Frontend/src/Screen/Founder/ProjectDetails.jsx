@@ -24,12 +24,14 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
-import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
-import ImportExportOutlinedIcon from "@mui/icons-material/ImportExportOutlined";
+import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
+import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import Reports from "./Reports";
+import CreateTaskForm from "./CreateTaskForm";
+import TaskProgressDetails from "./TaskProgressDetails";
 
 function getAssignedSiteEngineers(project) {
   const engineers = [
@@ -75,17 +77,23 @@ function InventoryCubeIcon() {
 }
 // import { toast } from 'react-toastify';
 import {
+  Checkbox,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  MenuItem
+  MenuItem,
+  Popover,
 } from "@mui/material";
 import FullScreenLoader from "../../Components/FullScreenLoader"
 
 export default function ProjectDetails() {
   const [openMiscModal, setOpenMiscModal] = useState(false);
+  const [showCreateTask, setShowCreateTask] = useState(false);
+  const [createdTasks, setCreatedTasks] = useState([]);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [taskOverrides, setTaskOverrides] = useState({});
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("More");
@@ -101,6 +109,15 @@ export default function ProjectDetails() {
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("Site Engineer");
   const [sendingInvite, setSendingInvite] = useState(false);
+  const [scheduleAnchor, setScheduleAnchor] = useState(null);
+  const [scheduleDraft, setScheduleDraft] = useState([]);
+  const [scheduleFilter, setScheduleFilter] = useState([]);
+  const [statusAnchor, setStatusAnchor] = useState(null);
+  const [statusDraft, setStatusDraft] = useState([]);
+  const [statusFilter, setStatusFilter] = useState([]);
+  const [categoryAnchor, setCategoryAnchor] = useState(null);
+  const [categoryDraft, setCategoryDraft] = useState([]);
+  const [categoryFilter, setCategoryFilter] = useState([]);
   const { id } = useParams();
   const socketRef = useRef(null);
   const navigate = useNavigate();
@@ -119,10 +136,14 @@ export default function ProjectDetails() {
   ];
 
   const mockTasks = [
-    { id: "TSK000003", name: "shd trial", progress: 7 },
+    { id: "TSK000003", name: "shd trial", progress: 7, status: "In Progress" },
     { id: "TSK000001", name: "building", progress: 10, status: "Completed", issueCount: 2, issueRange: "10/10/26 - 25/10/26" },
-    { id: "TSK000002", name: "work 2", progress: 55 },
+    { id: "TSK000002", name: "work 2", progress: 55, status: "In Progress" },
   ];
+  const allTasks = [...mockTasks, ...createdTasks].map((task) => ({ ...task, ...taskOverrides[task.id] }));
+  const visibleTasks = statusFilter.length
+    ? allTasks.filter((task) => statusFilter.includes(task.status))
+    : allTasks;
 
   const renderTasksSection = () => (
     <Box sx={{ width: "100%", pt: 1 }}>
@@ -132,7 +153,7 @@ export default function ProjectDetails() {
         </Typography>
       </Box>
 
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 2.25, flexWrap: "wrap" }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 2.25, flexWrap: "wrap" }}>
         <Box
           sx={{
             flex: 1,
@@ -180,7 +201,7 @@ export default function ProjectDetails() {
               justifyContent: "center",
               width: 42,
               height: 42,
-              border: "1px solid #1f2937",
+              border: "1px solid #d1d5db",
               borderRadius: "8px",
               background: "#ffffff",
               color: "#111827",
@@ -195,7 +216,7 @@ export default function ProjectDetails() {
               },
             }}
           >
-            <FilterListOutlinedIcon sx={{ fontSize: 22, color: "#1f2937" }} />
+            <FilterAltOutlinedIcon sx={{ fontSize: 22, color: "#374151" }} />
           </Box>
 
           <Box
@@ -203,7 +224,7 @@ export default function ProjectDetails() {
               display: "inline-flex",
               alignItems: "center",
               height: 42,
-              border: "1px solid #1f2937",
+              border: "1px solid #d1d5db",
               borderRadius: "8px",
               background: "#ffffff",
               color: "#111827",
@@ -230,7 +251,7 @@ export default function ProjectDetails() {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 0.8 }}>
-                <ImportExportOutlinedIcon sx={{ fontSize: 16, color: "#111827", transform: "rotate(90deg)" }} />
+                <SwapVertOutlinedIcon sx={{ fontSize: 20, color: "#ff642d" }} />
               </Box>
             </Box>
 
@@ -254,15 +275,7 @@ export default function ProjectDetails() {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap", mb: 2.5 }}>
-        {[
-          "In Progress",
-          "Task with Work order",
-          "Delayed",
-          "Task open issue",
-          "Schedule",
-          "Status",
-          "Category",
-        ].map((filter, index) => (
+        {["In Progress", "Task with Work order", "Delayed", "Task open issue"].map((filter) => (
           <Box
             key={filter}
             sx={{
@@ -273,7 +286,7 @@ export default function ProjectDetails() {
               border: "1px solid #dfe3e6",
               borderRadius: "8px",
               background: "#ffffff",
-              px: index >= 4 ? 0 : 1.5,
+              px: 1.5,
               py: 0,
               color: "#111827",
               fontWeight: 600,
@@ -286,26 +299,175 @@ export default function ProjectDetails() {
               },
             }}
           >
-            <Box component="span" sx={{ px: index >= 4 ? 1.2 : 0.3, py: 0.55, display: "inline-flex", alignItems: "center" }}>
+            <Box component="span" sx={{ px: 0.3, py: 0.55, display: "inline-flex", alignItems: "center" }}>
               {filter}
             </Box>
-            {index >= 4 && (
-              <Box component="span" sx={{ width: 22, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#111827", fontSize: 12, borderLeft: "1px solid #e5e7eb", height: "100%" }}>
-                <ExpandMoreOutlinedIcon sx={{ fontSize: 16 }} />
-              </Box>
-            )}
           </Box>
         ))}
+        {["Schedule", "Status", "Category"].map((filter) => (
+          <Box
+            key={filter}
+            component="button"
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={filter === "Schedule" ? Boolean(scheduleAnchor) : filter === "Status" ? Boolean(statusAnchor) : Boolean(categoryAnchor)}
+            onClick={filter === "Schedule" ? (event) => {
+              setScheduleDraft(scheduleFilter);
+              setScheduleAnchor(event.currentTarget);
+            } : filter === "Status" ? (event) => {
+              setStatusDraft(statusFilter);
+              setStatusAnchor(event.currentTarget);
+            } : (event) => {
+              setCategoryDraft(categoryFilter);
+              setCategoryAnchor(event.currentTarget);
+            }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 34,
+              border: "1px solid #dfe3e6",
+              borderRadius: "8px",
+              background: "#ffffff",
+              px: 0,
+              py: 0,
+              color: "#111827",
+              fontWeight: 600,
+              fontSize: 12,
+              overflow: "hidden",
+              cursor: "pointer",
+              fontFamily: "inherit",
+              transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+              "&:hover": { borderColor: "#f97316", boxShadow: "0 0 0 1px rgba(249,115,22,0.12)" },
+            }}
+          >
+            <Box component="span" sx={{ px: 1.2, py: 0.55, display: "inline-flex", alignItems: "center" }}>
+              {filter}
+              {filter === "Schedule" && scheduleFilter.length > 0 ? ` (${scheduleFilter.length})` : ""}
+              {filter === "Status" && statusFilter.length > 0 ? ` (${statusFilter.length})` : ""}
+              {filter === "Category" && categoryFilter.length > 0 ? ` (${categoryFilter.length})` : ""}
+            </Box>
+            <Box component="span" sx={{ width: 22, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#111827", fontSize: 12, borderLeft: "1px solid #e5e7eb", height: "100%" }}>
+              <ExpandMoreOutlinedIcon sx={{ fontSize: 16 }} />
+            </Box>
+          </Box>
+        ))}
+        <Popover
+          open={Boolean(scheduleAnchor)}
+          anchorEl={scheduleAnchor}
+          onClose={() => setScheduleAnchor(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          slotProps={{ paper: { className: "task-schedule-popover" } }}
+        >
+          <Box className="task-schedule-popover__options" role="group" aria-label="Schedule filters">
+            {[
+              { value: "today", label: "Today" },
+              { value: "next7", label: "Next 7 Day" },
+              { value: "next3", label: "Next 3 day" },
+            ].map((option) => (
+              <label className="task-schedule-option" key={option.value}>
+                <Checkbox
+                  checked={scheduleDraft.includes(option.value)}
+                  onChange={(event) => setScheduleDraft((current) => event.target.checked
+                    ? [...current, option.value]
+                    : current.filter((value) => value !== option.value))}
+                  icon={<span className="task-schedule-checkbox" />}
+                  checkedIcon={<span className="task-schedule-checkbox task-schedule-checkbox--checked">✓</span>}
+                  inputProps={{ "aria-label": option.label }}
+                />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </Box>
+          <Box className="task-schedule-popover__actions">
+            <button type="button" className="task-schedule-clear" onClick={() => setScheduleDraft([])}>Clear All</button>
+            <button type="button" className="task-schedule-apply" onClick={() => {
+              setScheduleFilter(scheduleDraft);
+              setScheduleAnchor(null);
+            }}>Apply</button>
+          </Box>
+        </Popover>
+        <Popover
+          open={Boolean(statusAnchor)}
+          anchorEl={statusAnchor}
+          onClose={() => setStatusAnchor(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          slotProps={{ paper: { className: "task-schedule-popover task-status-popover" } }}
+        >
+          <Box className="task-schedule-popover__options task-status-popover__options" role="group" aria-label="Task status filters">
+            {["Not Started", "In Progress", "Completed"].map((option) => (
+              <label className="task-schedule-option" key={option}>
+                <Checkbox
+                  checked={statusDraft.includes(option)}
+                  onChange={(event) => setStatusDraft((current) => event.target.checked
+                    ? [...current, option]
+                    : current.filter((value) => value !== option))}
+                  icon={<span className="task-schedule-checkbox" />}
+                  checkedIcon={<span className="task-schedule-checkbox task-schedule-checkbox--checked">✓</span>}
+                  inputProps={{ "aria-label": option }}
+                />
+                <span>{option}</span>
+              </label>
+            ))}
+          </Box>
+          <Box className="task-schedule-popover__actions task-status-popover__actions">
+            <button type="button" className="task-schedule-clear" onClick={() => setStatusDraft([])}>Clear All</button>
+            <button type="button" className="task-schedule-apply" onClick={() => {
+              setStatusFilter(statusDraft);
+              setStatusAnchor(null);
+            }}>Apply</button>
+          </Box>
+        </Popover>
+        <Popover
+          open={Boolean(categoryAnchor)}
+          anchorEl={categoryAnchor}
+          onClose={() => setCategoryAnchor(null)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          transformOrigin={{ vertical: "top", horizontal: "left" }}
+          slotProps={{ paper: { className: "task-schedule-popover task-category-popover" } }}
+        >
+          <Box className="task-schedule-popover__options task-category-popover__options" role="group" aria-label="Task category filters">
+            {["Ceiling", "Civil", "Electrical", "General"].map((option) => (
+              <label className="task-schedule-option" key={option}>
+                <Checkbox
+                  checked={categoryDraft.includes(option)}
+                  onChange={(event) => setCategoryDraft((current) => event.target.checked
+                    ? [...current, option]
+                    : current.filter((value) => value !== option))}
+                  icon={<span className="task-schedule-checkbox" />}
+                  checkedIcon={<span className="task-schedule-checkbox task-schedule-checkbox--checked">✓</span>}
+                  inputProps={{ "aria-label": option }}
+                />
+                <span>{option}</span>
+              </label>
+            ))}
+          </Box>
+          <Box className="task-schedule-popover__actions task-category-popover__actions">
+            <button type="button" className="task-schedule-clear" onClick={() => setCategoryDraft([])}>Clear All</button>
+            <button type="button" className="task-schedule-apply" onClick={() => {
+              setCategoryFilter(categoryDraft);
+              setCategoryAnchor(null);
+            }}>Apply</button>
+          </Box>
+        </Popover>
       </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.4 }}>
         <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#111827", mb: 0.3 }}>
-          3 Tasks
+          {visibleTasks.length} {visibleTasks.length === 1 ? "Task" : "Tasks"}
         </Typography>
 
-        {mockTasks.map((task, index) => (
+        {visibleTasks.length === 0 ? (
+          <Typography sx={{ py: 3, color: "#6b7280", textAlign: "center" }}>No tasks match the selected status.</Typography>
+        ) : visibleTasks.map((task, index) => (
           <Box
             key={task.id}
+            component="button"
+            type="button"
+            onClick={() => setSelectedTask(task)}
+            aria-label={`Open ${task.name} task progress`}
             sx={{
               display: "flex",
               alignItems: "center",
@@ -318,6 +480,11 @@ export default function ProjectDetails() {
               px: 2,
               py: 1.3,
               boxSizing: "border-box",
+              width: "100%",
+              textAlign: "left",
+              font: "inherit",
+              cursor: "pointer",
+              "&:hover": { borderColor: "#ff9b75", boxShadow: "0 2px 8px rgba(249, 115, 22, 0.08)" },
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2.25, minWidth: 0, flex: 1 }}>
@@ -441,22 +608,41 @@ export default function ProjectDetails() {
 
       <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2.25 }}>
         <Box
+          component="button"
+          type="button"
+          aria-label="Add task"
+          onClick={() => setShowCreateTask(true)}
           sx={{
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 1,
-            background: "linear-gradient(180deg, #ff9d2b 0%, #f97316 100%)",
-            color: "#ffffff",
-            borderRadius: "10px",
-            px: 1.6,
-            py: 0.9,
-            fontWeight: 700,
+            gap: 1.1,
+            border: 0,
+            background: "transparent",
+            color: "#ff642d",
+            p: 0,
+            fontFamily: "inherit",
+            fontWeight: 600,
             fontSize: 14,
-            boxShadow: "0 8px 18px rgba(249, 115, 22, 0.25)",
+            cursor: "pointer",
           }}
         >
-          <AddOutlinedIcon sx={{ fontSize: 20 }} />
+          <Box
+            component="span"
+            sx={{
+              width: 45,
+              height: 45,
+              display: "grid",
+              placeItems: "center",
+              borderRadius: "11px",
+              background: "linear-gradient(180deg, #ff7040 0%, #ff572b 100%)",
+              boxShadow: "0 4px 10px rgba(255, 87, 43, 0.18)",
+              transition: "transform 0.16s ease, box-shadow 0.16s ease",
+              "button:hover &": { transform: "translateY(-1px)", boxShadow: "0 6px 13px rgba(255, 87, 43, 0.25)" },
+            }}
+          >
+            <AddOutlinedIcon sx={{ fontSize: 22, color: "#ffffff" }} />
+          </Box>
           <Box component="span">Add Task</Box>
         </Box>
       </Box>
@@ -748,10 +934,11 @@ export default function ProjectDetails() {
                 <span>{label}</span>
               </Box>
             ))}
-            <Box component="button" type="button" className="project-overview-rail-chat" aria-label="Open chat">
-              <ChatBubbleOutlineOutlinedIcon />
-              <span>Chat</span>
-            </Box>
+            <ChatModal
+              projectId={id}
+              triggerClassName="project-overview-rail-chat-badge"
+              trigger={<Box component="button" className="project-overview-rail-chat" aria-label="Open project chat"><ChatBubbleOutlineOutlinedIcon /><span>Chat</span></Box>}
+            />
           </Box>
         </Box>
 
@@ -1123,31 +1310,6 @@ export default function ProjectDetails() {
                   </Typography>
                 )}
 
-                <Box sx={{ position: "relative" }}>
-                  {false ? (
-                    <Button
-                      className="overview-chat-button"
-                      variant="outlined"
-                      sx={{
-                        opacity: 0.6,
-                        position: "relative"
-                      }}
-                      onClick={() => {}}
-                    >
-                      Chat
-                      <LockIcon
-                        fontSize="small"
-                        sx={{
-                          ml: 1,
-                          fontSize: 16,
-                          color: "#ff9800"
-                        }}
-                      />
-                    </Button>
-                  ) : (
-                    <span className="overview-chat-button"><ChatModal projectId={id} showIcon /></span>
-                  )}
-                </Box>
               </Box>
             </Box>
           </>
@@ -1165,7 +1327,31 @@ export default function ProjectDetails() {
             />
           </Box>
         ) : activeTab === "Task" ? (
-          renderTasksSection()
+          showCreateTask ? (
+            <CreateTaskForm
+              siteEngineers={assignedSiteEngineers}
+              onBack={() => setShowCreateTask(false)}
+              onDone={(task) => {
+                setCreatedTasks((current) => [{
+                  ...task,
+                  id: `TSK${Date.now().toString().slice(-6)}`,
+                  status: "Not Started",
+                }, ...current]);
+                setShowCreateTask(false);
+              }}
+            />
+          ) : selectedTask ? (
+            <TaskProgressDetails
+              task={selectedTask}
+              projectId={id}
+              onBack={() => setSelectedTask(null)}
+              onUpdateProgress={(progress) => {
+                const status = progress >= 100 ? "Completed" : progress > 0 ? "In Progress" : "Not Started";
+                setTaskOverrides((current) => ({ ...current, [selectedTask.id]: { progress, status } }));
+                setSelectedTask((current) => ({ ...current, progress, status }));
+              }}
+            />
+          ) : renderTasksSection()
         ) : activeTab !== "More" ? (
           renderComingSoonSection()
         ) : null}

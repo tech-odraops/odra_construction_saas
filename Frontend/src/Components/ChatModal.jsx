@@ -24,7 +24,7 @@ const style = {
   p: 4,
 };
 
-export default function ChatModal({projectId, showIcon = false}) {
+export default function ChatModal({ projectId, showIcon = false, trigger = null, triggerClassName }) {
   const [open, setOpen] = React.useState(false);
   const [unreadCount, setUnreadCount] = React.useState(0);
   const socketRef = React.useRef(null);
@@ -137,11 +137,19 @@ export default function ChatModal({projectId, showIcon = false}) {
     }, 100);
   };
 
+  const chatTrigger = trigger
+    ? React.cloneElement(trigger, {
+        type: "button",
+        onClick: (event) => {
+          trigger.props.onClick?.(event);
+          handleOpen();
+        },
+      })
+    : <Button onClick={handleOpen} variant="contained" color="primary" size="small" startIcon={showIcon ? <ChatBubbleOutlineIcon /> : undefined} sx={{ borderRadius: 10, padding: 1, margin: 1 }}>Chat</Button>;
+
   return (
-    <div>
-      <Badge badgeContent={unreadCount} color="error">
-        <Button onClick={handleOpen} variant="contained" color="primary" size="small" startIcon={showIcon ? <ChatBubbleOutlineIcon /> : undefined} sx={{ borderRadius: 10 , padding: 1 ,margin: 1}}>Chat</Button>
-      </Badge>
+    <div className={triggerClassName ? "chat-modal-custom-trigger-root" : undefined}>
+      <Badge className={triggerClassName} badgeContent={unreadCount} color="error">{chatTrigger}</Badge>
       <Modal
         open={open}
         onClose={handleClose}
