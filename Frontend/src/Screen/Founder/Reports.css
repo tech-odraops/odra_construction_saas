@@ -519,6 +519,7 @@
   width: 42px;
   height: 42px;
   place-items: center;
+  padding: 0;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -552,6 +553,95 @@
   outline-offset: 2px;
 }
 
+.report-entry-dialog .MuiDialog-paper {
+  box-sizing: border-box;
+  width: 30vw;
+  max-width: 30vw;
+  min-width: 360px;
+  overflow: hidden;
+  border: 1px solid #e6e8ec;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgb(23 35 60 / 20%);
+}
+
+.report-entry-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 30px 12px;
+}
+
+.report-entry-dialog__header h2 {
+  margin: 0;
+  color: #182033;
+  font-size: 1.65rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.report-entry-dialog__header h2 span {
+  color: #f04b24;
+}
+
+.report-entry-dialog__header p {
+  margin: 12px 0 0;
+  color: #8a91a0;
+  font-size: 0.98rem;
+}
+
+.report-entry-dialog__content.MuiDialogContent-root {
+  display: grid;
+  gap: 16px;
+  padding: 28px 30px 20px;
+}
+
+.report-entry-dialog__label {
+  position: relative;
+  padding-left: 14px;
+  color: #202b42;
+  font-size: 1.18rem;
+  font-weight: 700;
+}
+
+.report-entry-dialog__label::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  border-radius: 3px;
+  background: #f04b24;
+  content: "";
+}
+
+.report-entry-dialog__textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 150px;
+  padding: 16px;
+  border: 1px solid #dfe3e8;
+  border-radius: 10px;
+  color: #263248;
+  font: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+.report-entry-dialog__textarea::placeholder {
+  color: #969cab;
+}
+
+.report-entry-dialog__textarea:focus-visible {
+  border-color: #f04b24;
+  outline: 2px solid rgb(240 75 36 / 16%);
+}
+
+.report-entry-dialog__actions.MuiDialogActions-root {
+  gap: 12px;
+  padding: 12px 30px 28px;
+}
+
 @media (max-width: 900px) {
   .report-form-layout {
     grid-template-columns: minmax(0, 1fr) minmax(240px, 0.75fr);
@@ -564,6 +654,12 @@
 }
 
 @media (max-width: 680px) {
+  .report-entry-dialog .MuiDialog-paper {
+    width: calc(100vw - 32px);
+    max-width: calc(100vw - 32px);
+    min-width: 0;
+  }
+
   .reports-page {
     height: auto;
     min-height: 100%;
@@ -605,6 +701,18 @@
 
   .report-project-picker {
     max-width: none;
+  }
+
+  .report-entry-dialog__header {
+    padding: 22px 20px 8px;
+  }
+
+  .report-entry-dialog__content.MuiDialogContent-root {
+    padding: 20px;
+  }
+
+  .report-entry-dialog__actions.MuiDialogActions-root {
+    padding: 8px 20px 20px;
   }
 
   .report-illustration-wrap {

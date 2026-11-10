@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
+import MicNoneOutlinedIcon from "@mui/icons-material/MicNoneOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
@@ -7,8 +8,9 @@ import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import AddIcon from "@mui/icons-material/Add";
+import StopOutlinedIcon from "@mui/icons-material/StopOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import { Menu, MenuItem } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, Menu, MenuItem } from "@mui/material";
 import { toast } from "react-toastify";
 import Button from "../../Components/atoms/Button/Button";
 import RadioButton from "../../Components/atoms/RadioButton/RadioButton";
@@ -64,6 +66,12 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
   const [fromDate, setFromDate] = useState(initialRange.from);
   const [toDate, setToDate] = useState(initialRange.to);
   const [submissionMessage, setSubmissionMessage] = useState("");
+  const [activeEntry, setActiveEntry] = useState(null);
+  const [entryDraft, setEntryDraft] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const streamRef = useRef(null);
   const [reportParts, setReportParts] = useState({
     taskUpdate: true,
     photos: true,
@@ -71,13 +79,36 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
     workDown: true,
     inventory: true,
   });
-  const [expandedParts, setExpandedParts] = useState({
-    issues: false,
-    workDown: false,
-  });
   const [photos, setPhotos] = useState([]);
   const [issues, setIssues] = useState("");
   const [workDown, setWorkDown] = useState("");
+
+  useEffect(() => () => {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
+
+  const entryConfig = {
+    issues: {
+      title: "Issue",
+      section: "Issues",
+      placeholder: "Mention any issues or blockers...",
+      submitLabel: "Submit Issue",
+    },
+    workDown: {
+      title: "Work Down",
+      section: "Work Down",
+      placeholder: "Describe completed work and work remaining...",
+      submitLabel: "Submit Work Down",
+    },
+  };
+  const reportDate = toDate
+    ? new Date(`${toDate}T00:00:00`).toLocaleDateString("en-GB")
+    : "";
 
   const handleDurationChange = (nextDuration) => {
     setDuration(nextDuration);
@@ -100,8 +131,81 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
     setSubmissionMessage("");
   };
 
-  const toggleExpandedPart = (part) => {
-    setExpandedParts((current) => ({ ...current, [part]: !current[part] }));
+  const openEntryDialog = (part) => {
+    setEntryDraft(part === "issues" ? issues : workDown);
+    setActiveEntry(part);
+  };
+
+  const closeEntryDialog = () => {
+    if (isRecording) return;
+    setActiveEntry(null);
+    setEntryDraft("");
+  };
+
+  const saveEntry = () => {
+    if (activeEntry === "issues") setIssues(entryDraft);
+    if (activeEntry === "workDown") setWorkDown(entryDraft);
+    setSubmissionMessage("");
+    setActiveEntry(null);
+    setEntryDraft("");
+  };
+
+  const startRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      toast.error("Audio recording is not supported by this browser.");
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      audioChunksRef.current = [];
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      recorder.onstop = async () => {
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        mediaRecorderRef.current = null;
+        setIsRecording(false);
+
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        if (!audioBlob.size) return;
+
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.webm");
+        try {
+          const response = await axiosInstance.post("/reports/voice-to-text", formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+          const transcription = activeEntry === "issues"
+            ? response.data?.structuredData?.issuesFound
+            : response.data?.structuredData?.workDone;
+          if (typeof transcription !== "string" || !transcription.trim()) {
+            throw new Error("No transcription was returned for this entry.");
+          }
+          setEntryDraft((current) => [current, transcription].filter(Boolean).join("\n"));
+        } catch (error) {
+          console.error("Could not transcribe report audio:", error);
+          toast.error(error.response?.data?.message || "Unable to transcribe recording.");
+        }
+      };
+      recorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Could not start report audio recording:", error);
+      toast.error(error.message || "Unable to access the microphone.");
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current?.state === "recording") {
+      mediaRecorderRef.current.stop();
+    }
   };
 
   const invalidDateRange = fromDate && toDate && fromDate > toDate;
@@ -345,7 +449,7 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
                   </label>
                 </div>
 
-                <div className={`report-part-card${expandedParts.issues ? " is-expanded" : ""}`}>
+                <div className="report-part-card">
                   <input
                     className="report-part-checkbox"
                     id="report-part-issues"
@@ -357,31 +461,20 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
                     <span className="report-part-icon"><WarningAmberOutlinedIcon /></span>
                     <span className="report-part-copy">
                       <span className="report-part-title">Issues</span>
-                      <span className="report-part-description">Add and track site issues</span>
+                      <span className="report-part-description">{issues || "Add and track site issues"}</span>
                     </span>
                   </label>
                   <button
                     className="report-part-expand"
                     type="button"
-                    aria-label={expandedParts.issues ? "Hide issues details" : "Add issues details"}
-                    aria-expanded={expandedParts.issues}
-                    onClick={() => toggleExpandedPart("issues")}
+                    aria-label={issues ? "Edit issues" : "Add issues"}
+                    onClick={() => openEntryDialog("issues")}
                   >
-                    {expandedParts.issues ? <KeyboardArrowDownIcon /> : <AddIcon />}
+                    <AddIcon />
                   </button>
-                  {expandedParts.issues && (
-                    <textarea
-                      className="report-part-details"
-                      value={issues}
-                      onChange={(event) => setIssues(event.target.value)}
-                      placeholder="Describe issues found on site…"
-                      aria-label="Issues details"
-                      rows={3}
-                    />
-                  )}
                 </div>
 
-                <div className={`report-part-card${expandedParts.workDown ? " is-expanded" : ""}`}>
+                <div className="report-part-card">
                   <input
                     className="report-part-checkbox"
                     id="report-part-work-down"
@@ -393,28 +486,17 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
                     <span className="report-part-icon"><BarChartOutlinedIcon /></span>
                     <span className="report-part-copy">
                       <span className="report-part-title">Work Down</span>
-                      <span className="report-part-description">Include work completed / work down details</span>
+                      <span className="report-part-description">{workDown || "Include work completed / work down details"}</span>
                     </span>
                   </label>
                   <button
                     className="report-part-expand"
                     type="button"
-                    aria-label={expandedParts.workDown ? "Hide work down details" : "Add work down details"}
-                    aria-expanded={expandedParts.workDown}
-                    onClick={() => toggleExpandedPart("workDown")}
+                    aria-label={workDown ? "Edit work down" : "Add work down"}
+                    onClick={() => openEntryDialog("workDown")}
                   >
-                    {expandedParts.workDown ? <KeyboardArrowDownIcon /> : <AddIcon />}
+                    <AddIcon />
                   </button>
-                  {expandedParts.workDown && (
-                    <textarea
-                      className="report-part-details"
-                      value={workDown}
-                      onChange={(event) => setWorkDown(event.target.value)}
-                      placeholder="Describe completed work and work remaining…"
-                      aria-label="Work down details"
-                      rows={3}
-                    />
-                  )}
                 </div>
 
                 <div className="report-part-card">
@@ -464,6 +546,76 @@ export default function Reports({ projectId, projectTitle, onClose, onProjectSel
           </p>
         )}
       </form>
+
+      <Dialog
+        open={Boolean(activeEntry)}
+        onClose={closeEntryDialog}
+        fullWidth
+        maxWidth="sm"
+        className="report-entry-dialog"
+      >
+        {activeEntry && (
+          <>
+            <div className="report-entry-dialog__header">
+              <div>
+                <h2>Submit <span>{entryConfig[activeEntry].title}</span></h2>
+                <p>Report Date: {reportDate}</p>
+              </div>
+              <Button
+                variant="outlined"
+                iconOnly
+                startIcon={<CloseOutlinedIcon />}
+                aria-label="Close"
+                onClick={closeEntryDialog}
+                disabled={isRecording}
+              />
+            </div>
+            <DialogContent className="report-entry-dialog__content">
+              <label className="report-entry-dialog__label" htmlFor="report-entry-text">
+                {entryConfig[activeEntry].section}
+              </label>
+              <textarea
+                id="report-entry-text"
+                className="report-entry-dialog__textarea"
+                value={entryDraft}
+                onChange={(event) => setEntryDraft(event.target.value)}
+                placeholder={entryConfig[activeEntry].placeholder}
+                disabled={isRecording}
+                rows={5}
+              />
+              <Button
+                variant="outlined"
+                fullWidth
+                startIcon={isRecording ? <StopOutlinedIcon /> : <MicNoneOutlinedIcon />}
+                type="button"
+                onClick={isRecording ? stopRecording : startRecording}
+              >
+                {isRecording ? "Stop Recording" : "Start Recording"}
+              </Button>
+            </DialogContent>
+            <DialogActions className="report-entry-dialog__actions">
+              <Button
+                variant="outlined"
+                size="compact"
+                type="button"
+                onClick={closeEntryDialog}
+                disabled={isRecording}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                size="compact"
+                type="button"
+                onClick={saveEntry}
+                disabled={isRecording}
+              >
+                {entryConfig[activeEntry].submitLabel}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
     </main>
   );
 }
