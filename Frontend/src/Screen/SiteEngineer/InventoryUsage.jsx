@@ -259,7 +259,6 @@ export default function InventoryUsage() {
         </Box>
       </Box>
   
-      <Footer />
     </>
   );
   

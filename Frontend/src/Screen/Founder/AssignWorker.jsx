@@ -221,7 +221,6 @@ export default function AssignWorkers() {
         </Box>
       </Box>
 
-      <Footer />
     </>
   );
 

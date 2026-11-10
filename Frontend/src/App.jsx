@@ -25,9 +25,8 @@ const AssignWorker = lazy(() => import("./Screen/Founder/AssignWorker"));
 const ProjectInventory = lazy(() => import("./Screen/Founder/ProjectInventory"));
 const InventoryHistory = lazy(() => import("./Screen/Founder/InventoryHistory"));
 import ActivateAccount from './Screen/ActivateAccount'
-
-import Dashboard from "./Screen/Dashboard";
-import MyProjects from "./Screen/SiteEngineer/MyProjects";
+const Dashboard = lazy(() => import("./Screen/Dashboard"));
+const MyProjects = lazy(() => import("./Screen/SiteEngineer/MyProjects"));
 const ProjectWork = lazy(() => import("./Screen/SiteEngineer/ProjectWork"));
 const SubmitReport = lazy(() => import("./Screen/SiteEngineer/SubmitReport"));
 const Attendance = lazy(() => import("./Screen/SiteEngineer/Attendance"));

@@ -113,8 +113,22 @@ Use an existing atom before using MUI. Use MUI only when no existing atom suppor
   import RadioButton from "../../Components/atoms/RadioButton/RadioButton";
   ```
 
-- Use it for one option in a group. Provide the same `name` to related radio buttons and forward `value`, `checked`, and `onChange`.
+- Use it for one option in a radio group. Provide the same `name` to related radio buttons and forward native radio props such as `value`, `checked`, `onChange`, and `disabled`.
 - Provide a visible `label` or an equivalent accessible name.
+- Props include `label`, `id`, `className`, `style`, and `size`; the atom generates a stable input ID when `id` is omitted.
+- `size` defaults to `md`. Use `size="md"` for the compact control (22px outer circle with a 10px selected dot); `size="lg"` uses the base dimensions. The shared `name` keeps options mutually exclusive.
+- Radio sizing tokens are defined in the `sizing` group and wired through `componentStyles.radioButton` in `themePrimitives.js`; do not add or edit generated CSS variables directly.
+
+  ```jsx
+  <RadioButton
+    size="md"
+    name="report-duration"
+    value="today"
+    checked={duration === "today"}
+    onChange={() => setDuration("today")}
+    label="Today"
+  />
+  ```
 
 ### StatusChips
 

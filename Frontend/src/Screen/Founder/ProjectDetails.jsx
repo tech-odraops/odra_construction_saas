@@ -19,8 +19,17 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import Groups2OutlinedIcon from "@mui/icons-material/Groups2Outlined";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
+import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
+import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
+import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
+import ImportExportOutlinedIcon from "@mui/icons-material/ImportExportOutlined";
+import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
+import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
+import Reports from "./Reports";
 
 function getAssignedSiteEngineers(project) {
   const engineers = [
@@ -79,6 +88,7 @@ export default function ProjectDetails() {
   const [openMiscModal, setOpenMiscModal] = useState(false);
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("More");
   const [openWageModal, setOpenWageModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -99,6 +109,384 @@ export default function ProjectDetails() {
   const overviewTitleSplit = overviewTitle.lastIndexOf(" ");
   const assignedSiteEngineers = getAssignedSiteEngineers(project);
   const assignedSiteEngineerIds = getAssignedSiteEngineerIds(project);
+  const actionTabs = [
+    { label: "Report", icon: DescriptionOutlinedIcon },
+    { label: "Task", icon: TaskAltOutlinedIcon },
+    { label: "Material", icon: Inventory2OutlinedIcon },
+    { label: "Attendance", icon: CalendarMonthOutlinedIcon },
+    { label: "More", icon: MoreHorizOutlinedIcon },
+    { label: "Misc Expenses", icon: MonetizationOnOutlinedIcon },
+  ];
+
+  const mockTasks = [
+    { id: "TSK000003", name: "shd trial", progress: 7 },
+    { id: "TSK000001", name: "building", progress: 10, status: "Completed", issueCount: 2, issueRange: "10/10/26 - 25/10/26" },
+    { id: "TSK000002", name: "work 2", progress: 55 },
+  ];
+
+  const renderTasksSection = () => (
+    <Box sx={{ width: "100%", pt: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
+        <Typography sx={{ fontSize: "2.1rem", fontWeight: 800, color: "#1f2937", lineHeight: 1.2 }}>
+          Tasks
+        </Typography>
+      </Box>
+
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5, mb: 2.25, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            flex: 1,
+            minWidth: 260,
+            maxWidth: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            height: 42,
+            border: "1px solid #dfe3e6",
+            borderRadius: "8px",
+            background: "#ffffff",
+            px: 1.4,
+            boxSizing: "border-box",
+            transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+            "&:hover": {
+              borderColor: "#f97316",
+              boxShadow: "0 0 0 1px rgba(249,115,22,0.12)",
+            },
+          }}
+        >
+          <SearchOutlinedIcon sx={{ color: "#6b7280", fontSize: 22 }} />
+          <Box
+            component="input"
+            placeholder="Search by ID or task name"
+            sx={{
+              width: "100%",
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              fontSize: 14,
+              color: "#111827",
+              fontWeight: 500,
+              padding: 0,
+              "::placeholder": { color: "#6b7280", opacity: 1 },
+            }}
+          />
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, ml: "auto" }}>
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 42,
+              height: 42,
+              border: "1px solid #1f2937",
+              borderRadius: "8px",
+              background: "#ffffff",
+              color: "#111827",
+              transition: "box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease",
+              "&:hover": {
+                borderColor: "#f97316",
+                boxShadow: "0 0 0 1px rgba(249,115,22,0.12)",
+                transform: "translateY(-1px)",
+              },
+              "&:hover .MuiSvgIcon-root": {
+                color: "#f97316",
+              },
+            }}
+          >
+            <FilterListOutlinedIcon sx={{ fontSize: 22, color: "#1f2937" }} />
+          </Box>
+
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              height: 42,
+              border: "1px solid #1f2937",
+              borderRadius: "8px",
+              background: "#ffffff",
+              color: "#111827",
+              fontWeight: 700,
+              fontSize: 15,
+              minWidth: 128,
+              overflow: "hidden",
+              transition: "box-shadow 0.2s ease, border-color 0.2s ease",
+              "&:hover": {
+                borderColor: "#f97316",
+                boxShadow: "0 0 0 1px rgba(249,115,22,0.12)",
+              },
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 36,
+                height: "100%",
+                borderRight: "1px solid #dfe3e6",
+                background: "#ffffff",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 0.8 }}>
+                <ImportExportOutlinedIcon sx={{ fontSize: 16, color: "#111827", transform: "rotate(90deg)" }} />
+              </Box>
+            </Box>
+
+            <Box component="span" sx={{ px: 1.1, color: "#111827", whiteSpace: "nowrap", lineHeight: 1 }}>Sort By</Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 28,
+                height: "100%",
+                borderLeft: "1px solid #dfe3e6",
+                background: "#ffffff",
+              }}
+            >
+              <ExpandMoreOutlinedIcon sx={{ fontSize: 18, color: "#f97316" }} />
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap", mb: 2.5 }}>
+        {[
+          "In Progress",
+          "Task with Work order",
+          "Delayed",
+          "Task open issue",
+          "Schedule",
+          "Status",
+          "Category",
+        ].map((filter, index) => (
+          <Box
+            key={filter}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 34,
+              border: "1px solid #dfe3e6",
+              borderRadius: "8px",
+              background: "#ffffff",
+              px: index >= 4 ? 0 : 1.5,
+              py: 0,
+              color: "#111827",
+              fontWeight: 600,
+              fontSize: 12,
+              overflow: "hidden",
+              transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+              "&:hover": {
+                borderColor: "#f97316",
+                boxShadow: "0 0 0 1px rgba(249,115,22,0.12)",
+              },
+            }}
+          >
+            <Box component="span" sx={{ px: index >= 4 ? 1.2 : 0.3, py: 0.55, display: "inline-flex", alignItems: "center" }}>
+              {filter}
+            </Box>
+            {index >= 4 && (
+              <Box component="span" sx={{ width: 22, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#111827", fontSize: 12, borderLeft: "1px solid #e5e7eb", height: "100%" }}>
+                <ExpandMoreOutlinedIcon sx={{ fontSize: 16 }} />
+              </Box>
+            )}
+          </Box>
+        ))}
+      </Box>
+
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.4 }}>
+        <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#111827", mb: 0.3 }}>
+          3 Tasks
+        </Typography>
+
+        {mockTasks.map((task, index) => (
+          <Box
+            key={task.id}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 2,
+              minHeight: 76,
+              background: "#ffffff",
+              border: "1px solid #e5e7eb",
+              borderRadius: "12px",
+              px: 2,
+              py: 1.3,
+              boxSizing: "border-box",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2.25, minWidth: 0, flex: 1 }}>
+              <Box
+                sx={{
+                  width: 28,
+                  height: 28,
+                  minWidth: 28,
+                  borderRadius: "50%",
+                  background: "#f2f4f7",
+                  color: "#475467",
+                  display: "grid",
+                  placeItems: "center",
+                  fontWeight: 700,
+                  fontSize: 13,
+                }}
+              >
+                {index + 1}
+              </Box>
+
+              <Box sx={{ minWidth: 0 }}>
+                <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: "0.12em", textTransform: "uppercase", mb: 0.2 }}>
+                  {task.id}
+                </Typography>
+                <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>
+                  {task.name}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.4, flexShrink: 0 }}>
+              {task.status === "Completed" ? (
+                <>
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.5,
+                      px: 1.1,
+                      py: 0.5,
+                      borderRadius: "6px",
+                      background: "#ebf9ef",
+                      color: "#1f9d63",
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    <Box component="span" sx={{ fontSize: 13 }}>✓</Box>
+                    <Box component="span">Completed</Box>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.4,
+                      px: 1,
+                      py: 0.5,
+                      borderRadius: "6px",
+                      background: "#ffe5e5",
+                      color: "#dc2626",
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    <Box component="span" sx={{ fontSize: 13 }}>!</Box>
+                    <Box component="span">2 Open issues</Box>
+                  </Box>
+
+                  <Box component="span" sx={{ color: "#4b5563", fontSize: 12, whiteSpace: "nowrap" }}>{task.issueRange}</Box>
+                </>
+              ) : (
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: 52,
+                    px: 1,
+                    py: 0.45,
+                    borderRadius: "6px",
+                    background: "#fef1d5",
+                    color: "#b86b00",
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                >
+                  {task.progress}%
+                </Box>
+              )}
+
+              <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.75 }}>
+                <Box
+                  sx={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: "50%",
+                    border: "1px solid #d1d5db",
+                    background: "#ffffff",
+                    color: "#111827",
+                    display: "grid",
+                    placeItems: "center",
+                    fontWeight: 400,
+                    fontSize: 18,
+                    lineHeight: 1,
+                    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                    "&:hover": {
+                      borderColor: "#f97316",
+                      boxShadow: "0 0 0 1px rgba(249,115,22,0.12)",
+                    },
+                  }}
+                >
+                  +
+                </Box>
+                <Typography sx={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>Update</Typography>
+              </Box>
+            </Box>
+          </Box>
+        ))}
+      </Box>
+
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2.25 }}>
+        <Box
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+            background: "linear-gradient(180deg, #ff9d2b 0%, #f97316 100%)",
+            color: "#ffffff",
+            borderRadius: "10px",
+            px: 1.6,
+            py: 0.9,
+            fontWeight: 700,
+            fontSize: 14,
+            boxShadow: "0 8px 18px rgba(249, 115, 22, 0.25)",
+          }}
+        >
+          <AddOutlinedIcon sx={{ fontSize: 20 }} />
+          <Box component="span">Add Task</Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+
+  const renderComingSoonSection = () => (
+    <Box
+      sx={{
+        backgroundColor: "#fff",
+        borderRadius: "16px",
+        p: { xs: 3, md: 4 },
+        boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
+        textAlign: "center",
+        minHeight: "220px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Box>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: "#111827", mb: 1 }}>
+          This page will come soon
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#6b7280" }}>
+          We’re preparing this section for you.
+        </Typography>
+      </Box>
+    </Box>
+  );
 
   const handleCompleteProject = async () => {
     const confirm = window.confirm(
@@ -329,7 +717,6 @@ export default function ProjectDetails() {
             {t("project.unable_load")}
           </Typography>
         </Box>
-        <Footer />
       </Box>
     );
   }
@@ -338,7 +725,8 @@ export default function ProjectDetails() {
     <Box
       className="project-overview-page"
       sx={{
-        minHeight: "100vh",
+        height: "calc(100dvh - var(--dashboard-header-height))",
+        minHeight: 0,
         display: "flex",
         flexDirection: "column",
         backgroundColor: "#f9fafb",
@@ -346,288 +734,239 @@ export default function ProjectDetails() {
     >
 
       <Box className="project-overview-main">
-        {/* HEADER */}
-        <Box className="project-overview-heading" sx={{ mb: 3 }}>
-          <Typography variant="h1" className="project-overview-title">
-            {overviewTitleSplit > 0 ? <>{overviewTitle.slice(0, overviewTitleSplit)} <span>{overviewTitle.slice(overviewTitleSplit + 1)}</span></> : <span>{overviewTitle}</span>}
-          </Typography>
-          <Typography variant="body1" className="project-overview-subtitle">
-            {t("project.project_overview_desc")}
-          </Typography>
+        <Box className="project-overview-rail-wrap">
+          <Box className="project-overview-rail" aria-label="Project action navigation">
+            {actionTabs.map(({ label, icon: Icon }) => (
+              <Box
+                key={label}
+                component="button"
+                type="button"
+                className={`project-overview-rail-item${activeTab === label ? " active" : ""}`}
+                onClick={() => setActiveTab(label)}
+              >
+                <Icon className="project-overview-rail-icon" />
+                <span>{label}</span>
+              </Box>
+            ))}
+            <Box component="button" type="button" className="project-overview-rail-chat" aria-label="Open chat">
+              <ChatBubbleOutlineOutlinedIcon />
+              <span>Chat</span>
+            </Box>
+          </Box>
         </Box>
 
+        <Box className="project-overview-content">
+        {activeTab === "More" && (
+          <>
+            {/* HEADER */}
+            <Box className="project-overview-heading" sx={{ mb: 3 }}>
+              <Typography variant="h1" className="project-overview-title">
+                {overviewTitleSplit > 0 ? <>{overviewTitle.slice(0, overviewTitleSplit)} <span>{overviewTitle.slice(overviewTitleSplit + 1)}</span></> : <span>{overviewTitle}</span>}
+              </Typography>
+              <Typography variant="body1" className="project-overview-subtitle">
+                {t("project.project_overview_desc")}
+              </Typography>
+            </Box>
 
-        {/* MANAGE SITE MEMBERS */}
-        <Box
-          sx={{
-            backgroundColor: "#fff",
-            borderRadius: "16px",
-            p: { xs: 2.5, md: 3 },
-            mb: 4,
-            boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
-          }}
-        >
-          <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-            Manage Site Members
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#667085", mb: 2 }}>
-            Search for an active Site Engineer in your organization and assign them to this project. New members must activate their account before they can be assigned.
-          </Typography>
-
-          <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, mb: 2 }}>
-            <TextField
-              fullWidth
-              size="small"
-              label="Search Site Engineers"
-              placeholder="Enter name or email"
-              value={memberSearch}
-              onChange={(event) => searchSiteMembers(event.target.value)}
-              inputProps={{ maxLength: 100 }}
-            />
-            <Button
-              variant="outlined"
-              onClick={() => setOpenInviteDialog(true)}
-              sx={{ whiteSpace: "nowrap", minWidth: { sm: "190px" } }}
+            {/* MANAGE SITE MEMBERS */}
+            <Box
+              sx={{
+                backgroundColor: "#fff",
+                borderRadius: "16px",
+                p: { xs: 2.5, md: 3 },
+                mb: 4,
+                boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
+              }}
             >
-              + Invite New Member
-            </Button>
-          </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                Manage Site Members
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#667085", mb: 2 }}>
+                Search for an active Site Engineer in your organization and assign them to this project. New members must activate their account before they can be assigned.
+              </Typography>
 
-          {memberSearchLoading && <CircularProgress size={24} sx={{ mb: 1 }} />}
-
-          {memberSearch.trim() && !memberSearchLoading && (
-            <Box sx={{ mt: 1.5, display: "grid", gap: 1 }}>
-              {siteMembers.length > 0 ? siteMembers.map((member) => (
-                <Box
-                  key={member._id}
-                  sx={{
-                    border: "1px solid #e5e7eb",
-                    borderRadius: 2,
-                    p: 1.5,
-                    display: "flex",
-                    flexDirection: { xs: "column", sm: "row" },
-                    alignItems: { sm: "center" },
-                    justifyContent: "space-between",
-                    gap: 1.5,
-                  }}
+              <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 1.5, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Search Site Engineers"
+                  placeholder="Enter name or email"
+                  value={memberSearch}
+                  onChange={(event) => searchSiteMembers(event.target.value)}
+                  inputProps={{ maxLength: 100 }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => setOpenInviteDialog(true)}
+                  sx={{ whiteSpace: "nowrap", minWidth: { sm: "190px" } }}
                 >
-                  <Box>
-                    <Typography sx={{ fontWeight: 600 }}>{member.name}</Typography>
-                    <Typography variant="body2" color="text.secondary">{member.email}</Typography>
-                    <Typography variant="caption" color="text.secondary">{member.role}</Typography>
-                  </Box>
-                  {!assignedSiteEngineerIds.has(member._id) && (
-                    <Button
-                      variant="contained"
-                      disabled={Boolean(assigningMemberId)}
-                      onClick={() => assignSiteEngineer(member)}
+                  + Invite New Member
+                </Button>
+              </Box>
+
+              {memberSearchLoading && <CircularProgress size={24} sx={{ mb: 1 }} />}
+
+              {memberSearch.trim() && !memberSearchLoading && (
+                <Box sx={{ mt: 1.5, display: "grid", gap: 1 }}>
+                  {siteMembers.length > 0 ? siteMembers.map((member) => (
+                    <Box
+                      key={member._id}
+                      sx={{
+                        border: "1px solid #e5e7eb",
+                        borderRadius: 2,
+                        p: 1.5,
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        alignItems: { sm: "center" },
+                        justifyContent: "space-between",
+                        gap: 1.5,
+                      }}
                     >
-                      {assigningMemberId === member._id ? "Assigning..." : "Assign"}
-                    </Button>
+                      <Box>
+                        <Typography sx={{ fontWeight: 600 }}>{member.name}</Typography>
+                        <Typography variant="body2" color="text.secondary">{member.email}</Typography>
+                        <Typography variant="caption" color="text.secondary">{member.role}</Typography>
+                      </Box>
+                      {!assignedSiteEngineerIds.has(member._id) && (
+                        <Button
+                          variant="contained"
+                          disabled={Boolean(assigningMemberId)}
+                          onClick={() => assignSiteEngineer(member)}
+                        >
+                          {assigningMemberId === member._id ? "Assigning..." : "Assign"}
+                        </Button>
+                      )}
+                    </Box>
+                  )) : (
+                    <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
+                      No active Site Engineers found for this search.
+                    </Typography>
                   )}
                 </Box>
-              )) : (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 1 }}>
-                  No active Site Engineers found for this search.
+              )}
+
+              <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: "#f8fafc" }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                  Currently assigned site engineers
                 </Typography>
-              )}
-            </Box>
-          )}
-
-          <Box sx={{ mt: 2, p: 1.5, borderRadius: 2, backgroundColor: "#f8fafc" }}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              Currently assigned site engineers
-            </Typography>
-            {assignedSiteEngineers.length > 0 ? (
-              <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 2.5 }}>
-                {assignedSiteEngineers.map((engineer, index) => (
-                  <li key={typeof engineer === "object" ? engineer?._id || index : engineer}>
-                    <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
-                      {typeof engineer === "object" ? engineer?.name || "Site Engineer" : "Site Engineer"}
-                    </Typography>
-                    {typeof engineer === "object" && engineer?.email && (
-                      <>
-                        {" — "}
-                        <Typography
-                          component="a"
-                          variant="body2"
-                          href={`mailto:${engineer.email}`}
-                          sx={{ color: "text.secondary", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
-                        >
-                          {engineer.email}
+                {assignedSiteEngineers.length > 0 ? (
+                  <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 2.5 }}>
+                    {assignedSiteEngineers.map((engineer, index) => (
+                      <li key={typeof engineer === "object" ? engineer?._id || index : engineer}>
+                        <Typography component="span" variant="body2" sx={{ fontWeight: 500 }}>
+                          {typeof engineer === "object" ? engineer?.name || "Site Engineer" : "Site Engineer"}
                         </Typography>
-                      </>
-                    )}
-                  </li>
-                ))}
+                        {typeof engineer === "object" && engineer?.email && (
+                          <>
+                            {" — "}
+                            <Typography
+                              component="a"
+                              variant="body2"
+                              href={`mailto:${engineer.email}`}
+                              sx={{ color: "text.secondary", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}
+                            >
+                              {engineer.email}
+                            </Typography>
+                          </>
+                        )}
+                      </li>
+                    ))}
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                    No site engineers assigned yet.
+                  </Typography>
+                )}
               </Box>
-            ) : (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                No site engineers assigned yet.
-              </Typography>
-            )}
-          </Box>
-        </Box>
+            </Box>
 
-        {/* PROJECT INFO CARD */}
-        <Box
-          className="project-overview-grid"
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
-            gap: 4,
-            mb: 5,
-          }}
-        >
-          {/* LEFT: DETAILS */}
-          <Box
-            className="project-details-card"
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: "16px",
-              p: 4,
-              boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
-            }}
-          >
-            <Box className="project-details-title-row" display="flex" alignItems="center" gap={1}>
-              <Box className="project-details-building"><OverviewBuildingIcon /></Box>
-              <Box className="project-details-title-copy">
-                <div className="project-name-line">
-                  <Typography variant="h4" className="project-details-title">{project.title}</Typography>
-                  <EditIcon
-                className="project-title-edit"
+            {/* PROJECT INFO CARD */}
+            <Box
+              className="project-overview-grid"
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+                gap: 4,
+                mb: 5,
+              }}
+            >
+              {/* LEFT: DETAILS */}
+              <Box
+                className="project-details-card"
                 sx={{
-                  cursor: "pointer",
-                  fontSize: 22,
-                  color: "#666"
+                  backgroundColor: "#fff",
+                  borderRadius: "16px",
+                  p: 4,
+                  boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
                 }}
-                onClick={handleOpenEdit}
-              />
-                </div>
-                <Typography variant="body2" className="project-details-description">{project.description}</Typography>
-              </Box>
-            </Box>
-            <Box className="project-metadata-list">
-              <div className="project-metadata-row"><OverviewFlagIcon /><strong>{t("project.status")}:</strong>
-                <StatusChips
-                  label={project.status || t("project.ongoing")}
-                  status={project.status || "ongoing"}
-                  style={{ justifySelf: "start", alignSelf: "center" }}
-                />
-              </div>
-              <div className="project-metadata-row"><CalendarMonthOutlinedIcon /><strong>{t("project.start_date")}:</strong><span>{project.startDate ? new Date(project.startDate).toLocaleDateString("en-GB") : "—"}</span></div>
-              <div className="project-metadata-row"><EventAvailableOutlinedIcon /><strong>{t("project.end_date")}:</strong><span>{project.endDate ? new Date(project.endDate).toLocaleDateString("en-GB") : "—"}</span></div>
-              <div className="project-metadata-row"><PersonOutlineIcon /><strong>{t("project.contractor")}:</strong><span>{project.contractor?.name || "N/A"}</span></div>
-              <div className="project-metadata-row">
-                <SiteEngineerIcon />
-                <strong>{t("project.site_engineers")}:</strong>
-                <Box component="span" sx={{ display: "grid", gap: 0.5, py: 1 }}>
-                  {assignedSiteEngineers.length > 0 ? assignedSiteEngineers.map((engineer, index) => (
-                    <span key={typeof engineer === "object" ? engineer?._id || index : engineer}>
-                      {typeof engineer === "object" ? engineer?.name || "Site Engineer" : "Site Engineer"}
-                    </span>
-                  )) : <span>N/A</span>}
+              >
+                <Box className="project-details-title-row" display="flex" alignItems="center" gap={1}>
+                  <Box className="project-details-building"><OverviewBuildingIcon /></Box>
+                  <Box className="project-details-title-copy">
+                    <div className="project-name-line">
+                      <Typography variant="h4" className="project-details-title">{project.title}</Typography>
+                      <EditIcon
+                        className="project-title-edit"
+                        sx={{
+                          cursor: "pointer",
+                          fontSize: 22,
+                          color: "#666"
+                        }}
+                        onClick={handleOpenEdit}
+                      />
+                    </div>
+                    <Typography variant="body2" className="project-details-description">{project.description}</Typography>
+                  </Box>
                 </Box>
-              </div>
-            </Box>
-          </Box>
+                <Box className="project-metadata-list">
+                  <div className="project-metadata-row"><OverviewFlagIcon /><strong>{t("project.status")}:</strong>
+                    <StatusChips
+                      label={project.status || t("project.ongoing")}
+                      status={project.status || "ongoing"}
+                      style={{ justifySelf: "start", alignSelf: "center" }}
+                    />
+                  </div>
+                  <div className="project-metadata-row"><CalendarMonthOutlinedIcon /><strong>{t("project.start_date")}:</strong><span>{project.startDate ? new Date(project.startDate).toLocaleDateString("en-GB") : "—"}</span></div>
+                  <div className="project-metadata-row"><EventAvailableOutlinedIcon /><strong>{t("project.end_date")}:</strong><span>{project.endDate ? new Date(project.endDate).toLocaleDateString("en-GB") : "—"}</span></div>
+                  <div className="project-metadata-row"><PersonOutlineIcon /><strong>{t("project.contractor")}:</strong><span>{project.contractor?.name || "N/A"}</span></div>
+                  <div className="project-metadata-row">
+                    <SiteEngineerIcon />
+                    <strong>{t("project.site_engineers")}:</strong>
+                    <Box component="span" sx={{ display: "grid", gap: 0.5, py: 1 }}>
+                      {assignedSiteEngineers.length > 0 ? assignedSiteEngineers.map((engineer, index) => (
+                        <span key={typeof engineer === "object" ? engineer?._id || index : engineer}>
+                          {typeof engineer === "object" ? engineer?.name || "Site Engineer" : "Site Engineer"}
+                        </span>
+                      )) : <span>N/A</span>}
+                    </Box>
+                  </div>
+                </Box>
+              </Box>
 
-          {/* RIGHT: ACTIONS */}
-          <Box
-            className="project-actions-card"
-            sx={{
-              backgroundColor: "#fff",
-              borderRadius: "16px",
-              p: 4,
-              boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 2,
-              height: "fit-content",
-            }}
-          >
-            <Typography variant="h4" className="project-actions-title">
-              {t("project.actions")}
-            </Typography>
+              {/* RIGHT: ACTIONS */}
+              <Box
+                className="project-actions-card"
+                sx={{
+                  backgroundColor: "#fff",
+                  borderRadius: "16px",
+                  p: 4,
+                  boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  height: "fit-content",
+                }}
+              >
+                <Typography variant="h4" className="project-actions-title">
+                  {t("project.actions")}
+                </Typography>
 
-            <Button
-              className="overview-action primary-action"
-              startIcon={<VisibilityOutlinedIcon />}
-              variant="contained"
-              onClick={() => {
-
-                navigate(`/founder/projects/${id}/attendance`);
-              }}
-              sx={{
-                position: "relative",
-                opacity: 1,
-                backgroundColor: "primary.main",
-                color: "#000",
-                fontWeight: 600,
-                "&:hover": {
-                  backgroundColor: "white",
-                },
-              }}
-            >
-              {t("project.view_attendance")}
-
-              {false && (
-                <LockIcon
-                  fontSize="small"
-                  sx={{
-                    ml: 1,
-                    fontSize: 18,
-                    color: "#ff9800"
-                  }}
-                />
-              )}
-            </Button>
-
-            <Button
-              className="overview-action"
-              startIcon={<Groups2OutlinedIcon />}
-              variant="outlined"
-              onClick={() => {
-
-                setOpenWageModal(true)
-              }}
-              sx={{
-                position: "relative",
-                opacity: 1,
-                color: "#F97316",
-                borderColor: "#F97316",
-                backgroundColor: "#fff",
-                fontWeight: 600,
-                "&:hover": {
-                  borderColor: "#e9650e",
-                  backgroundColor: "#fff7f2",
-                  color: "#F97316",
-                },
-              }}
-            >
-              View Worker Wages
-              {false && (
-                <LockIcon
-                  fontSize="small"
-                  sx={{
-                    ml: 1,
-                    fontSize: 18,
-                    color: "#ff9800"
-                  }}
-                />
-              )}
-            </Button>
-
-            {project.status === "Ongoing" && (
-              <>
                 <Button
-                  className="overview-action"
-                  startIcon={<Groups2OutlinedIcon />}
+                  className="overview-action primary-action"
+                  startIcon={<VisibilityOutlinedIcon />}
                   variant="contained"
-                  color="secondary"
                   onClick={() => {
-
-                    navigate(`/founder/projects/${id}/assign-workers`);
+                    navigate(`/founder/projects/${id}/attendance`);
                   }}
                   sx={{
                     position: "relative",
@@ -638,10 +977,9 @@ export default function ProjectDetails() {
                     "&:hover": {
                       backgroundColor: "white",
                     },
-
                   }}
                 >
-                  {t("project.assign_workers")}
+                  {t("project.view_attendance")}
 
                   {false && (
                     <LockIcon
@@ -657,192 +995,146 @@ export default function ProjectDetails() {
 
                 <Button
                   className="overview-action"
-                  variant="contained"
-                  color="error"
-                  onClick={handleCompleteProject}
-                >
-                  {t("project.mark_completed")}
-                </Button>
-              </>
-            )}
-
-            <Button
-              className="overview-action"
-              startIcon={<InventoryCubeIcon />}
-              variant="outlined"
-              onClick={() =>
-                navigate(`/founder/projects/${id}/inventory`)
-              }
-            >
-              {t("project.view_inventory")}
-            </Button>
-
-            <Button
-              className="overview-action misc-action"
-              startIcon={<MonetizationOnOutlinedIcon />}
-              variant="contained"
-              color="warning"
-              onClick={() => {
-
-                setOpenMiscModal(true)
-              }}
-              sx={{
-                position: "relative",
-                opacity: 1,
-                color: "primary.main",
-                borderColor: "primary.main",
-                fontWeight: 600,
-                "&:hover": {
-                  borderColor: "primary.main",
-                  color: "primary.main",
-                },
-              }}
-            >
-              View Misc Expenses
-              {false && (
-                <LockIcon
-                  fontSize="small"
-                  sx={{
-                    ml: 1,
-                    fontSize: 18,
-                    color: "#ff9800"
-                  }}
-                />
-              )}
-            </Button>
-
-            {project.status === "Completed" && (
-              <Typography className="project-locked-note" color="error" variant="body2">
-                {t("project.project_locked")}
-              </Typography>
-            )}
-
-            <Box sx={{ position: "relative" }}>
-              {false ? (
-                <Button
-                  className="overview-chat-button"
+                  startIcon={<Groups2OutlinedIcon />}
                   variant="outlined"
-                  sx={{
-                    opacity: 0.6,
-                    position: "relative"
+                  onClick={() => {
+                    setOpenWageModal(true)
                   }}
-                  onClick={() => {}}
-                >
-                  Chat
-                  <LockIcon
-                    fontSize="small"
-                    sx={{
-                      ml: 1,
-                      fontSize: 16,
-                      color: "#ff9800"
-                    }}
-                  />
-                </Button>
-              ) : (
-                <span className="overview-chat-button"><ChatModal projectId={id} showIcon /></span>
-              )}
-            </Box>
-          </Box>
-        </Box>
-
-        {/* REPORTS SECTION */}
-
-        {false ? (
-
-          <Box
-            className="project-reports-locked"
-            sx={{
-              mt: 4,
-              p: 4,
-              textAlign: "center",
-              borderRadius: 3,
-              border: "1px dashed #ddd",
-              backgroundColor: "#fafafa",
-            }}
-          >
-            <Typography variant="h5" >
-              🔒 {t("project.reports")}
-            </Typography>
-
-            <Typography
-              variant="body2"
-              sx={{ mt: 1 }}
-            >
-
-            </Typography>
-
-          </Box>
-
-        ) : <Box className="project-reports-section">
-          <Typography variant="h5" fontWeight={600} gutterBottom>
-            {t("project.reports")}
-          </Typography>
-
-          {Array.isArray(project.reports) && project.reports.length === 0 && (
-            <Typography variant="body1">
-              {t("project.no_reports")}
-            </Typography>
-          )}
-
-          <Box sx={{ display: "grid", gap: 3, mt: 3 }}>
-            {Array.isArray(project.reports) &&
-              project.reports.map((report) => (
-                <Box
-                  key={report._id}
-                  className="project-report-card"
                   sx={{
+                    position: "relative",
+                    opacity: 1,
+                    color: "#F97316",
+                    borderColor: "#F97316",
                     backgroundColor: "#fff",
-                    borderRadius: "14px",
-                    p: 3,
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                    fontWeight: 600,
+                    "&:hover": {
+                      borderColor: "#e9650e",
+                      backgroundColor: "#fff7f2",
+                      color: "#F97316",
+                    },
                   }}
                 >
-                  <div className="project-report-icon"><DescriptionOutlinedIcon /></div>
-                  <Typography variant='body1' fontWeight="bold">
-                    {t("project.report_by", { name: report.siteEngineerId?.name || "Unknown" })}
-                  </Typography>
-
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    <strong>{t("project.work_done")}:</strong> {report.workDone.slice(0, 20) + "...."}
-                  </Typography>
-
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    <strong>{t("project.issues")}:</strong> {report.issuesFound}
-                  </Typography>
-
-                  {report.contractorStatus && (
-                    <Box sx={{ mt: 1 }}>
-                      <span className={`badge ${report.contractorStatus.toLowerCase() === "approved" ? "is-approved" : "is-pending"}`}>
-                        {report.contractorStatus}
-                      </span>
-                    </Box>
+                  View Worker Wages
+                  {false && (
+                    <LockIcon
+                      fontSize="small"
+                      sx={{
+                        ml: 1,
+                        fontSize: 18,
+                        color: "#ff9800"
+                      }}
+                    />
                   )}
+                </Button>
 
-                  <Button
-                    className="view-report-button"
-                    variant="outlined"
-                    size="small"
-                    endIcon={<OpenInNewIcon />}
-                    sx={{
-                      mt: 2,
-                      opacity: 1,
-                      position: "relative",
-                      backgroundColor: "primary.main",
-                      color: "#000",
-                      fontWeight: 600,
-                      "&:hover": {
-                        backgroundColor: "white",
-                      },
+                {project.status === "Ongoing" && (
+                  <>
+                    <Button
+                      className="overview-action"
+                      startIcon={<Groups2OutlinedIcon />}
+                      variant="contained"
+                      color="secondary"
+                      onClick={() => {
+                        navigate(`/founder/projects/${id}/assign-workers`);
+                      }}
+                      sx={{
+                        position: "relative",
+                        opacity: 1,
+                        backgroundColor: "primary.main",
+                        color: "#000",
+                        fontWeight: 600,
+                        "&:hover": {
+                          backgroundColor: "white",
+                        },
+                      }}
+                    >
+                      {t("project.assign_workers")}
 
-                    }}
-                    onClick={() => {
+                      {false && (
+                        <LockIcon
+                          fontSize="small"
+                          sx={{
+                            ml: 1,
+                            fontSize: 18,
+                            color: "#ff9800"
+                          }}
+                        />
+                      )}
+                    </Button>
 
-                      navigate(`/founder/view-report/${report._id}`);
-                    }}
-                  >
-                    {t("project.view_report")}
+                    <Button
+                      className="overview-action"
+                      variant="contained"
+                      color="error"
+                      onClick={handleCompleteProject}
+                    >
+                      {t("project.mark_completed")}
+                    </Button>
+                  </>
+                )}
 
-                    {false && (
+                <Button
+                  className="overview-action"
+                  startIcon={<InventoryCubeIcon />}
+                  variant="outlined"
+                  onClick={() =>
+                    navigate(`/founder/projects/${id}/inventory`)
+                  }
+                >
+                  {t("project.view_inventory")}
+                </Button>
+
+                <Button
+                  className="overview-action misc-action"
+                  startIcon={<MonetizationOnOutlinedIcon />}
+                  variant="contained"
+                  color="warning"
+                  onClick={() => {
+                    setOpenMiscModal(true)
+                  }}
+                  sx={{
+                    position: "relative",
+                    opacity: 1,
+                    color: "primary.main",
+                    borderColor: "primary.main",
+                    fontWeight: 600,
+                    "&:hover": {
+                      borderColor: "primary.main",
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  View Misc Expenses
+                  {false && (
+                    <LockIcon
+                      fontSize="small"
+                      sx={{
+                        ml: 1,
+                        fontSize: 18,
+                        color: "#ff9800"
+                      }}
+                    />
+                  )}
+                </Button>
+
+                {project.status === "Completed" && (
+                  <Typography className="project-locked-note" color="error" variant="body2">
+                    {t("project.project_locked")}
+                  </Typography>
+                )}
+
+                <Box sx={{ position: "relative" }}>
+                  {false ? (
+                    <Button
+                      className="overview-chat-button"
+                      variant="outlined"
+                      sx={{
+                        opacity: 0.6,
+                        position: "relative"
+                      }}
+                      onClick={() => {}}
+                    >
+                      Chat
                       <LockIcon
                         fontSize="small"
                         sx={{
@@ -851,13 +1143,33 @@ export default function ProjectDetails() {
                           color: "#ff9800"
                         }}
                       />
-                    )}
-                  </Button>
-
+                    </Button>
+                  ) : (
+                    <span className="overview-chat-button"><ChatModal projectId={id} showIcon /></span>
+                  )}
                 </Box>
-              ))}
+              </Box>
+            </Box>
+          </>
+        )}
+
+        {activeTab === "Report" ? (
+          <Box className="project-reports-panel">
+            <Reports
+              projectId={id}
+              projectTitle={project.title}
+              onClose={() => setActiveTab("More")}
+              onProjectSelect={(selectedProject) => {
+                navigate(`/founder/project/${selectedProject._id}`);
+              }}
+            />
           </Box>
-        </Box>}
+        ) : activeTab === "Task" ? (
+          renderTasksSection()
+        ) : activeTab !== "More" ? (
+          renderComingSoonSection()
+        ) : null}
+        </Box>
 
       </Box>
 
@@ -974,7 +1286,6 @@ export default function ProjectDetails() {
 
       </Dialog>
 
-      <Footer />
     </Box>
   );
 

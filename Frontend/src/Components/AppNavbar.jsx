@@ -41,6 +41,7 @@ function getOwnerInitials() {
 export default function AppNavbar({
   dashboard = false,
   siteEngineer = false,
+  sticky = false,
   showMobileNavigation = true,
   showMobileDrawer = showMobileNavigation,
   onMobileMenuClick,
@@ -99,7 +100,7 @@ export default function AppNavbar({
   return (
     <>
       {/* TOP BAR */}
-      <AppBar position="static" className="contractor-appbar" sx={{ backgroundColor: "var(--palette-background-paper)", color: "var(--color-organization-profile-nav-text)", height: "var(--dashboard-header-height)", boxSizing: "border-box", border: dashboard ? "1px solid var(--color-dashboard-border)" : 0, borderLeft: dashboard ? 0 : undefined, borderBottom: "1px solid var(--color-dashboard-border)", borderRadius: 0, boxShadow: "none", m: 0 }}>
+      <AppBar position="static" className={`contractor-appbar${sticky ? " contractor-appbar--sticky" : ""}`} sx={{ backgroundColor: "var(--palette-background-paper)", color: "var(--color-organization-profile-nav-text)", height: "var(--dashboard-header-height)", boxSizing: "border-box", border: dashboard ? "1px solid var(--color-dashboard-border)" : 0, borderLeft: dashboard ? 0 : undefined, borderBottom: "1px solid var(--color-dashboard-border)", borderRadius: 0, boxShadow: "none", m: 0 }}>
         <Toolbar className="contractor-toolbar" sx={{ justifyContent: 'space-between', height: "100%", minHeight: "0 !important", boxSizing: "border-box", px: { xs: 1.5, md: 2.5 } }}>
           {/* Mobile Menu Icon */}
           {showMobileNavigation && (

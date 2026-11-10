@@ -7,11 +7,14 @@ export default function RadioButton({
   className = '',
   id,
   style,
+  size = 'md',
   ...props
 }) {
   const generatedId = useId();
   const inputId = id || generatedId;
-  const classes = ['radio-button-atom', className].filter(Boolean).join(' ');
+  const classes = ['radio-button-atom', `radio-button-atom--${size}`, className]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <label

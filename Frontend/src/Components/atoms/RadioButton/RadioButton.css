@@ -33,6 +33,17 @@
     background-color var(--motion-fast-duration) var(--motion-easing);
 }
 
+.radio-button-atom--md .radio-button-atom__control {
+  width: var(--radio-control-size-md);
+  height: var(--radio-control-size-md);
+  flex-basis: var(--radio-control-size-md);
+}
+
+.radio-button-atom--md .radio-button-atom__control::after {
+  width: var(--radio-dot-size-md);
+  height: var(--radio-dot-size-md);
+}
+
 .radio-button-atom__control::after {
   content: '';
   width: var(--radio-dot-size);
