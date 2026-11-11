@@ -92,6 +92,7 @@ export default function ProjectDetails() {
   const [openMiscModal, setOpenMiscModal] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [createdTasks, setCreatedTasks] = useState([]);
+  const [deletedTaskIds, setDeletedTaskIds] = useState(() => new Set());
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskOverrides, setTaskOverrides] = useState({});
   const [project, setProject] = useState(null);
@@ -140,7 +141,7 @@ export default function ProjectDetails() {
     { id: "TSK000001", name: "building", progress: 10, status: "Completed", issueCount: 2, issueRange: "10/10/26 - 25/10/26" },
     { id: "TSK000002", name: "work 2", progress: 55, status: "In Progress" },
   ];
-  const allTasks = [...mockTasks, ...createdTasks].map((task) => ({ ...task, ...taskOverrides[task.id] }));
+  const allTasks = [...mockTasks, ...createdTasks].filter((task) => !deletedTaskIds.has(task.id)).map((task) => ({ ...task, ...taskOverrides[task.id] }));
   const visibleTasks = statusFilter.length
     ? allTasks.filter((task) => statusFilter.includes(task.status))
     : allTasks;
@@ -1344,11 +1345,28 @@ export default function ProjectDetails() {
             <TaskProgressDetails
               task={selectedTask}
               projectId={id}
+              projectName={project?.title}
+              assignees={getAssignedSiteEngineers(project)}
               onBack={() => setSelectedTask(null)}
               onUpdateProgress={(progress) => {
                 const status = progress >= 100 ? "Completed" : progress > 0 ? "In Progress" : "Not Started";
                 setTaskOverrides((current) => ({ ...current, [selectedTask.id]: { progress, status } }));
                 setSelectedTask((current) => ({ ...current, progress, status }));
+              }}
+              onUpdateTaskName={(name) => {
+                setTaskOverrides((current) => ({ ...current, [selectedTask.id]: { ...current[selectedTask.id], name } }));
+                setSelectedTask((current) => ({ ...current, name }));
+              }}
+              onDeleteTask={() => {
+                const taskId = selectedTask.id;
+                setDeletedTaskIds((current) => new Set(current).add(taskId));
+                setCreatedTasks((current) => current.filter((task) => task.id !== taskId));
+                setTaskOverrides((current) => {
+                  const next = { ...current };
+                  delete next[taskId];
+                  return next;
+                });
+                setSelectedTask(null);
               }}
             />
           ) : renderTasksSection()

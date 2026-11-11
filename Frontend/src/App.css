@@ -1455,6 +1455,66 @@ main,
   color: #172554;
 }
 
+.issue-dialog .MuiDialog-paper {
+  width: min(100%, 620px);
+  border: 1px solid #d6dce5;
+  border-radius: 12px;
+  color: #172554;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, .24);
+}
+
+.task-name-dialog .MuiDialog-paper { width: min(100%, 340px); border-radius: 10px; color: #172554; }
+.task-name-dialog__header { display: flex; align-items: center; gap: 10px; padding: 13px 16px 10px; }
+.task-name-dialog__header > svg { color: #ff5b2b; font-size: 21px; }
+.task-name-dialog__header h2 { flex: 1; margin: 0; color: #172554; font-size: 15px; font-weight: 750; }
+.task-name-dialog__header .MuiIconButton-root { margin: -5px -8px -5px 0; padding: 4px; color: #64748b; }
+.task-name-dialog__header .MuiIconButton-root svg { font-size: 19px; }
+.task-name-dialog__body { display: flex; flex-direction: column; gap: 8px; padding: 0 16px 16px; }
+.task-name-dialog__body label { color: #334155; font-size: 11px; font-weight: 600; }
+.task-name-dialog__body label span { color: #f04438; }
+.task-name-dialog__body input { box-sizing: border-box; width: 100%; height: 34px; padding: 7px 10px; border: 1px solid #cbd5e1; border-radius: 5px; outline: none; color: #334155; font: inherit; font-size: 12px; }
+.task-name-dialog__body input:focus { border-color: #ff5b2b; box-shadow: 0 0 0 2px rgba(255, 91, 43, .12); }
+.task-name-dialog__body .MuiButton-root { min-height: 34px; margin-top: 8px; border-radius: 5px; background: #ff5b2b; color: #fff; font-size: 12px; font-weight: 650; text-transform: none; }
+.task-delete-dialog .MuiDialog-paper { width: min(100%, 390px); border: 1px solid #d7dce4; border-radius: 9px; color: #172554; }
+.task-delete-dialog__content { padding: 12px 16px 16px; }
+.task-delete-dialog__header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #e5e9ef; }
+.task-delete-dialog__header > svg { color: #ff5b2b; font-size: 21px; }
+.task-delete-dialog__header h2 { flex: 1; margin: 0; color: #172554; font-size: 16px; font-weight: 750; }
+.task-delete-dialog__header .MuiIconButton-root { margin: -5px -8px -5px 0; padding: 4px; color: #172554; }
+.task-delete-dialog__header .MuiIconButton-root svg { font-size: 20px; }
+.task-delete-dialog__content > p { margin: 12px 0 26px; color: #526176; font-size: 13px; line-height: 1.55; }
+.task-delete-dialog__content > p strong { color: #24324a; }
+.task-delete-dialog__actions { display: flex; justify-content: flex-end; gap: 9px; }
+.task-delete-dialog__actions .MuiButton-root { min-width: 90px; min-height: 35px; border: 1px solid #d7dce4; border-radius: 6px; color: #334155; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.task-delete-dialog__actions .MuiButton-contained { border-color: #ff5b2b; background: #ff5b2b; color: #fff; }
+
+.issue-modal { display: flex; flex-direction: column; }
+.issue-modal__header { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid #e7ebf1; }
+.issue-modal__header svg { color: #ff5b2b; font-size: 23px; }
+.issue-modal__header h2 { margin: 0; color: #172554; font-size: 18px; font-weight: 750; }
+.issue-modal__body { display: flex; flex-direction: column; gap: 14px; padding: 18px 24px; }
+.issue-modal__body label { display: flex; min-width: 0; flex-direction: column; gap: 6px; color: #27364f; font-size: 12px; font-weight: 650; }
+.issue-modal__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.issue-modal__body input, .issue-modal__body select, .issue-modal__body textarea { box-sizing: border-box; width: 100%; min-height: 38px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; background: #fff; color: #334155; font: inherit; font-size: 12px; }
+.issue-modal__body input:focus, .issue-modal__body select:focus, .issue-modal__body textarea:focus { border-color: #ff6b35; box-shadow: 0 0 0 2px rgba(255, 107, 53, .12); }
+.issue-modal__body input[readonly] { background: #f5f7fa; }
+.issue-modal__body textarea { min-height: 78px; resize: vertical; }
+.issue-modal__attachment-label span { display: inline; color: #64748b; font-weight: 400; }
+.issue-modal__file-input { display: none !important; }
+.issue-modal__dropzone { display: flex; min-height: 66px; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border: 1px dashed #cbd5e1; border-radius: 7px; background: #f8fafc; color: #ff5b2b; cursor: pointer; }
+.issue-modal__dropzone svg { font-size: 20px; }
+.issue-modal__dropzone strong { font-size: 12px; }
+.issue-modal__dropzone span { color: #8491a5; font-size: 11px; }
+.issue-modal__error { color: #b42318; font-size: 12px !important; }
+.issue-modal__actions { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 24px 18px; border-top: 1px solid #e7ebf1; }
+.issue-modal__actions .MuiButton-root { min-width: 108px; border: 1px solid #cbd5e1; border-radius: 6px; color: #334155; font-size: 12px; font-weight: 650; text-transform: none; }
+.issue-modal__actions .MuiButton-contained { border-color: #ff5b2b; background: #ff5b2b; color: #fff; }
+
+@media (max-width: 560px) {
+  .issue-modal__grid { grid-template-columns: 1fr; gap: 14px; }
+  .issue-modal__header, .issue-modal__body { padding-right: 18px; padding-left: 18px; }
+}
+
 .task-progress-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(250px, 0.9fr);

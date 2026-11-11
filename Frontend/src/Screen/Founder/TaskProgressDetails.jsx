@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Box, IconButton, Slider, Typography } from "@mui/material";
+import { Box, Button, Dialog, IconButton, Slider, Typography } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -16,6 +16,8 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import AttachFileRoundedIcon from "@mui/icons-material/AttachFileRounded";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import ChatModal from "../../Components/ChatModal";
 
 const initialUpdates = [
@@ -51,12 +53,45 @@ function DetailPanel({ title, action, icon: Icon, children, className = "" }) {
   );
 }
 
-export default function TaskProgressDetails({ task, projectId, onBack, onUpdateProgress }) {
+export default function TaskProgressDetails({ task, projectId, projectName, assignees = [], onBack, onUpdateProgress, onUpdateTaskName, onDeleteTask }) {
   const photoInputRef = useRef(null);
+  const issueFilesRef = useRef(null);
   const [progress, setProgress] = useState(Number(task.progress) || 0);
   const [photos, setPhotos] = useState([]);
   const [updates, setUpdates] = useState(initialUpdates);
   const [progressSaved, setProgressSaved] = useState(false);
+  const [issueOpen, setIssueOpen] = useState(false);
+  const [editNameOpen, setEditNameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [taskName, setTaskName] = useState(task.name || "");
+  const [issueFiles, setIssueFiles] = useState([]);
+  const [issue, setIssue] = useState({ description: "", dueDate: "", assignedTo: "", tag: "" });
+  const [issueError, setIssueError] = useState("");
+
+  function handleCreateIssue(event) {
+    event.preventDefault();
+    if (!issue.description.trim()) {
+      setIssueError("Please add an issue description.");
+      return;
+    }
+    setIssue({ description: "", dueDate: "", assignedTo: "", tag: "" });
+    setIssueFiles([]);
+    setIssueError("");
+    setIssueOpen(false);
+  }
+
+  function handleSaveTaskName(event) {
+    event.preventDefault();
+    const nextName = taskName.trim();
+    if (!nextName) return;
+    onUpdateTaskName?.(nextName);
+    setEditNameOpen(false);
+  }
+
+  function handleDeleteTask() {
+    onDeleteTask?.();
+    setDeleteOpen(false);
+  }
 
   function handleUpdateProgress() {
     const update = {
@@ -77,9 +112,9 @@ export default function TaskProgressDetails({ task, projectId, onBack, onUpdateP
             <button type="button" className="task-progress-back" onClick={onBack} aria-label="Back to tasks"><ArrowBackRoundedIcon /></button>
             <Typography component="h1">Task Progress</Typography>
             <Box className="task-progress-page__tools">
-              <IconButton aria-label="Task issues"><WarningAmberOutlinedIcon /></IconButton>
-              <IconButton aria-label="Edit task"><EditOutlinedIcon /></IconButton>
-              <IconButton aria-label="Delete task"><DeleteOutlineOutlinedIcon /></IconButton>
+              <IconButton aria-label="Create new issue" onClick={() => setIssueOpen(true)}><WarningAmberOutlinedIcon /></IconButton>
+              <IconButton aria-label="Edit task name" onClick={() => { setTaskName(task.name || ""); setEditNameOpen(true); }}><EditOutlinedIcon /></IconButton>
+              <IconButton aria-label="Delete task" onClick={() => setDeleteOpen(true)}><DeleteOutlineOutlinedIcon /></IconButton>
               <IconButton aria-label="More task actions"><MoreVertRoundedIcon /></IconButton>
             </Box>
           </Box>
@@ -204,6 +239,62 @@ export default function TaskProgressDetails({ task, projectId, onBack, onUpdateP
         />
         <button type="button" className="task-progress-submit" onClick={handleUpdateProgress} disabled={progressSaved}>Update Progress</button>
       </Box>
+
+      <Dialog open={issueOpen} onClose={() => setIssueOpen(false)} maxWidth="sm" fullWidth className="issue-dialog">
+        <Box component="form" onSubmit={handleCreateIssue} className="issue-modal">
+          <Box className="issue-modal__header">
+            <WarningAmberOutlinedIcon />
+            <Typography component="h2">Create New Issue</Typography>
+          </Box>
+          <Box className="issue-modal__body">
+            <Box className="issue-modal__grid">
+              <label>Project Name<input value={projectName || ""} readOnly /></label>
+              <label>Linked Task<input value={task.name || ""} readOnly /></label>
+            </Box>
+            <label>Issue Description<textarea rows={3} placeholder="Briefly explain your issue..." value={issue.description} onChange={(event) => setIssue({ ...issue, description: event.target.value })} /></label>
+            <Box className="issue-modal__grid">
+              <label>Due Date<input type="date" value={issue.dueDate} onChange={(event) => setIssue({ ...issue, dueDate: event.target.value })} /></label>
+              <label>Assigned to<select value={issue.assignedTo} onChange={(event) => setIssue({ ...issue, assignedTo: event.target.value })}><option value="">Assign issue to someone</option>{assignees.map((person) => <option key={person._id || person.id || person.name} value={person._id || person.id || person.name}>{person.name || person.fullName || person.email}</option>)}</select></label>
+            </Box>
+            <label>Tags<select value={issue.tag} onChange={(event) => setIssue({ ...issue, tag: event.target.value })}><option value="">Choose a tag to group issue by category</option><option>Safety</option><option>Materials</option><option>Quality</option><option>Delay</option><option>Other</option></select></label>
+            <label className="issue-modal__attachment-label">Add Attachments <span>(Supports up to 200 MB per file)</span></label>
+            <input ref={issueFilesRef} className="issue-modal__file-input" type="file" accept="image/*,video/*,.pdf" multiple onChange={(event) => { const files = Array.from(event.target.files || []); const oversized = files.find((file) => file.size > 200 * 1024 * 1024); if (files.length > 10 || oversized) { setIssueError(files.length > 10 ? "You can attach up to 10 files." : "Each file must be 200 MB or smaller."); return; } setIssueError(""); setIssueFiles(files); }} />
+            <button type="button" className="issue-modal__dropzone" onClick={() => issueFilesRef.current?.click()}><AttachFileRoundedIcon /><strong>{issueFiles.length ? `${issueFiles.length} file${issueFiles.length === 1 ? "" : "s"} selected` : "Add Attachments"}</strong><span>Up to 10 photos, videos or PDF files</span></button>
+            {issueError && <Typography className="issue-modal__error" role="alert">{issueError}</Typography>}
+          </Box>
+          <Box className="issue-modal__actions"><Button type="button" onClick={() => setIssueOpen(false)}>Cancel</Button><Button type="submit" variant="contained">Create Issue</Button></Box>
+        </Box>
+      </Dialog>
+
+      <Dialog open={editNameOpen} onClose={() => setEditNameOpen(false)} maxWidth="xs" fullWidth className="task-name-dialog">
+        <Box component="form" onSubmit={handleSaveTaskName}>
+          <Box className="task-name-dialog__header">
+            <EditOutlinedIcon />
+            <Typography component="h2">Change Task Name</Typography>
+            <IconButton aria-label="Close" onClick={() => setEditNameOpen(false)}><CloseRoundedIcon /></IconButton>
+          </Box>
+          <Box className="task-name-dialog__body">
+            <label htmlFor="task-name-input">Task Name <span>*</span></label>
+            <input id="task-name-input" value={taskName} onChange={(event) => setTaskName(event.target.value)} autoFocus required />
+            <Button type="submit" variant="contained" disabled={!taskName.trim()}>Save Changes</Button>
+          </Box>
+        </Box>
+      </Dialog>
+
+      <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)} maxWidth="xs" fullWidth className="task-delete-dialog">
+        <Box className="task-delete-dialog__content">
+          <Box className="task-delete-dialog__header">
+            <DeleteOutlineOutlinedIcon />
+            <Typography component="h2">Delete Task</Typography>
+            <IconButton aria-label="Close" onClick={() => setDeleteOpen(false)}><CloseRoundedIcon /></IconButton>
+          </Box>
+          <Typography component="p">Are you sure you want to delete <strong>{task.name}</strong> task?</Typography>
+          <Box className="task-delete-dialog__actions">
+            <Button type="button" onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button type="button" variant="contained" onClick={handleDeleteTask}>Delete</Button>
+          </Box>
+        </Box>
+      </Dialog>
     </Box>
   );
 }
