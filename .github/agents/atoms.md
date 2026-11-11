@@ -49,7 +49,7 @@ Use an existing atom before using MUI. Use MUI only when no existing atom suppor
   ```
 
 - Supports text inputs, password inputs, textareas (`type="textarea"`), and selects (`select`).
-- Relevant props include `label`, `id`, `required`, `disabled`, `icon`, `endIcon`, `validationState`, `validationMessage`, `aria-describedby`, and native input props such as `value`, `onChange`, `name`, and `placeholder`.
+- Relevant props include `label`, `id`, `required`, `disabled`, `icon`, `endIcon`, `size` (`default` or `compact`), `validationState`, `validationMessage`, `aria-describedby`, and native input props such as `value`, `onChange`, `name`, and `placeholder`.
 - Use `validationState="error"` or `validationState="success"` with a meaningful `validationMessage` rather than rendering an unrelated validation label.
 - Keep labels associated with controls. The atom generates a stable ID when one is not supplied.
 
@@ -64,6 +64,8 @@ Use an existing atom before using MUI. Use MUI only when no existing atom suppor
     required
   />
   ```
+
+- Use `type="search"` for search fields and `size="compact"` for dense search and filter controls.
 
 ### Icon
 

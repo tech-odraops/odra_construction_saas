@@ -6,10 +6,12 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import CollectionsOutlinedIcon from "@mui/icons-material/CollectionsOutlined";
 import AppNavbar from "./AppNavbar";
 
 const contractorMenuItems = [
   { label: "Home", path: "/founder/home", Icon: HomeOutlinedIcon },
+  { label: "Gallery", path: "/founder/gallery", Icon: CollectionsOutlinedIcon },
   { label: "Projects", path: "/founder/project", Icon: FolderOpenOutlinedIcon },
   { label: "Team", path: "/founder/workers", Icon: GroupsOutlinedIcon },
   { label: "Add New Project", path: "/founder/add-project", Icon: AddCircleRoundedIcon },

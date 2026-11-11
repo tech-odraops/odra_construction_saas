@@ -41,6 +41,17 @@
     background-color var(--motion-fast-duration) var(--motion-easing);
 }
 
+.input-atom--compact {
+  height: 2.25rem;
+  border-radius: 0.375rem;
+}
+
+.input-atom--compact .input-atom__control {
+  padding-block: 0.375rem;
+  padding-inline: 0.625rem;
+  font-size: 0.8125rem;
+}
+
 .input-atom:focus-within {
   border-color: #F97316;
 }

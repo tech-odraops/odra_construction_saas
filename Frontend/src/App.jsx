@@ -14,6 +14,7 @@ const Home = lazy(() => import("./Screen/Home"));
 const Login = lazy(() => import("./Screen/Login"));
 
 const OrganizationProfile = lazy(() => import("./Screen/Founder/OrganizationProfile"));
+const Gallery = lazy(() => import("./Screen/Founder/Gallery"));
 const Project = lazy(() => import("./Screen/Founder/Project"));
 const ProjectDetails = lazy(() => import("./Screen/Founder/ProjectDetails"));
 const AddProject = lazy(() => import("./Screen/Founder/AddProject"));
@@ -183,6 +184,7 @@ function App() {
             <Route path="/reset-password" element={<Login />} />
             <Route element={<ProtectedRoleLayout />}>
               <Route path="/founder/home" element={<Dashboard />} />
+              <Route path="/founder/gallery" element={<Gallery />} />
               <Route path="/founder/organization-profile" element={<OrganizationProfile />} />
               <Route path="/founder/edit-organization-profile" element={<OrganizationProfile />} />
               <Route path="/organization-profile" element={<OrganizationProfile />} />

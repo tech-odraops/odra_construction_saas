@@ -16,7 +16,11 @@ export default {
     },
     type: {
       control: 'select',
-      options: ['text', 'email', 'password', 'date', 'number'],
+      options: ['text', 'search', 'email', 'password', 'date', 'number'],
+    },
+    size: {
+      control: 'select',
+      options: ['default', 'compact'],
     },
     icon: {
       control: 'select',
@@ -60,6 +64,14 @@ export const WithPasswordToggle = {
 export const WithIcon = {
   args: {
     icon: 'user',
+  },
+};
+
+export const CompactSearch = {
+  args: {
+    size: 'compact',
+    type: 'search',
+    placeholder: 'Search...',
   },
 };
 
