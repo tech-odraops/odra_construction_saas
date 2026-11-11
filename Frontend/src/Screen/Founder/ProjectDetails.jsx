@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Footer from '../../Components/Footer';
 import WageModal from "../../Components/WageModal";
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import Button from '../../Components/atoms/Button/Button';
 import { toast } from 'react-toastify';
@@ -11,6 +11,7 @@ import axiosInstance from '../../utils/axiosInstance';
 import { useTranslation } from "react-i18next";
 import LockIcon from "@mui/icons-material/Lock";
 import MiscExpenseModal from "../../Components/MiscExpenseModal";
+import AddMiscExpenseModal from "../../Components/AddMiscExpenseModal";
 import EditIcon from "@mui/icons-material/Edit";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import EventAvailableOutlinedIcon from "@mui/icons-material/EventAvailableOutlined";
@@ -21,8 +22,6 @@ import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlin
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import TaskAltOutlinedIcon from "@mui/icons-material/TaskAltOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import MoreHorizOutlinedIcon from "@mui/icons-material/MoreHorizOutlined";
-import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import SearchOutlinedIcon from "@mui/icons-material/SearchOutlined";
 import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
@@ -88,15 +87,25 @@ import {
 } from "@mui/material";
 import FullScreenLoader from "../../Components/FullScreenLoader"
 
-export default function ProjectDetails() {
+export default function ProjectDetails({ isSiteEngineer = false }) {
   const [openMiscModal, setOpenMiscModal] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [createdTasks, setCreatedTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskOverrides, setTaskOverrides] = useState({});
+  const [openInventoryModal, setOpenInventoryModal] = useState(false);
+  const [inventoryForm, setInventoryForm] = useState({
+    name: "",
+    unit: "",
+    supplierName: "",
+    companyName: "",
+    quantity: "",
+    pricePerUnit: "",
+    purchaseDate: new Date().toISOString().split("T")[0],
+  });
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("More");
+  const [activeTab, setActiveTab] = useState("Overview");
   const [openWageModal, setOpenWageModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -122,16 +131,17 @@ export default function ProjectDetails() {
   const socketRef = useRef(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const projectListPath = isSiteEngineer ? "/site-engineer/projects" : "/founder/project";
   const overviewTitle = t("project.project_overview");
   const overviewTitleSplit = overviewTitle.lastIndexOf(" ");
   const assignedSiteEngineers = getAssignedSiteEngineers(project);
   const assignedSiteEngineerIds = getAssignedSiteEngineerIds(project);
   const actionTabs = [
+    { label: "Overview" },
     { label: "Report", icon: DescriptionOutlinedIcon },
     { label: "Task", icon: TaskAltOutlinedIcon },
     { label: "Material", icon: Inventory2OutlinedIcon },
     { label: "Attendance", icon: CalendarMonthOutlinedIcon },
-    { label: "More", icon: MoreHorizOutlinedIcon },
     { label: "Misc Expenses", icon: MonetizationOnOutlinedIcon },
   ];
 
@@ -693,6 +703,33 @@ export default function ProjectDetails() {
     }
   };
 
+  const handleInventoryChange = (event) => {
+    setInventoryForm((previous) => ({
+      ...previous,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const handleAddInventory = async () => {
+    try {
+      await axiosInstance.post(`/inventory/${id}`, inventoryForm);
+      toast.success("Inventory added");
+      setOpenInventoryModal(false);
+      setInventoryForm({
+        name: "",
+        unit: "",
+        supplierName: "",
+        companyName: "",
+        quantity: "",
+        pricePerUnit: "",
+        purchaseDate: new Date().toISOString().split("T")[0],
+      });
+    } catch (error) {
+      console.error("Add inventory error:", error);
+      toast.error(error.response?.data?.message || "Failed to add inventory");
+    }
+  };
+
 
   const searchSiteMembers = async (searchValue) => {
     setMemberSearch(searchValue);
@@ -828,32 +865,22 @@ export default function ProjectDetails() {
   useEffect(() => {
     fetchProject();
 
-    // set the socket connection
     socketRef.current = io(import.meta.env.VITE_API_URL, {
       transports: ['websocket']
     });
-    socketRef.current.emit("join", {
-      projectId: id
-    });
+    socketRef.current.emit("join", { projectId: id });
 
-    // listen for report:new event
-    socketRef.current.on("report:new", (data) => {
-      console.log("New report received:", data);
-      // update the project state with the new report
+    const handleNewReport = (data) => {
       setProject((prevData) => {
         if (!prevData) return prevData;
-        // Prevent duplicate reports by checking _id
-        if (
-          prevData.reports.some(
-            (report) => report._id === data.newReport._id
-          )
-        ) {
+        const reports = Array.isArray(prevData.reports) ? prevData.reports : [];
+        if (reports.some((report) => report._id === data.newReport._id)) {
           return prevData;
         }
         return {
           ...prevData,
           reports: [
-            ...prevData.reports,
+            ...reports,
             {
               ...data.newReport,
               siteEngineerId: {
@@ -863,32 +890,75 @@ export default function ProjectDetails() {
             }
           ]
         };
-
       });
       toast.info(`New report received: ${data.projectTitle}`, {
         onClick: () => {
           if (data.newReport?._id) {
-            navigate(`/founder/view-report/${data.newReport._id}`);
+            navigate(isSiteEngineer
+              ? `/site-engineer/projects/${id}/report`
+              : `/founder/view-report/${data.newReport._id}`);
           }
         }
       });
-    });
-
-    socketRef.current.on("misc:new", (data) => {
-
-      toast.info(
-        `New misc expense added: ${data.itemName}`
-      );
+    };
+    const handleMiscNew = (data) => {
+      toast.info(`New misc expense added: ${data.itemName}`);
       fetchProject();
+    };
+    const handleReportReviewed = (data) => {
+      setProject((previous) => ({
+        ...previous,
+        reports: (previous?.reports || []).map((report) =>
+          report._id?.toString() === data.reportId?.toString()
+            ? {
+                ...report,
+                contractorStatus: data.contractorStatus,
+                contractorComment: data.contractorComment,
+              }
+            : report,
+        ),
+      }));
+      toast.info("Report has Been Reviewed");
+    };
+    const handleProjectCompleted = () => {
+      toast.info("Project has been completed");
+      setProject((previous) => ({ ...previous, status: "Completed" }));
+      if (isSiteEngineer) navigate(projectListPath);
+    };
+    const handleProjectDeleted = () => {
+      toast.info("Project has been deleted");
+      navigate(projectListPath);
+    };
+    const handleTitleUpdated = (data) => {
+      setProject((previous) => ({ ...previous, title: data.title }));
+      toast.info("Title Updated");
+    };
+    const handleMiscUpdated = (data) => {
+      toast.info(`Expense ${data.itemName} was ${data.status}`);
+    };
 
-    });
+    socketRef.current.on("report:new", handleNewReport);
+    socketRef.current.on("misc:new", handleMiscNew);
+    socketRef.current.on("report:reviewed", handleReportReviewed);
+    socketRef.current.on("project:completed", handleProjectCompleted);
+    socketRef.current.on("project:deleted", handleProjectDeleted);
+    socketRef.current.on("project:titleUpdated", handleTitleUpdated);
+    socketRef.current.on("misc:updated", handleMiscUpdated);
 
     return () => {
       if (socketRef.current) {
+        socketRef.current.off("report:new", handleNewReport);
+        socketRef.current.off("misc:new", handleMiscNew);
+        socketRef.current.off("report:reviewed", handleReportReviewed);
+        socketRef.current.off("project:completed", handleProjectCompleted);
+        socketRef.current.off("project:deleted", handleProjectDeleted);
+        socketRef.current.off("project:titleUpdated", handleTitleUpdated);
+        socketRef.current.off("misc:updated", handleMiscUpdated);
         socketRef.current.disconnect();
+        socketRef.current = null;
       }
     };
-  }, [id]);
+  }, [id, isSiteEngineer, navigate, projectListPath]);
 
   console.log(project)
 
@@ -930,20 +1000,39 @@ export default function ProjectDetails() {
                 className={`project-overview-rail-item${activeTab === label ? " active" : ""}`}
                 onClick={() => setActiveTab(label)}
               >
-                <Icon className="project-overview-rail-icon" />
+                {Icon && <Icon className="project-overview-rail-icon" />}
                 <span>{label}</span>
               </Box>
             ))}
             <ChatModal
               projectId={id}
-              triggerClassName="project-overview-rail-chat-badge"
-              trigger={<Box component="button" className="project-overview-rail-chat" aria-label="Open project chat"><ChatBubbleOutlineOutlinedIcon /><span>Chat</span></Box>}
+              showIcon
+              buttonClassName="project-overview-rail-chat"
+              buttonStyle={{
+                width: "auto",
+                minWidth: 0,
+                height: 30,
+                padding: "0 18px",
+              }}
+              buttonSx={{
+                borderRadius: "5px",
+                background: "linear-gradient(180deg, #ff9d2b 0%, #f97316 100%)",
+                color: "#fff",
+                boxShadow: "0 8px 18px rgba(249, 115, 22, 0.25)",
+                fontSize: "0.8rem",
+                fontWeight: 700,
+                textTransform: "none",
+                "&:hover": {
+                  background: "linear-gradient(180deg, #ff9d2b 0%, #f97316 100%)",
+                  boxShadow: "0 8px 18px rgba(249, 115, 22, 0.25)",
+                },
+              }}
             />
           </Box>
         </Box>
 
         <Box className="project-overview-content">
-        {activeTab === "More" && (
+        {activeTab === "Overview" && (
           <>
             {/* HEADER */}
             <Box className="project-overview-heading" sx={{ mb: 3 }}>
@@ -956,7 +1045,7 @@ export default function ProjectDetails() {
             </Box>
 
             {/* MANAGE SITE MEMBERS */}
-            <Box
+            {!isSiteEngineer && <Box
               sx={{
                 backgroundColor: "#fff",
                 borderRadius: "16px",
@@ -1065,7 +1154,7 @@ export default function ProjectDetails() {
                   </Typography>
                 )}
               </Box>
-            </Box>
+            </Box>}
 
             {/* PROJECT INFO CARD */}
             <Box
@@ -1092,7 +1181,7 @@ export default function ProjectDetails() {
                   <Box className="project-details-title-copy">
                     <div className="project-name-line">
                       <Typography variant="h4" className="project-details-title">{project.title}</Typography>
-                      <EditIcon
+                      {!isSiteEngineer && <EditIcon
                         className="project-title-edit"
                         sx={{
                           cursor: "pointer",
@@ -1100,7 +1189,7 @@ export default function ProjectDetails() {
                           color: "#666"
                         }}
                         onClick={handleOpenEdit}
-                      />
+                      />}
                     </div>
                     <Typography variant="body2" className="project-details-description">{project.description}</Typography>
                   </Box>
@@ -1148,7 +1237,7 @@ export default function ProjectDetails() {
                   {t("project.actions")}
                 </Typography>
 
-                <Button
+                {!isSiteEngineer && <Button
                   className="overview-action primary-action"
                   startIcon={<VisibilityOutlinedIcon />}
                   variant="contained"
@@ -1178,9 +1267,9 @@ export default function ProjectDetails() {
                       }}
                     />
                   )}
-                </Button>
+                </Button>}
 
-                <Button
+                {!isSiteEngineer && <Button
                   className="overview-action"
                   startIcon={<Groups2OutlinedIcon />}
                   variant="outlined"
@@ -1212,97 +1301,97 @@ export default function ProjectDetails() {
                       }}
                     />
                   )}
-                </Button>
+                </Button>}
 
-                {project.status === "Ongoing" && (
+                {isSiteEngineer ? (
+                  project.status !== "Completed" ? (
+                    <>
+                      <Button
+                        className="overview-action primary-action"
+                        component={Link}
+                        to={`/site-engineer/projects/${id}/report`}
+                        variant="contained"
+                      >
+                        {t("project.submit_report_btn")}
+                      </Button>
+                      <Button
+                        className="overview-action"
+                        component={Link}
+                        to={`/site-engineer/projects/${id}/attendance`}
+                        variant="outlined"
+                      >
+                        {t("project.mark_attendance")}
+                      </Button>
+                      <Button
+                        className="overview-action"
+                        component={Link}
+                        to={`/site-engineer/projects/${id}/inventory`}
+                        variant="outlined"
+                      >
+                        {t("project.log_inventory")}
+                      </Button>
+                      <Button
+                        className="overview-action"
+                        variant="outlined"
+                        onClick={() => setOpenInventoryModal(true)}
+                      >
+                        ADD INVENTORY
+                      </Button>
+                      <Button
+                        className="overview-action"
+                        variant="outlined"
+                        onClick={() => setOpenMiscModal(true)}
+                      >
+                        Add Misc Expense
+                      </Button>
+                    </>
+                  ) : (
+                    <Typography color="error">
+                      {t("project.project_completed_locked")}
+                    </Typography>
+                  )
+                ) : (
                   <>
+                    {project.status === "Ongoing" && (
+                      <>
+                        <Button
+                          className="overview-action"
+                          startIcon={<Groups2OutlinedIcon />}
+                          variant="contained"
+                          color="secondary"
+                          onClick={() => navigate(`/founder/projects/${id}/assign-workers`)}
+                        >
+                          {t("project.assign_workers")}
+                        </Button>
+                        <Button
+                          className="overview-action"
+                          variant="contained"
+                          color="error"
+                          onClick={handleCompleteProject}
+                        >
+                          {t("project.mark_completed")}
+                        </Button>
+                      </>
+                    )}
                     <Button
                       className="overview-action"
-                      startIcon={<Groups2OutlinedIcon />}
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => {
-                        navigate(`/founder/projects/${id}/assign-workers`);
-                      }}
-                      sx={{
-                        position: "relative",
-                        opacity: 1,
-                        backgroundColor: "primary.main",
-                        color: "#000",
-                        fontWeight: 600,
-                        "&:hover": {
-                          backgroundColor: "white",
-                        },
-                      }}
+                      startIcon={<InventoryCubeIcon />}
+                      variant="outlined"
+                      onClick={() => navigate(`/founder/projects/${id}/inventory`)}
                     >
-                      {t("project.assign_workers")}
-
-                      {false && (
-                        <LockIcon
-                          fontSize="small"
-                          sx={{
-                            ml: 1,
-                            fontSize: 18,
-                            color: "#ff9800"
-                          }}
-                        />
-                      )}
+                      {t("project.view_inventory")}
                     </Button>
-
                     <Button
-                      className="overview-action"
+                      className="overview-action misc-action"
+                      startIcon={<MonetizationOnOutlinedIcon />}
                       variant="contained"
-                      color="error"
-                      onClick={handleCompleteProject}
+                      color="warning"
+                      onClick={() => setOpenMiscModal(true)}
                     >
-                      {t("project.mark_completed")}
+                      View Misc Expenses
                     </Button>
                   </>
                 )}
-
-                <Button
-                  className="overview-action"
-                  startIcon={<InventoryCubeIcon />}
-                  variant="outlined"
-                  onClick={() =>
-                    navigate(`/founder/projects/${id}/inventory`)
-                  }
-                >
-                  {t("project.view_inventory")}
-                </Button>
-
-                <Button
-                  className="overview-action misc-action"
-                  startIcon={<MonetizationOnOutlinedIcon />}
-                  variant="contained"
-                  color="warning"
-                  onClick={() => {
-                    setOpenMiscModal(true)
-                  }}
-                  sx={{
-                    position: "relative",
-                    opacity: 1,
-                    color: "primary.main",
-                    borderColor: "primary.main",
-                    fontWeight: 600,
-                    "&:hover": {
-                      borderColor: "primary.main",
-                      color: "primary.main",
-                    },
-                  }}
-                >
-                  View Misc Expenses
-                  {false && (
-                    <LockIcon
-                      fontSize="small"
-                      sx={{
-                        ml: 1,
-                        fontSize: 18,
-                        color: "#ff9800"
-                      }}
-                    />
-                  )}
-                </Button>
 
                 {project.status === "Completed" && (
                   <Typography className="project-locked-note" color="error" variant="body2">
@@ -1315,18 +1404,9 @@ export default function ProjectDetails() {
           </>
         )}
 
-        {activeTab === "Report" ? (
-          <Box className="project-reports-panel">
-            <Reports
-              projectId={id}
-              projectTitle={project.title}
-              onClose={() => setActiveTab("More")}
-              onProjectSelect={(selectedProject) => {
-                navigate(`/founder/project/${selectedProject._id}`);
-              }}
-            />
-          </Box>
-        ) : activeTab === "Task" ? (
+        {/* REPORTS SECTION */}
+
+        {activeTab === "Task" ? (
           showCreateTask ? (
             <CreateTaskForm
               siteEngineers={assignedSiteEngineers}
@@ -1352,27 +1432,66 @@ export default function ProjectDetails() {
               }}
             />
           ) : renderTasksSection()
-        ) : activeTab !== "More" ? (
+        ) : activeTab === "Report" ? (
+          <Box className="project-reports-panel">
+            <Reports
+              projectId={id}
+              projectTitle={project.title}
+              onClose={() => setActiveTab("Overview")}
+            />
+          </Box>
+        ) : activeTab !== "Overview" ? (
           renderComingSoonSection()
         ) : null}
         </Box>
 
       </Box>
 
-      <WageModal
+      {!isSiteEngineer && <WageModal
         open={openWageModal}
         onClose={() => setOpenWageModal(false)}
         projectId={id}
-      />
+      />}
 
-      <MiscExpenseModal
+      {!isSiteEngineer ? <MiscExpenseModal
         open={openMiscModal}
         onClose={() => setOpenMiscModal(false)}
         project={project}
         refreshProject={fetchProject}
-      />
+      /> : (
+        <AddMiscExpenseModal
+          open={openMiscModal}
+          onClose={() => setOpenMiscModal(false)}
+          projectId={id}
+          onSuccess={fetchProject}
+        />
+      )}
 
-      <Dialog
+      {isSiteEngineer && (
+        <Dialog
+          open={openInventoryModal}
+          onClose={() => setOpenInventoryModal(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Add Inventory</DialogTitle>
+          <DialogContent>
+            <TextField fullWidth margin="normal" label="Material Name" name="name" value={inventoryForm.name} onChange={handleInventoryChange} />
+            <TextField fullWidth margin="normal" label="Unit" name="unit" value={inventoryForm.unit} onChange={handleInventoryChange} />
+            <TextField fullWidth margin="normal" label="Supplier Name" name="supplierName" value={inventoryForm.supplierName} onChange={handleInventoryChange} />
+            <TextField fullWidth margin="normal" label="Company Name" name="companyName" value={inventoryForm.companyName} onChange={handleInventoryChange} />
+            <TextField fullWidth margin="normal" type="number" label="Quantity" name="quantity" value={inventoryForm.quantity} onChange={handleInventoryChange} />
+            <TextField fullWidth margin="normal" type="number" label="Price Per Unit" name="pricePerUnit" value={inventoryForm.pricePerUnit} onChange={handleInventoryChange} />
+            <TextField fullWidth margin="normal" type="date" label="Purchase Date" name="purchaseDate" value={inventoryForm.purchaseDate} onChange={handleInventoryChange} InputLabelProps={{ shrink: true }} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenInventoryModal(false)}>Cancel</Button>
+            <Button variant="contained" onClick={handleAddInventory}>Add</Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {!isSiteEngineer && <Dialog
         open={openInviteDialog}
         onClose={() => {
           if (!sendingInvite) setOpenInviteDialog(false);
@@ -1430,9 +1549,9 @@ export default function ProjectDetails() {
             </Button>
           </DialogActions>
         </Box>
-      </Dialog>
+      </Dialog>}
 
-      <Dialog
+      {!isSiteEngineer && <Dialog
         className="project-title-dialog"
         open={openEditModal}
         onClose={() => setOpenEditModal(false)}
@@ -1470,7 +1589,7 @@ export default function ProjectDetails() {
 
         </DialogActions>
 
-      </Dialog>
+      </Dialog>}
 
     </Box>
   );

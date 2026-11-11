@@ -59,16 +59,6 @@ export default function AppNavbar({
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const organizationLogo = siteEngineer ? null : getOrganizationLogo();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("IsLogin");
-    localStorage.removeItem("User_id");
-    localStorage.removeItem("name");
-    localStorage.removeItem("organizationId");
-    localStorage.removeItem("role");
-    navigate("/home");
-  };
-
   const menuItems = siteEngineer
     ? [{ label: t("navbar.all_projects"), path: "/site-engineer/projects", icon: FolderOpenOutlinedIcon }]
     : [
@@ -164,23 +154,6 @@ export default function AppNavbar({
               {organizationLogo ? <img src={organizationLogo} alt="" /> : getOwnerInitials()}
             </Avatar>
 
-            {/* Logout Button */}
-            <Button
-              variant="contained"
-              onClick={logout}
-              sx={{
-                display: { xs: "none", md: "inline-flex" },
-                backgroundColor: "var(--palette-primary-main)",
-                color: "var(--palette-primary-contrast-text)",
-                fontWeight: "var(--font-weight-semibold)",
-                "&:hover": {
-                  backgroundColor: "var(--palette-primary-dark)",
-                },
-              }}
-            >
-              {t("navbar.logout")}
-            </Button>
-
             <Select
               size="small"
               value={i18n.language}
@@ -275,7 +248,7 @@ export default function AppNavbar({
 
           {/* BOTTOM SECTION */}
           <Box>
-            {/* USER + LOGOUT */}
+            {/* USER PROFILE */}
             <Box
               sx={{
                 display: "flex",
@@ -297,16 +270,6 @@ export default function AppNavbar({
                 {organizationLogo ? <img src={organizationLogo} alt="" /> : getOwnerInitials()}
               </Avatar>
 
-              <Button
-                variant="contained"
-                onClick={logout}
-                sx={{
-                  flex: 1,
-                  fontWeight: 600,
-                }}
-              >
-                {t("navbar.logout")}
-              </Button>
             </Box>
 
             {/* DIVIDER */}

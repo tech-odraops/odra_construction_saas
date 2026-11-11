@@ -1023,7 +1023,8 @@ main,
   display: flex;
   align-items: stretch;
   width: 100%;
-  min-height: 56px;
+  max-height: fit-content;
+  gap: 1rem;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 0;
@@ -1032,7 +1033,6 @@ main,
 }
 
 .project-overview-rail-item {
-  flex: 1 1 0;
   appearance: none;
   border: 0;
   background: transparent;
@@ -1040,7 +1040,7 @@ main,
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 14px 11px;
+  padding: 12px 24px 11px;
   color: #374151;
   font-size: 0.84rem;
   font-weight: 600;
@@ -1079,10 +1079,17 @@ main,
   color: inherit;
 }
 
+.project-overview-rail > div:last-child {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-left: auto;
+}
+
 .project-overview-rail-chat {
   flex: 0 0 auto;
   align-self: center;
-  margin: 8px 10px 8px 8px;
+  margin: 2px 16px 2px 8px;
   padding: 0 18px;
   min-height: 36px;
   border: 0;
@@ -1097,20 +1104,6 @@ main,
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 700;
-}
-
-.project-overview-rail-chat-badge.MuiBadge-root {
-  flex: 0 0 auto;
-  align-self: center;
-  margin: 8px 10px 8px 8px;
-}
-
-.chat-modal-custom-trigger-root {
-  display: contents;
-}
-
-.project-overview-rail-chat-badge .project-overview-rail-chat {
-  margin: 0;
 }
 
 .project-overview-rail-chat svg {
@@ -1938,10 +1931,6 @@ main,
   gap: 14px;
   margin-top: auto;
   padding: 0 4px;
-}
-
-.task-progress-chat-trigger.MuiBadge-root {
-  display: contents;
 }
 
 .task-progress-chat,

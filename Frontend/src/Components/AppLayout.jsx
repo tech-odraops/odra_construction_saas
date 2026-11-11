@@ -1,11 +1,13 @@
 import React, { Suspense } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Box, Drawer, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import Button from "./atoms/Button/Button";
 import AppNavbar from "./AppNavbar";
 
 const contractorMenuItems = [
@@ -26,6 +28,8 @@ function PageLoader() {
 
 export default function AppLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false);
   const isSiteEngineer = pathname.startsWith("/site-engineer");
   const isProjectDetails = pathname.startsWith("/founder/project/");
@@ -36,6 +40,17 @@ export default function AppLayout() {
     ]
     : contractorMenuItems;
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("IsLogin");
+    localStorage.removeItem("User_id");
+    localStorage.removeItem("name");
+    localStorage.removeItem("organizationId");
+    localStorage.removeItem("role");
+    setMobileSidebarOpen(false);
+    navigate("/home");
+  };
+
   const sidebar = (
     <>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, height: "var(--dashboard-header-height)", minHeight: 0, boxSizing: "border-box", p: 1.5, borderBottom: "1px solid var(--color-dashboard-border)" }}>
@@ -44,7 +59,7 @@ export default function AppLayout() {
         </Box>
         <Typography sx={{ fontWeight: 700, fontSize: 14 }}>{isSiteEngineer ? "Site Engineer" : "Founder"}</Typography>
       </Box>
-      <Box component="nav" sx={{ p: 1.5 }}>
+      <Box component="nav" sx={{ flex: 1, p: 1.5 }}>
         {menuItems.map(({ label, path, Icon }) => {
           const active = pathname === path || pathname.startsWith(`${path}/`);
           return (
@@ -74,6 +89,19 @@ export default function AppLayout() {
             </Box>
           );
         })}
+      </Box>
+      <Box sx={{ p: 1.5, borderTop: "1px solid var(--color-dashboard-border)" }}>
+        <Button
+          variant="contained"
+          fullWidth
+          onClick={logout}
+          sx={{
+            justifyContent: "flex-start",
+            fontWeight: "var(--font-weight-semibold)",
+          }}
+        >
+          {t("navbar.logout")}
+        </Button>
       </Box>
     </>
   );

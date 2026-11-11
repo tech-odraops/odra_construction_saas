@@ -199,8 +199,17 @@ export default function TaskProgressDetails({ task, projectId, onBack, onUpdateP
       <Box className="task-progress-footer">
         <ChatModal
           projectId={projectId}
-          triggerClassName="task-progress-chat-trigger"
-          trigger={<button type="button" className="task-progress-chat">Chats</button>}
+          buttonLabel="Chats"
+          buttonClassName="task-progress-chat"
+          buttonStyle={{ width: "100%", minWidth: 0, height: 34 }}
+          buttonSx={{
+            border: "1px solid #ff642d",
+            borderRadius: "5px",
+            background: "#fff",
+            color: "#ff572d",
+            fontSize: "10px",
+            "&:hover": { background: "#fff", borderColor: "#ff642d" },
+          }}
         />
         <button type="button" className="task-progress-submit" onClick={handleUpdateProgress} disabled={progressSaved}>Update Progress</button>
       </Box>
