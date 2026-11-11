@@ -30,6 +30,7 @@ const MyProjects = lazy(() => import("./Screen/SiteEngineer/MyProjects"));
 const SubmitReport = lazy(() => import("./Screen/SiteEngineer/SubmitReport"));
 const Attendance = lazy(() => import("./Screen/SiteEngineer/Attendance"));
 const InventoryUsage = lazy(() => import("./Screen/SiteEngineer/InventoryUsage"));
+const SiteEngineerProfile = lazy(() => import("./Screen/SiteEngineer/SiteEngineerProfile"));
 
 const Services = lazy(() => import("./Screen/Services"));
 
@@ -196,6 +197,7 @@ function App() {
               <Route path="/founder/add-worker" element={<AddWorker />} />
               <Route path="/founder/projects/:id/assign-workers" element={<AssignWorker />} />
               <Route path="/site-engineer/home" element={<Dashboard />} />
+              <Route path="/site-engineer/profile" element={<SiteEngineerProfile />} />
               <Route path="/site-engineer/projects" element={<MyProjects></MyProjects>} />
               <Route path="/site-engineer/projects/:id" element={<ProjectDetails isSiteEngineer />} />
               <Route path='/site-engineer/projects/:id/report' element={<SubmitReport />}></Route>

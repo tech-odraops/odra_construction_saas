@@ -25,6 +25,7 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import axiosInstance from "../utils/axiosInstance";
 
 function getOwnerInitials() {
   const ownerName = (localStorage.getItem("organizationName") || localStorage.getItem("name"))?.trim();
@@ -35,15 +36,6 @@ function getOwnerInitials() {
     .map((part) => part.charAt(0))
     .join("")
     .toUpperCase();
-}
-
-function getOrganizationLogo() {
-  try {
-    const savedLogo = JSON.parse(localStorage.getItem("organizationLogo") || "null");
-    return savedLogo?.type === "image" ? savedLogo.value : null;
-  } catch {
-    return null;
-  }
 }
 
 export default function AppNavbar({
@@ -57,7 +49,33 @@ export default function AppNavbar({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [openDrawer, setOpenDrawer] = React.useState(false);
-  const organizationLogo = siteEngineer ? null : getOrganizationLogo();
+  const [avatarUrl, setAvatarUrl] = React.useState(null);
+  const [avatarName, setAvatarName] = React.useState(() => localStorage.getItem("name") || "");
+
+  React.useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      if (event.detail?.name) setAvatarName(event.detail.name);
+      setAvatarUrl(event.detail?.avatarUrl || null);
+    };
+    window.addEventListener("profile:updated", handleProfileUpdate);
+    return () => window.removeEventListener("profile:updated", handleProfileUpdate);
+  }, []);
+
+  React.useEffect(() => {
+    let active = true;
+    if (!siteEngineer) localStorage.removeItem("organizationLogo");
+    const endpoint = siteEngineer ? "/profile/me" : "/profile/organization";
+    axiosInstance.get(endpoint).then(({ data }) => {
+      if (!active) return;
+      const person = siteEngineer ? data.profile : data.organization;
+      const url = siteEngineer ? person?.profilePictureUrl : person?.logoUrl;
+      setAvatarUrl(url || null);
+      if (person?.name) setAvatarName(person.name);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [siteEngineer]);
+
+  const avatarInitials = avatarName.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toUpperCase() || (siteEngineer ? "S" : getOwnerInitials());
 
   const menuItems = siteEngineer
     ? [{ label: t("navbar.all_projects"), path: "/site-engineer/projects", icon: FolderOpenOutlinedIcon }]
@@ -133,9 +151,9 @@ export default function AppNavbar({
             {/* Avatar */}
             <Avatar
               className="contractor-profile-avatar"
-              component={siteEngineer ? "div" : Link}
-              to={siteEngineer ? undefined : "/founder/organization-profile"}
-              aria-label={siteEngineer ? "User profile" : "Edit organization profile"}
+              component={Link}
+              to={siteEngineer ? "/site-engineer/profile" : "/founder/organization-profile"}
+              aria-label={siteEngineer ? "Edit user profile" : "Edit organization profile"}
               sx={{
                 bgcolor: "var(--color-organization-profile-avatar-surface)",
                 color: "var(--palette-primary-main)",
@@ -145,13 +163,13 @@ export default function AppNavbar({
                 height: 40,
                 fontSize: "var(--font-body-font-size)",
                 border: 0,
-                cursor: siteEngineer ? "default" : "pointer",
+                cursor: "pointer",
                 display: { xs: dashboard ? "none" : "flex", md: "flex" },
                 "&:hover": { bgcolor: "var(--color-organization-profile-nav-avatar-hover)" },
                 "&:focus-visible": { outline: "var(--control-focus-outline-width) solid var(--palette-primary-main)", outlineOffset: "var(--control-focus-outline-offset)" },
               }}
             >
-              {organizationLogo ? <img src={organizationLogo} alt="" /> : getOwnerInitials()}
+              {avatarUrl ? <img src={avatarUrl} alt="" /> : avatarInitials}
             </Avatar>
 
             <Select
@@ -260,14 +278,14 @@ export default function AppNavbar({
               <Avatar
                 className="contractor-profile-avatar"
                 component={Link}
-                to="/founder/organization-profile"
+                to={siteEngineer ? "/site-engineer/profile" : "/founder/organization-profile"}
                 onClick={() => {
                   setOpenDrawer(false);
                 }}
-                aria-label="Edit organization profile"
+                aria-label={siteEngineer ? "Edit user profile" : "Edit organization profile"}
                 sx={{ bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)", border: 0, cursor: "pointer" }}
               >
-                {organizationLogo ? <img src={organizationLogo} alt="" /> : getOwnerInitials()}
+                {avatarUrl ? <img src={avatarUrl} alt="" /> : avatarInitials}
               </Avatar>
 
             </Box>
