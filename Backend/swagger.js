@@ -11,6 +11,6 @@ module.exports = swaggerJsdoc({
     definition: baseDocument,
     apis: [
         path.join(__dirname, 'index.js'),
-        path.join(__dirname, 'routes/**/*.js')
+        path.resolve(__dirname, 'routes', '**', '*.js').replace(/\\/g, '/')
     ]
 });
