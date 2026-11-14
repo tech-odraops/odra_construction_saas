@@ -64,7 +64,7 @@ app.set('io', io); // attaching io to app for easy access in routes
 // Authenticate every Socket.IO connection
 io.use(socketAuth);
 
-// listening for socket connection & client 
+// listening for socket coonection & client
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
 
