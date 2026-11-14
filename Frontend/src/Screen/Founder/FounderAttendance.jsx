@@ -9,10 +9,10 @@ import {
     CircularProgress
 } from "@mui/material";
 import { toast } from "react-toastify";
-import {io} from "socket.io-client"
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
+import { createAuthenticatedSocket } from "../../utils/socket";
 
 export default function FounderAttendance() {
     const { id: projectId } = useParams();
@@ -23,17 +23,19 @@ export default function FounderAttendance() {
     const socketRef = useRef(null);
     const { t } = useTranslation();
     const navigate = useNavigate();
+    const dateRef = useRef(date);
+    dateRef.current = date;
 
     useEffect(() => {
 
     }, []);
 
     // fetch attendance
-    const fetchAttendance = async () => {
-        if (!date) return;
+    const fetchAttendance = async (attendanceDate = date) => {
+        if (!attendanceDate) return;
 
         try {
-            const res = await axiosInstance.get(`/attendance/${projectId}/${date}`);
+            const res = await axiosInstance.get(`/attendance/${projectId}/${attendanceDate}`);
 
             setProject(res.data.attendance.projectId);
             setAttendance(res.data.attendance);
@@ -47,22 +49,37 @@ export default function FounderAttendance() {
 
     // make the socket connection one time
     useEffect(()=>{
-        socketRef.current = io(import.meta.env.VITE_API_URL,{
-            transports:["websocket"]
-        })
-        return ()=> socketRef.current.disconnect();
+        const socket = createAuthenticatedSocket();
+        if (!socket) return undefined;
+        socketRef.current = socket;
+        socket.emit("join", { projectId });
+
+        const handleProjectDeleted = () => {
+            toast.info("Project has been deleted");
+            navigate("/founder/project");
+        };
+        socket.on("project:deleted", handleProjectDeleted);
+
+        return () => {
+            socket.off("project:deleted", handleProjectDeleted);
+            socket.disconnect();
+            socketRef.current = null;
+        };
     },[projectId]);
 
     useEffect(()=>{
-        socketRef.current.emit("join",{projectId});
-        socketRef.current.on("attendance:updated",(data)=>{
-            if(data.date === date){
+        const socket = socketRef.current;
+        if (!socket) return undefined;
+
+        const handleAttendanceUpdated = (data) => {
+            if(data.date === dateRef.current){
                 toast.success("Attendance has been marked");
-                fetchAttendance()
+                fetchAttendance(dateRef.current)
             }
-        })
-        return ()=> socketRef.current.off("attendance:updated");
-    },[date]);
+        };
+        socket.on("attendance:updated", handleAttendanceUpdated);
+        return () => socket.off("attendance:updated", handleAttendanceUpdated);
+    }, [projectId]);
 
 
     return (

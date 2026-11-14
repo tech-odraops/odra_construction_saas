@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../utils/axiosInstance"
-import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -9,20 +8,14 @@ import Button from "./atoms/Button/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-export default function ProjectChat({ projectId, onMessageSent }) {
+export default function ProjectChat({ projectId, onMessageSent, socket }) {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
-    const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
-
-    // checking access and making the connection
-    useEffect(() => {
-
-    }, []);
 
     // 🔐 get current user id from JWT
     const token = localStorage.getItem("token");
@@ -85,39 +78,25 @@ export default function ProjectChat({ projectId, onMessageSent }) {
        2️⃣ Setup socket connection
     -------------------------- */
     useEffect(() => {
-        const socket = io(import.meta.env.VITE_API_URL, {
-            transports: ["websocket"],
-        });
+        if (!socket) return undefined;
 
-        socketRef.current = socket;
-
-        socket.on("connect", () => {
-            console.log("Chat socket connected:", socket.id);
-
-            socket.emit("join", {
-                projectId,
-                organizationId: decoded.organizationId,
-                isChat: true
-            });
-        });
-
-        socket.on("chat:new", (data) => {
+        const handleNewMessage = (data) => {
             setMessages((prev) => [...prev, data]);
-        });
+        };
 
-        socketRef.current.on("project:deleted", (data) => {
+        const handleProjectDeleted = () => {
             toast.info("Project has been deleted");
             navigate(`/site-engineer/projects`);
-        });
+        };
+        socket.on("chat:new", handleNewMessage);
+        socket.on("project:deleted", handleProjectDeleted);
 
 
         return () => {
-            socket.emit("leave", { projectId });
-            socket.off("chat:new");
-            socket.disconnect();
-            socketRef.current = null;
+            socket.off("chat:new", handleNewMessage);
+            socket.off("project:deleted", handleProjectDeleted);
         };
-    }, [projectId]);
+    }, [projectId, navigate, socket]);
 
     /* -------------------------
        3️⃣ Send message
@@ -125,9 +104,13 @@ export default function ProjectChat({ projectId, onMessageSent }) {
     const sendMessage = () => {
         if (!newMessage.trim()) return;
 
-        socketRef.current.emit("chat:new", {
+        if (!socket?.connected) {
+            toast.error("Chat connection is unavailable.");
+            return;
+        }
+
+        socket.emit("chat:new", {
             projectId,
-            senderId: currentUserId,
             message: newMessage
         });
 

@@ -5,6 +5,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 
 const { sendToUser } = require("../services/notification.service");
+const { emitToRooms } = require("../utils/socketRooms");
 
 exports.createReport = async (req, res) => {
     try {
@@ -54,21 +55,15 @@ exports.createReport = async (req, res) => {
         // emit socket io to client
         const io = req.app.get('io');
         if (io) {
-            // inform contractor that a report was posted
-            io.to(`contractor-${projectDetails.contractor._id.toString()}`).emit('report:new', {
+            emitToRooms(io, 'report:new', {
                 siteEngName,
                 projectTitle: projectDetails.title,
                 projectId,
                 newReport
-            })
-
-            // also send to the project room if contractor is in the project page
-            io.to(`project-${projectId}`).emit('report:new', {
-                siteEngName,
-                projectTitle: projectDetails.title,
-                projectId,
-                newReport
-            })
+            }, {
+                userIds: [projectDetails.contractor],
+                projectId
+            });
         }
 
         // Fetch contractor's FCM token
@@ -121,17 +116,13 @@ exports.reviewReport = async (req, res) => {
         // notify the site engineer
         const io = req.app.get('io');
         if (io) {
-            io.to(`siteEngineer-${report.siteEngineerId.toString()}`).emit('report:reviewed', {
+            emitToRooms(io, 'report:reviewed', {
                 reportId: report._id,
                 contractorComment: report.contractorComment,
                 contractorStatus: report.contractorStatus,
-            });
-
-            // also to project room
-            io.to(`project-${report.projectId._id.toString()}`).emit('report:reviewed', {
-                reportId: report._id,
-                contractorComment: report.contractorComment,
-                contractorStatus: report.contractorStatus,
+            }, {
+                userIds: [report.siteEngineerId],
+                projectId: report.projectId._id
             });
         }
         return res.status(202).json({ "message": "Reviewed Succefully" });

@@ -5,7 +5,6 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import Button from '../../Components/atoms/Button/Button';
 import { toast } from 'react-toastify';
-import { io } from 'socket.io-client';
 import ChatModal from '../../Components/ChatModal';
 import axiosInstance from '../../utils/axiosInstance';
 import { useTranslation } from "react-i18next";
@@ -27,6 +26,7 @@ import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import { createAuthenticatedSocket } from "../../utils/socket";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import Reports from "./Reports";
 import CreateTaskForm from "./CreateTaskForm";
@@ -129,6 +129,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   const [categoryFilter, setCategoryFilter] = useState([]);
   const { id } = useParams();
   const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const projectListPath = isSiteEngineer ? "/site-engineer/projects" : "/founder/project";
@@ -865,12 +866,25 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   useEffect(() => {
     fetchProject();
 
+<<<<<<< HEAD
     socketRef.current = io(import.meta.env.VITE_API_URL, {
       transports: ['websocket']
     });
     socketRef.current.emit("join", { projectId: id });
 
     const handleNewReport = (data) => {
+=======
+    const authenticatedSocket = createAuthenticatedSocket();
+    socketRef.current = authenticatedSocket;
+    setSocket(authenticatedSocket);
+    if (!authenticatedSocket) return undefined;
+
+    // listen for report:new event
+    authenticatedSocket.emit("join", { projectId: id, isChat: true });
+    const handleNewReport = (data) => {
+      console.log("New report received:", data);
+      // update the project state with the new report
+>>>>>>> features/socket.io-refactoring
       setProject((prevData) => {
         if (!prevData) return prevData;
         const reports = Array.isArray(prevData.reports) ? prevData.reports : [];
@@ -901,8 +915,17 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
         }
       });
     };
+<<<<<<< HEAD
     const handleMiscNew = (data) => {
       toast.info(`New misc expense added: ${data.itemName}`);
+=======
+
+    const handleMiscNew = (data) => {
+
+      toast.info(
+        `New misc expense added: ${data.itemName}`
+      );
+>>>>>>> features/socket.io-refactoring
       fetchProject();
     };
     const handleReportReviewed = (data) => {
@@ -937,6 +960,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
       toast.info(`Expense ${data.itemName} was ${data.status}`);
     };
 
+<<<<<<< HEAD
     socketRef.current.on("report:new", handleNewReport);
     socketRef.current.on("misc:new", handleMiscNew);
     socketRef.current.on("report:reviewed", handleReportReviewed);
@@ -957,6 +981,18 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
         socketRef.current.disconnect();
         socketRef.current = null;
       }
+=======
+    };
+    authenticatedSocket.on("report:new", handleNewReport);
+    authenticatedSocket.on("misc:new", handleMiscNew);
+
+    return () => {
+      authenticatedSocket.emit("leave", { projectId: id });
+      authenticatedSocket.off("report:new", handleNewReport);
+      authenticatedSocket.off("misc:new", handleMiscNew);
+      authenticatedSocket.disconnect();
+      socketRef.current = null;
+>>>>>>> features/socket.io-refactoring
     };
   }, [id, isSiteEngineer, navigate, projectListPath]);
 
@@ -1399,6 +1435,34 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
                   </Typography>
                 )}
 
+<<<<<<< HEAD
+=======
+                <Box sx={{ position: "relative" }}>
+                  {false ? (
+                    <Button
+                      className="overview-chat-button"
+                      variant="outlined"
+                      sx={{
+                        opacity: 0.6,
+                        position: "relative"
+                      }}
+                      onClick={() => {}}
+                    >
+                      Chat
+                      <LockIcon
+                        fontSize="small"
+                        sx={{
+                          ml: 1,
+                          fontSize: 16,
+                          color: "#ff9800"
+                        }}
+                      />
+                    </Button>
+                  ) : (
+                    <span className="overview-chat-button"><ChatModal projectId={id} showIcon socket={socket} /></span>
+                  )}
+                </Box>
+>>>>>>> features/socket.io-refactoring
               </Box>
             </Box>
           </>

@@ -1,9 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
-import { io } from "socket.io-client";
 import { toast } from "react-toastify";
-import { jwtDecode } from "jwt-decode";
 import { useTranslation } from "react-i18next";
 import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
 import HandymanRoundedIcon from "@mui/icons-material/HandymanRounded";
@@ -13,6 +11,7 @@ import axiosInstance from "../utils/axiosInstance";
 import StatusChips from "../Components/atoms/StatusChips/StatusChips";
 import Button from "../Components/atoms/Button/Button";
 import { DashboardStatsSkeleton, RecentProjectsSkeleton } from "../Components/DashboardSkeleton";
+import { createAuthenticatedSocket } from "../utils/socket";
 
 export default function Dashboard() {
   const [role, setRole] = useState(() => localStorage.getItem("role"));
@@ -42,33 +41,42 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!token || !["Founder", "Site Engineer"].includes(role)) return undefined;
-    const decoded = jwtDecode(token);
     axiosInstance.get(paths.endpoint)
       .then(({ data }) => setDashboard(data))
       .catch((error) => console.error("Unable to load dashboard:", error))
       .finally(() => setLoading(false));
 
-    socketRef.current = io(import.meta.env.VITE_API_URL, { transports: ["websocket"] });
+    socketRef.current = createAuthenticatedSocket();
+    if (!socketRef.current) return undefined;
+
     if (isSiteEngineer) {
-      socketRef.current.emit("join", { siteEngineerId: decoded.User_id });
-      socketRef.current.on("project:assigned", (data) => {
+      const handleProjectAssigned = (data) => {
         toast.info(`New project assigned: ${data.newProject.title}`, {
           onClick: () => data.newProject?._id && navigate(`/site-engineer/projects/${data.newProject._id}`),
         });
-      });
+      };
+      socketRef.current.on("project:assigned", handleProjectAssigned);
+      return () => {
+        socketRef.current?.off("project:assigned", handleProjectAssigned);
+        socketRef.current?.disconnect();
+        socketRef.current = null;
+      };
     } else {
-      socketRef.current.emit("join", { contractorId: decoded.User_id });
-      socketRef.current.on("report:new", (data) => {
+      const handleNewReport = (data) => {
         const reportId = data.newReport?._id || data.reportId;
         toast.info(`New report received: ${data.projectTitle}`, {
           onClick: () => reportId
             ? navigate(`/founder/view-report/${reportId}`)
             : data.projectId && navigate(`/founder/project/${data.projectId}`),
         });
-      });
+      };
+      socketRef.current.on("report:new", handleNewReport);
+      return () => {
+        socketRef.current?.off("report:new", handleNewReport);
+        socketRef.current?.disconnect();
+        socketRef.current = null;
+      };
     }
-
-    return () => socketRef.current?.disconnect();
   }, [isSiteEngineer, navigate, paths.endpoint, role, token]);
 
   if (!token || !["Founder", "Site Engineer"].includes(role)) return null;
