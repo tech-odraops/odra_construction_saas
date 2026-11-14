@@ -22,7 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import FullScreenLoader from "../../Components/FullScreenLoader";
-import { createAuthenticatedSocket } from "../../utils/socket";
+import { createAuthenticatedSocket, joinProjectRoom } from "../../utils/socket";
 
 export default function ProjectWork() {
   const [openInventoryModal, setOpenInventoryModal] = useState(false);
@@ -63,7 +63,7 @@ export default function ProjectWork() {
     // Check if socket is initialized before using it
     if (!socket || !id) return undefined;
 
-    socket.emit("join", { projectId: id, isChat: true })
+    const leaveProjectRoom = joinProjectRoom(socket, id, { isChat: true });
 
     const handler = (data) => {
       setProjects((prev) => ({
@@ -124,7 +124,7 @@ export default function ProjectWork() {
 
 
     return () => {
-      socket.emit("leave", { projectId: id });
+      leaveProjectRoom();
       socket.off("report:reviewed", handler);
       socket.off("project:completed", handleProjectCompleted);
       socket.off("project:deleted", handleProjectDeleted);
@@ -508,7 +508,15 @@ export default function ProjectWork() {
                   />
                 </Button>
               ) : (
-                <ChatModal projectId={id} socket={socket} />
+                <ChatModal
+                  projectId={id}
+                  participants={[
+                    project?.contractor,
+                    ...(Array.isArray(project?.siteEngineers) ? project.siteEngineers : []),
+                    project?.siteEngineer,
+                  ].filter(Boolean)}
+                  socket={socket}
+                />
               )}
             </Box>
           </Paper>
