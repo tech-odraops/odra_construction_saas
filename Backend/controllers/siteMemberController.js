@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+const { emitToRooms } = require("../utils/socketRooms");
 const { Resend } = require("resend");
 
 const User = require("../models/user");
@@ -710,12 +711,14 @@ exports.assignSiteMember = async (req, res) => {
         const io = req.app.get("io");
 
         if (io) {
-            io.to(`siteEngineer-${member._id}`).emit(
+            emitToRooms(
+                io,
                 "project:assigned",
                 {
                     newProject: project.toObject(),
                     contractorName: requester.name || "Founder"
-                }
+                },
+                { userIds: [member._id] }
             );
         }
 

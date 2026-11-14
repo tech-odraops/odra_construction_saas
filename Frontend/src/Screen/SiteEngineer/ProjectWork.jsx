@@ -9,8 +9,6 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { io } from "socket.io-client";
-import { useRef } from "react";
 import { toast } from "react-toastify";
 import ChatModal from '../../Components/ChatModal';
 import axiosInstance from "../../utils/axiosInstance";
@@ -24,6 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import FullScreenLoader from "../../Components/FullScreenLoader";
+import { createAuthenticatedSocket } from "../../utils/socket";
 
 export default function ProjectWork() {
   const [openInventoryModal, setOpenInventoryModal] = useState(false);
@@ -42,18 +41,16 @@ export default function ProjectWork() {
   const [project, setProjects] = useState({ reports: [] });
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null);
   const { t } = useTranslation();
 
   useEffect(() => {
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"]
-    })
+    const authenticatedSocket = createAuthenticatedSocket();
+    setSocket(authenticatedSocket);
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
+      if (authenticatedSocket) {
+        authenticatedSocket.disconnect();
       }
     }
   }, [])
@@ -64,10 +61,9 @@ export default function ProjectWork() {
 
   useEffect(() => {
     // Check if socket is initialized before using it
-    if (!socketRef.current || !id) return;
+    if (!socket || !id) return undefined;
 
-    // join the room
-    socketRef.current.emit("join", { projectId: id })
+    socket.emit("join", { projectId: id, isChat: true })
 
     const handler = (data) => {
       setProjects((prev) => ({
@@ -90,18 +86,17 @@ export default function ProjectWork() {
       toast.info("Report has Been Reviewed");
     };
 
-    socketRef.current.on("report:reviewed", handler);
-    socketRef.current.on("project:completed", ({ projectId }) => {
+    const handleProjectCompleted = () => {
       toast.info("Project has been completed");
       navigate(`/site-engineer/projects`);
-    })
+    };
 
-    socketRef.current.on("project:deleted", (data) => {
+    const handleProjectDeleted = () => {
       toast.info("Project has been deleted");
       navigate(`/site-engineer/projects`);
-    })
+    };
 
-     socketRef.current.on("project:titleUpdated", (data) => {
+    const handleProjectTitleUpdated = (data) => {
 
       setProjects((prev) => ({
         ...prev,
@@ -112,27 +107,31 @@ export default function ProjectWork() {
         "Title Updated"
       );
 
-    });
+    };
 
-    socketRef.current.on("misc:updated", (data) => {
+    const handleMiscUpdated = (data) => {
 
       toast.info(
         `Expense ${data.itemName} was ${data.status}`
       );
 
-    });
+    };
+    socket.on("report:reviewed", handler);
+    socket.on("project:completed", handleProjectCompleted);
+    socket.on("project:deleted", handleProjectDeleted);
+    socket.on("project:titleUpdated", handleProjectTitleUpdated);
+    socket.on("misc:updated", handleMiscUpdated);
 
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.off("report:reviewed", handler);
-        socketRef.current.off("project:completed");
-        socketRef.current.off("misc:updated");
-        socketRef.current.off("project:titleUpdated");
-        socketRef.current.disconnect();
-      }
+      socket.emit("leave", { projectId: id });
+      socket.off("report:reviewed", handler);
+      socket.off("project:completed", handleProjectCompleted);
+      socket.off("project:deleted", handleProjectDeleted);
+      socket.off("misc:updated", handleMiscUpdated);
+      socket.off("project:titleUpdated", handleProjectTitleUpdated);
     };
-  }, [id])
+  }, [id, navigate, socket])
 
   const handleInventoryChange = (e) => {
     setInventoryForm({
@@ -509,7 +508,7 @@ export default function ProjectWork() {
                   />
                 </Button>
               ) : (
-                <ChatModal projectId={id} />
+                <ChatModal projectId={id} socket={socket} />
               )}
             </Box>
           </Paper>

@@ -10,10 +10,10 @@ import {
   Paper
 } from "@mui/material";
 import { toast } from "react-toastify";
-import { io } from "socket.io-client";
 import InventoryBreakdownModal from "../../Components/InventoryBreakdownModal";
 import Button from "../../Components/atoms/Button/Button";
 import Input from "../../Components/atoms/Input/Input";
+import { createAuthenticatedSocket } from "../../utils/socket";
 
 
 export default function ProjectInventory() {
@@ -55,13 +55,12 @@ export default function ProjectInventory() {
 
   // socket connection
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"]
-    });
+    const socket = createAuthenticatedSocket();
+    if (!socket) return undefined;
 
     socket.emit("join", { projectId });
 
-    socket.on("inventory:updated", (data) => {
+    const handleInventoryUpdated = (data) => {
       setItems((prev) =>
         prev.map((item) =>
           item._id === data.inventoryItemId
@@ -72,15 +71,21 @@ export default function ProjectInventory() {
 
       refreshSummary();
 
-    });
+    };
 
-    socket.on("inventory:item-added", () => {
+    const handleInventoryItemAdded = () => {
       console.log("Called added");
       fetchInventory();
       refreshSummary();
-    });
+    };
+    socket.on("inventory:updated", handleInventoryUpdated);
+    socket.on("inventory:item-added", handleInventoryItemAdded);
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("inventory:updated", handleInventoryUpdated);
+      socket.off("inventory:item-added", handleInventoryItemAdded);
+      socket.disconnect();
+    };
   }, [projectId]);
 
 

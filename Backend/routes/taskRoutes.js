@@ -36,7 +36,6 @@ const {
     uploadTaskProgressAttachments,
     uploadTaskAttachments,
     removeTaskAttachment,
-    uploadTaskIssueAttachments,
     getTaskActivity
 } = require("../controllers/taskController");
 
@@ -59,7 +58,8 @@ const {
     updateTaskIssue,
     reassignTaskIssue,
     updateTaskIssueStatus,
-    removeTaskIssueAttachment
+    removeTaskIssueAttachment,
+    uploadTaskIssueAttachments,
 } = require("../controllers/taskIssueController");
 
 /**

@@ -15,12 +15,12 @@ import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurned
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
-import { io } from "socket.io-client";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import FullScreenLoader from "../../Components/FullScreenLoader";
 import pageBackground from "../../assets/background image.png";
 import ToggleSwitch from "../../Components/atoms/ToggleSwitch/ToggleSwitch";
+import { createAuthenticatedSocket } from "../../utils/socket";
 
 export default function Attendance() {
   const navigate = useNavigate();
@@ -36,32 +36,25 @@ export default function Attendance() {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    if (!projectId) return undefined;
 
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"]
-    })
+    const socket = createAuthenticatedSocket();
+    if (!socket) return undefined;
+    socketRef.current = socket;
+    socket.emit("join", { projectId });
 
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-    }
-  }, []);
-
-  useEffect(()=>{
-    // Check if socket is initialized before using it
-    if (!socketRef.current || !projectId) return;
-
-    // join the room
-    socketRef.current.emit("join", { projectId: projectId });
-
-    socketRef.current.on("project:deleted", (data) => {
+    const handleProjectDeleted = () => {
       toast.info("Project has been deleted");
       navigate(`/site-engineer/projects`);
-    });
+    };
+    socket.on("project:deleted", handleProjectDeleted);
 
-  },[projectId])
+    return () => {
+      socket.off("project:deleted", handleProjectDeleted);
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [projectId, navigate]);
 
   /* --------------------------------
      Fetch project, workers & attendance

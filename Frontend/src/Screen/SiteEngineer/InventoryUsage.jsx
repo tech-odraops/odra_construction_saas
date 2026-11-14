@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../utils/axiosInstance";
-import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import Footer from "../../Components/Footer";
 import {
@@ -14,9 +13,11 @@ import {
 import Button from "../../Components/atoms/Button/Button";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
+import { createAuthenticatedSocket } from "../../utils/socket";
 
 export default function InventoryUsage() {
   const { id: projectId } = useParams();
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const token = localStorage.getItem("token");
@@ -48,14 +49,13 @@ export default function InventoryUsage() {
      Socket logic 
   --------------------------- */
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"]
-    });
+    const socket = createAuthenticatedSocket();
+    if (!socket) return undefined;
 
     socket.emit("join", { projectId });
 
     // When stock is consumed
-    socket.on("inventory:updated", (data) => {
+    const handleInventoryUpdated = (data) => {
 
       // Prevent double update for sender
       if (data.updatedBy === currentUserId) return;
@@ -71,10 +71,10 @@ export default function InventoryUsage() {
             : item
         )
       );
-    });
+    };
 
     // 🔵 When material added or refilled
-    socket.on("inventory:item-added", (data) => {
+    const handleInventoryItemAdded = (data) => {
 
       setItems(prev => {
         const exists = prev.find(i => i._id === data.item._id);
@@ -97,16 +97,24 @@ export default function InventoryUsage() {
         return [...prev, updatedItem];
       });
       
-    });
+    };
 
-    socket.on("project:deleted", (data) => {
+    const handleProjectDeleted = () => {
       toast.info("Project has been deleted");
       navigate(`/site-engineer/projects`);
-    })
+    };
+    socket.on("inventory:updated", handleInventoryUpdated);
+    socket.on("inventory:item-added", handleInventoryItemAdded);
+    socket.on("project:deleted", handleProjectDeleted);
 
-    return () => socket.disconnect();
+    return () => {
+      socket.off("inventory:updated", handleInventoryUpdated);
+      socket.off("inventory:item-added", handleInventoryItemAdded);
+      socket.off("project:deleted", handleProjectDeleted);
+      socket.disconnect();
+    };
 
-  }, [projectId, currentUserId]);
+  }, [projectId, currentUserId, navigate]);
 
   /* ---------------------------
      Submit usage (FIXED)

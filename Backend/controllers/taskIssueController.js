@@ -13,6 +13,10 @@ const {
     deleteImage,
     getImageUrl
 } = require("../services/s3Service");
+const {
+    emitToRooms,
+    taskParticipantIds
+} = require("../utils/socketRooms");
 
 // Create an issue for a task
 exports.createTaskIssue = async (req, res) => {
@@ -227,6 +231,17 @@ exports.createTaskIssue = async (req, res) => {
         const populatedIssue = await TaskIssue.findById(createdIssue._id)
             .populate("raisedBy", "name email role")
             .populate("assignedTo", "name email role");
+
+        emitToRooms(req.app.get("io"), "task:issue-created", {
+            taskId: task._id,
+            issue: populatedIssue
+        }, {
+            userIds: taskParticipantIds(project, task, [
+                creatorId,
+                assignedEngineer._id
+            ]),
+            taskId: task._id
+        });
 
         return res.status(201).json({
             success: true,
@@ -753,6 +768,17 @@ exports.updateTaskIssue = async (req, res) => {
             req.updatedIssue = updatedIssue;
         });
 
+        emitToRooms(req.app.get("io"), "task:issue-updated", {
+            taskId: task._id,
+            issue: req.updatedIssue
+        }, {
+            userIds: taskParticipantIds(project, task, [
+                issue.raisedBy,
+                issue.assignedTo
+            ]),
+            taskId: task._id
+        });
+
         return res.status(200).json({
             success: true,
             message: "Issue updated successfully.",
@@ -955,6 +981,20 @@ exports.reassignTaskIssue = async (req, res) => {
             req.updatedIssue = updatedIssue;
         });
 
+        emitToRooms(req.app.get("io"), "task:issue-assigned", {
+            taskId: task._id,
+            issue: req.updatedIssue,
+            previousAssigneeId,
+            assignedTo: newAssignee._id
+        }, {
+            userIds: taskParticipantIds(project, task, [
+                issue.raisedBy,
+                previousAssigneeId,
+                newAssignee._id
+            ]),
+            taskId: task._id
+        });
+
         return res.status(200).json({
             success: true,
             message: "Issue reassigned successfully.",
@@ -1136,6 +1176,17 @@ exports.updateTaskIssueStatus = async (req, res) => {
             );
 
             req.updatedIssue = updatedIssue;
+        });
+
+        emitToRooms(req.app.get("io"), "task:issue-status-updated", {
+            taskId: task._id,
+            issue: req.updatedIssue
+        }, {
+            userIds: taskParticipantIds(project, task, [
+                issue.raisedBy,
+                issue.assignedTo
+            ]),
+            taskId: task._id
         });
 
         return res.status(200).json({
@@ -1354,6 +1405,18 @@ exports.uploadTaskIssueAttachments = async (req, res) => {
             req.updatedIssue = updatedIssue;
         });
 
+        emitToRooms(req.app.get("io"), "task:issue-attachment-added", {
+            taskId: task._id,
+            issueId: issue._id,
+            attachments
+        }, {
+            userIds: taskParticipantIds(project, task, [
+                issue.raisedBy,
+                issue.assignedTo
+            ]),
+            taskId: task._id
+        });
+
         return res.status(201).json({
             success: true,
             message: "Issue attachments uploaded successfully.",
@@ -1547,6 +1610,19 @@ exports.removeTaskIssueAttachment = async (req, res) => {
                 }],
                 { session }
             );
+        });
+
+        emitToRooms(req.app.get("io"), "task:issue-attachment-removed", {
+            taskId: task._id,
+            issueId: issue._id,
+            attachmentId,
+            attachmentName
+        }, {
+            userIds: taskParticipantIds(project, task, [
+                issue.raisedBy,
+                issue.assignedTo
+            ]),
+            taskId: task._id
         });
 
         return res.status(200).json({

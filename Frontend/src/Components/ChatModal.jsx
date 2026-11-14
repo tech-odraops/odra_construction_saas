@@ -5,11 +5,8 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 import Badge from '@mui/material/Badge';
 import axiosInstance from "../utils/axiosInstance";
-import { io } from 'socket.io-client';
 import ProjectChat from './ProjectChat';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import { useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
 
 const style = {
   position: 'absolute',
@@ -24,20 +21,9 @@ const style = {
   p: 4,
 };
 
-export default function ChatModal({projectId, showIcon = false}) {
+export default function ChatModal({projectId, showIcon = false, socket}) {
   const [open, setOpen] = React.useState(false);
   const [unreadCount, setUnreadCount] = React.useState(0);
-  const socketRef = React.useRef(null);
-
-  // 🔐 get current user id from JWT
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-  const decoded = jwtDecode(token);
-
-  useEffect(() => {
-
-  }, []);
-
   const fetchUnreadCount = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -72,22 +58,9 @@ export default function ChatModal({projectId, showIcon = false}) {
 
     fetchUnreadCount();
 
-    // Set up socket to listen for new messages
-    const socket = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"]
-    });
+    if (!socket) return undefined;
 
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      socket.emit("join", {
-        projectId,
-        organizationId: decoded.organizationId,
-        isChat: true
-       });
-    });
-
-    socket.on("chat:new", async (data) => {
+    const handleNewMessage = async () => {
       // If modal is open, mark the message as read immediately
       if (open) {
         try {
@@ -107,7 +80,8 @@ export default function ChatModal({projectId, showIcon = false}) {
         // If modal is closed, update unread count
         fetchUnreadCount();
       }
-    });
+    };
+    socket.on("chat:new", handleNewMessage);
 
     // Refresh unread count periodically (only when modal is closed)
     const interval = setInterval(() => {
@@ -117,10 +91,10 @@ export default function ChatModal({projectId, showIcon = false}) {
     }, 5000);
 
     return () => {
-      socket.disconnect();
+      socket.off("chat:new", handleNewMessage);
       clearInterval(interval);
     };
-  }, [projectId, open]);
+  }, [projectId, open, socket]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -149,7 +123,7 @@ export default function ChatModal({projectId, showIcon = false}) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <ProjectChat projectId={projectId} onMessageSent={markAsRead} />
+          <ProjectChat projectId={projectId} onMessageSent={markAsRead} socket={socket} />
         </Box>
       </Modal>
     </div>

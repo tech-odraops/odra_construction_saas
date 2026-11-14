@@ -33,7 +33,13 @@ const taskUnitRoutes = require("./routes/taskUnitRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const mongoose = require("mongoose");
 const Task = require("./models/Task");
+const Organization = require("./models/Organization");
 const socketAuth = require("./middleware/socketAuth");
+const {
+    userRoom,
+    projectRoom,
+    taskRoom
+} = require("./utils/socketRooms");
 
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
     ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
@@ -61,6 +67,20 @@ io.use(socketAuth);
 // listening for socket connection & client 
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
+
+    try {
+        const joined = socket.join(userRoom(socket.data.user.userId));
+        if (joined && typeof joined.catch === "function") {
+            joined.catch(error => {
+                console.error("Personal room join failed:", error);
+                socket.disconnect(true);
+            });
+        }
+    } catch (error) {
+        console.error("Personal room join failed:", error);
+        socket.disconnect(true);
+        return;
+    }
 
     // Join an authorized project room
     socket.on("join", async ({ projectId, isChat } = {}) => {
@@ -109,7 +129,7 @@ io.on('connection', (socket) => {
             }
 
             // Join the server-generated room name
-            const roomName = `project-${project._id}`;
+            const roomName = projectRoom(project._id);
             await socket.join(roomName);
 
             // Track chat access separately for each project
@@ -141,7 +161,7 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            const roomName = `project-${projectId}`;
+            const roomName = projectRoom(projectId);
 
             await socket.leave(roomName);
 
@@ -193,7 +213,14 @@ io.on('connection', (socket) => {
             let hasAccess = false;
 
             if (role === "Founder") {
+                const organization = await Organization.findOne({
+                    _id: organizationId,
+                    status: "active"
+                }).select("ownerId");
+
                 hasAccess =
+                    organization &&
+                    organization.ownerId.toString() === userId &&
                     project.contractor.toString() === userId;
             }
 
@@ -210,7 +237,7 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            const roomName = `task-${task._id}`;
+            const roomName = taskRoom(task._id);
 
             await socket.join(roomName);
 
@@ -232,7 +259,7 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            await socket.leave(`task-${taskId}`);
+            await socket.leave(taskRoom(taskId));
 
             console.log(`Socket ${socket.id} left task-${taskId}`);
 
@@ -305,7 +332,7 @@ io.on('connection', (socket) => {
             });
 
             // Broadcast to authorized project-room members
-            io.to(`project-${projectId}`).emit("chat:new", chat);
+            io.to(projectRoom(projectId)).emit("chat:new", chat);
 
             // Determine notification recipients
             let recipientIds = [];

@@ -15,6 +15,13 @@ const {
     deleteImage,
     getImageUrl
 } = require("../services/s3Service");
+const {
+    emitToRooms,
+    taskParticipantIds,
+    taskRoom,
+    removeUserFromTaskRoom,
+    clearRoom
+} = require("../utils/socketRooms");
 
 // Create a new task
 exports.createTask = async (req, res) => {
@@ -60,6 +67,7 @@ exports.createTask = async (req, res) => {
         session = await mongoose.startSession();
 
         let createdTask;
+        let founderId;
 
         await session.withTransaction(async () => {
 
@@ -103,6 +111,8 @@ exports.createTask = async (req, res) => {
                     { statusCode: 404 }
                 );
             }
+
+            founderId = project.contractor;
 
             // 4. Verify Founder ownership or Site Engineer assignment
             if (creatorRole === "Founder") {
@@ -289,6 +299,13 @@ exports.createTask = async (req, res) => {
                 ],
                 { session }
             );
+        });
+
+        emitToRooms(req.app.get("io"), "task:created", {
+            task: createdTask
+        }, {
+            userIds: [founderId, creatorId, ...(createdTask.assignees || [])],
+            taskId: createdTask._id
         });
 
         return res.status(201).json({
@@ -714,6 +731,7 @@ exports.updateTask = async (req, res) => {
         session = await mongoose.startSession();
 
         let updatedTask;
+        let recipientIds = [];
 
         await session.withTransaction(async () => {
 
@@ -770,6 +788,8 @@ exports.updateTask = async (req, res) => {
                     { statusCode: 404 }
                 );
             }
+
+            recipientIds = taskParticipantIds(project, task);
 
             // 6. Verify access permissions
             if (creatorRole === "Founder") {
@@ -906,6 +926,13 @@ exports.updateTask = async (req, res) => {
             );
         });
 
+        emitToRooms(req.app.get("io"), "task:updated", {
+            task: updatedTask
+        }, {
+            userIds: recipientIds,
+            taskId: updatedTask._id
+        });
+
         return res.status(200).json({
             success: true,
             message: "Task updated successfully.",
@@ -1018,6 +1045,8 @@ exports.deleteTask = async (req, res) => {
                 message: "Associated project not found."
             });
         }
+
+        const recipientIds = taskParticipantIds(project, task);
 
         // 6. Verify deletion permissions
         if (creatorRole === "Founder") {
@@ -1149,6 +1178,16 @@ exports.deleteTask = async (req, res) => {
             );
         });
 
+        const io = req.app.get("io");
+        emitToRooms(io, "task:deleted", {
+            taskId: task._id,
+            taskNumber: task.taskNumber
+        }, {
+            userIds: recipientIds,
+            taskId: task._id
+        });
+        await clearRoom(io, taskRoom(task._id));
+
         return res.status(200).json({
             success: true,
             message: "Task and all related records permanently deleted.",
@@ -1217,6 +1256,7 @@ exports.addTaskAssignees = async (req, res) => {
         let updatedTask;
         let newlyAssignedIds = [];
         let alreadyAssignedIds = [];
+        let recipientIds = [];
 
         await session.withTransaction(async () => {
 
@@ -1345,6 +1385,11 @@ exports.addTaskAssignees = async (req, res) => {
             alreadyAssignedIds = requestedIds.filter(
                 userId => existingAssigneeIds.has(userId)
             );
+            recipientIds = taskParticipantIds(
+                project,
+                task,
+                newlyAssignedIds
+            );
 
             // 8. Add new assignees
             if (newlyAssignedIds.length > 0) {
@@ -1386,6 +1431,17 @@ exports.addTaskAssignees = async (req, res) => {
                 updatedTask = task;
             }
         });
+
+        if (newlyAssignedIds.length > 0) {
+            emitToRooms(req.app.get("io"), "task:assignee-added", {
+                taskId: updatedTask._id,
+                assigneeIds: newlyAssignedIds,
+                task: updatedTask
+            }, {
+                userIds: recipientIds,
+                taskId: updatedTask._id
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -1455,6 +1511,7 @@ exports.removeTaskAssignee = async (req, res) => {
         session = await mongoose.startSession();
 
         let updatedTask;
+        let recipientIds = [];
 
         await session.withTransaction(async () => {
 
@@ -1519,6 +1576,8 @@ exports.removeTaskAssignee = async (req, res) => {
                 );
             }
 
+            recipientIds = taskParticipantIds(project, task, [userId]);
+
             if (project.contractor.toString() !== creatorId.toString()) {
                 throw Object.assign(
                     new Error("You cannot manage assignees for this task."),
@@ -1575,6 +1634,17 @@ exports.removeTaskAssignee = async (req, res) => {
                 ],
                 { session }
             );
+        });
+
+        const io = req.app.get("io");
+        await removeUserFromTaskRoom(io, userId, id);
+        emitToRooms(io, "task:assignee-removed", {
+            taskId: updatedTask._id,
+            assigneeId: userId,
+            task: updatedTask
+        }, {
+            userIds: recipientIds,
+            taskId: updatedTask._id
         });
 
         return res.status(200).json({
@@ -1642,6 +1712,7 @@ exports.createTaskProgress = async (req, res) => {
 
         let createdProgress;
         let updatedTask;
+        let recipientIds = [];
 
         await session.withTransaction(async () => {
 
@@ -1698,6 +1769,8 @@ exports.createTaskProgress = async (req, res) => {
                     { statusCode: 404 }
                 );
             }
+
+            recipientIds = taskParticipantIds(project, task);
 
             // 6. Verify task access
             if (creatorRole === "Founder") {
@@ -1827,6 +1900,15 @@ exports.createTaskProgress = async (req, res) => {
                 ],
                 { session }
             );
+        });
+
+        emitToRooms(req.app.get("io"), "task:progress-updated", {
+            taskId: updatedTask._id,
+            progress: createdProgress,
+            task: updatedTask
+        }, {
+            userIds: recipientIds,
+            taskId: updatedTask._id
         });
 
         return res.status(201).json({
@@ -2280,6 +2362,15 @@ exports.uploadTaskProgressAttachments = async (req, res) => {
             );
         });
 
+        emitToRooms(req.app.get("io"), "task:attachment-added", {
+            taskId: task._id,
+            progressId: progress._id,
+            attachments
+        }, {
+            userIds: taskParticipantIds(project, task),
+            taskId: task._id
+        });
+
         return res.status(201).json({
             success: true,
             message: "Progress photos uploaded successfully.",
@@ -2543,6 +2634,14 @@ exports.uploadTaskAttachments = async (req, res) => {
             }))
         );
 
+        emitToRooms(req.app.get("io"), "task:attachment-added", {
+            taskId: task._id,
+            attachments: attachmentsWithUrls
+        }, {
+            userIds: taskParticipantIds(project, task),
+            taskId: task._id
+        });
+
         return res.status(201).json({
             success: true,
             message: "Task photos uploaded successfully.",
@@ -2772,6 +2871,15 @@ exports.removeTaskAttachment = async (req, res) => {
                 ],
                 { session }
             );
+        });
+
+        emitToRooms(req.app.get("io"), "task:attachment-removed", {
+            taskId: task._id,
+            attachmentId,
+            attachmentName
+        }, {
+            userIds: taskParticipantIds(project, task),
+            taskId: task._id
         });
 
         return res.status(200).json({

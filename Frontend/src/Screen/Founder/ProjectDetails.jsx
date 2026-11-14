@@ -5,7 +5,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import Button from '../../Components/atoms/Button/Button';
 import { toast } from 'react-toastify';
-import { io } from 'socket.io-client';
 import ChatModal from '../../Components/ChatModal';
 import axiosInstance from '../../utils/axiosInstance';
 import { useTranslation } from "react-i18next";
@@ -28,6 +27,7 @@ import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 import ImportExportOutlinedIcon from "@mui/icons-material/ImportExportOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import { createAuthenticatedSocket } from "../../utils/socket";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import Reports from "./Reports";
 
@@ -103,6 +103,7 @@ export default function ProjectDetails() {
   const [sendingInvite, setSendingInvite] = useState(false);
   const { id } = useParams();
   const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const overviewTitle = t("project.project_overview");
@@ -642,16 +643,14 @@ export default function ProjectDetails() {
   useEffect(() => {
     fetchProject();
 
-    // set the socket connection
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ['websocket']
-    });
-    socketRef.current.emit("join", {
-      projectId: id
-    });
+    const authenticatedSocket = createAuthenticatedSocket();
+    socketRef.current = authenticatedSocket;
+    setSocket(authenticatedSocket);
+    if (!authenticatedSocket) return undefined;
 
     // listen for report:new event
-    socketRef.current.on("report:new", (data) => {
+    authenticatedSocket.emit("join", { projectId: id, isChat: true });
+    const handleNewReport = (data) => {
       console.log("New report received:", data);
       // update the project state with the new report
       setProject((prevData) => {
@@ -686,21 +685,25 @@ export default function ProjectDetails() {
           }
         }
       });
-    });
+    };
 
-    socketRef.current.on("misc:new", (data) => {
+    const handleMiscNew = (data) => {
 
       toast.info(
         `New misc expense added: ${data.itemName}`
       );
       fetchProject();
 
-    });
+    };
+    authenticatedSocket.on("report:new", handleNewReport);
+    authenticatedSocket.on("misc:new", handleMiscNew);
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
+      authenticatedSocket.emit("leave", { projectId: id });
+      authenticatedSocket.off("report:new", handleNewReport);
+      authenticatedSocket.off("misc:new", handleMiscNew);
+      authenticatedSocket.disconnect();
+      socketRef.current = null;
     };
   }, [id]);
 
@@ -1145,7 +1148,7 @@ export default function ProjectDetails() {
                       />
                     </Button>
                   ) : (
-                    <span className="overview-chat-button"><ChatModal projectId={id} showIcon /></span>
+                    <span className="overview-chat-button"><ChatModal projectId={id} showIcon socket={socket} /></span>
                   )}
                 </Box>
               </Box>
