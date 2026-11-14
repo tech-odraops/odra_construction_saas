@@ -8,6 +8,8 @@ import TextField from "@mui/material/TextField";
 import Button from "./atoms/Button/Button";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, FormControlLabel, IconButton, MenuItem } from "@mui/material";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 export default function ProjectChat({ projectId, onMessageSent }) {
     const [messages, setMessages] = useState([]);
@@ -15,6 +17,12 @@ export default function ProjectChat({ projectId, onMessageSent }) {
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [conversations, setConversations] = useState([{ _id: null, name: "Project chat", isDefault: true }]);
+    const [activeConversation, setActiveConversation] = useState(null);
+    const [groupDialog, setGroupDialog] = useState(false);
+    const [groupName, setGroupName] = useState("");
+    const [members, setMembers] = useState([]);
+    const [selectedMembers, setSelectedMembers] = useState([]);
     const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
@@ -46,7 +54,7 @@ export default function ProjectChat({ projectId, onMessageSent }) {
             }
 
             const res = await axiosInstance.get(
-                `/chat/${projectId}?page=${pageNumber}&limit=20`
+                `/chat/${projectId}?page=${pageNumber}&limit=20${activeConversation ? `&conversationId=${activeConversation}` : ""}`
             );
 
             const newChats = res.data.chats;
@@ -79,7 +87,17 @@ export default function ProjectChat({ projectId, onMessageSent }) {
         setPage(0);
         setHasMore(true);
         fetchChats(0);
-    }, [projectId]);
+    }, [projectId, activeConversation]);
+
+    useEffect(() => {
+        let active = true;
+        axiosInstance.get(`/chat/${projectId}/conversations`).then(conversationRes => {
+            if (!active) return;
+            setConversations(conversationRes.data.conversations || []);
+            setMembers((conversationRes.data.members || []).filter(member => member._id !== currentUserId));
+        }).catch(error => console.error("Unable to load chat groups", error));
+        return () => { active = false; };
+    }, [projectId, currentUserId]);
 
     /* -------------------------
        2️⃣ Setup socket connection
@@ -87,6 +105,7 @@ export default function ProjectChat({ projectId, onMessageSent }) {
     useEffect(() => {
         const socket = io(import.meta.env.VITE_API_URL, {
             transports: ["websocket"],
+            auth: { token: localStorage.getItem("token"), userId: currentUserId },
         });
 
         socketRef.current = socket;
@@ -97,7 +116,8 @@ export default function ProjectChat({ projectId, onMessageSent }) {
             socket.emit("join", {
                 projectId,
                 organizationId: decoded.organizationId,
-                isChat: true
+                isChat: true,
+                conversationId: activeConversation
             });
         });
 
@@ -117,7 +137,7 @@ export default function ProjectChat({ projectId, onMessageSent }) {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [projectId]);
+    }, [projectId, activeConversation]);
 
     /* -------------------------
        3️⃣ Send message
@@ -128,7 +148,8 @@ export default function ProjectChat({ projectId, onMessageSent }) {
         socketRef.current.emit("chat:new", {
             projectId,
             senderId: currentUserId,
-            message: newMessage
+            message: newMessage,
+            conversationId: activeConversation
         });
 
         setNewMessage("");
@@ -136,6 +157,21 @@ export default function ProjectChat({ projectId, onMessageSent }) {
         // Notify parent that a message was sent (mark as read)
         if (onMessageSent) {
             onMessageSent();
+        }
+    };
+
+    const createGroup = async () => {
+        try {
+            const response = await axiosInstance.post(`/chat/${projectId}/conversations`, { name: groupName, participantIds: selectedMembers });
+            const conversation = response.data.conversation;
+            setConversations(current => [conversation, ...current]);
+            setActiveConversation(conversation._id);
+            setGroupDialog(false);
+            setGroupName("");
+            setSelectedMembers([]);
+            toast.success("Group chat created");
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Unable to create group chat");
         }
     };
 
@@ -165,6 +201,24 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                     Chat
                 </Box>
             </Typography>
+
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1, mb: 1.5 }}>
+                <TextField select size="small" label="Conversation" value={activeConversation || ""} onChange={event => setActiveConversation(event.target.value || null)} sx={{ minWidth: 220 }}>
+                    {conversations.map(conversation => <MenuItem key={conversation._id || "default"} value={conversation._id || ""}>{conversation.name}</MenuItem>)}
+                </TextField>
+                <Box
+                    component="button"
+                    type="button"
+                    aria-label="Add engineers to project group"
+                    onClick={() => setGroupDialog(true)}
+                    sx={{ display: "flex", alignItems: "center", gap: 0.5, cursor: "pointer", color: "#F97316", border: 0, background: "transparent", p: 0 }}
+                >
+                    <AddCircleOutlineIcon />
+                    <Typography variant="body2" sx={{ fontWeight: 600, whiteSpace: "nowrap", color: "#111827" }}>
+                        Add engineers to project group
+                    </Typography>
+                </Box>
+            </Box>
 
             <Box
                 sx={{
@@ -275,8 +329,16 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                         typeof msg.senderId === "string"
                             ? msg.senderId
                             : msg.senderId?._id;
+                    const senderName = typeof msg.senderId === "object" ? msg.senderId?.name : "";
 
                     const isMine = senderId === currentUserId;
+                    const sentAt = msg.createdAt ? new Date(msg.createdAt) : null;
+                    const sentAtLabel = sentAt && !Number.isNaN(sentAt.getTime())
+                        ? new Intl.DateTimeFormat(undefined, {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                        }).format(sentAt)
+                        : "";
 
                     return (
                         <Box
@@ -301,9 +363,37 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                                     wordBreak: "break-word",
                                 }}
                             >
+                                {activeConversation && senderName && (
+                                    <Typography
+                                        sx={{
+                                            mb: 0.35,
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: isMine ? "rgba(255,255,255,0.9)" : "#F97316",
+                                        }}
+                                    >
+                                        {senderName}
+                                    </Typography>
+                                )}
                                 <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
                                     {msg.message}
                                 </Typography>
+                                {sentAtLabel && (
+                                    <Typography
+                                        component="time"
+                                        dateTime={sentAt.toISOString()}
+                                        sx={{
+                                            display: "block",
+                                            mt: 0.5,
+                                            fontSize: 10,
+                                            lineHeight: 1.2,
+                                            textAlign: "right",
+                                            color: isMine ? "rgba(255,255,255,0.78)" : "#6b7280",
+                                        }}
+                                    >
+                                        {sentAtLabel}
+                                    </Typography>
+                                )}
                             </Box>
                         </Box>
                     );
@@ -311,6 +401,17 @@ export default function ProjectChat({ projectId, onMessageSent }) {
 
                 <div ref={messagesEndRef}></div>
             </Box>
+
+            <Dialog open={groupDialog} onClose={() => setGroupDialog(false)} fullWidth maxWidth="sm">
+                <DialogTitle>Start a project group</DialogTitle>
+                <DialogContent>
+                    <TextField autoFocus fullWidth margin="dense" label="Group name" value={groupName} onChange={event => setGroupName(event.target.value)} inputProps={{ maxLength: 80 }} />
+                    <Typography sx={{ mt: 2, mb: 1 }} variant="subtitle2">Add site engineers</Typography>
+                    {members.length === 0 && <Typography color="text.secondary">No other assigned site engineers are available for this project.</Typography>}
+                    {members.map(member => <FormControlLabel key={member._id} control={<Checkbox checked={selectedMembers.includes(member._id)} onChange={event => setSelectedMembers(current => event.target.checked ? [...current, member._id] : current.filter(id => id !== member._id))} />} label={member.name} />)}
+                </DialogContent>
+                <DialogActions><Button onClick={() => setGroupDialog(false)}>Cancel</Button><Button variant="contained" disabled={!groupName.trim() || selectedMembers.length === 0} onClick={createGroup}>Create group</Button></DialogActions>
+            </Dialog>
 
             <Box
                 sx={{
@@ -367,3 +468,4 @@ export default function ProjectChat({ projectId, onMessageSent }) {
         </Box>
     );
 }
+

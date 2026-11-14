@@ -81,7 +81,8 @@ export default function ChatModal({
 
     // Set up socket to listen for new messages
     const socket = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"]
+      transports: ["websocket"],
+      auth: { token: localStorage.getItem("token") }
     });
 
     socketRef.current = socket;
