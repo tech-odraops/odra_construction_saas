@@ -1,6 +1,6 @@
 const express = require('express');
 const chatRouter = express.Router();
-const {getProjectChats, getUnreadCount, markChatRead} = require('../controllers/getProjectChats');
+const {getProjectChats, getUnreadCount, markChatRead, getConversations, createConversation} = require('../controllers/getProjectChats');
 const {authen} = require('../middleware/tokenValidatorsMiddleware');
 const {validateRoles} = require('../middleware/roles');
 
@@ -49,6 +49,8 @@ const {validateRoles} = require('../middleware/roles');
  *         $ref: "#/components/responses/InternalServerError"
  */
 chatRouter.get('/:projectId',authen,validateRoles(["Founder", "Site Engineer"]),getProjectChats);
+chatRouter.get('/:projectId/conversations',authen,validateRoles(["Founder", "Site Engineer"]),getConversations);
+chatRouter.post('/:projectId/conversations',authen,validateRoles(["Founder", "Site Engineer"]),createConversation);
 /**
  * @openapi
  * /chat/{projectId}/unread:
