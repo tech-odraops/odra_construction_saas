@@ -26,7 +26,7 @@ import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
-import { createAuthenticatedSocket } from "../../utils/socket";
+import { createAuthenticatedSocket, joinProjectRoom } from "../../utils/socket";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import Reports from "./Reports";
 import CreateTaskForm from "./CreateTaskForm";
@@ -867,25 +867,14 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   useEffect(() => {
     fetchProject();
 
-<<<<<<< HEAD
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ['websocket']
-    });
-    socketRef.current.emit("join", { projectId: id });
-
-    const handleNewReport = (data) => {
-=======
     const authenticatedSocket = createAuthenticatedSocket();
     socketRef.current = authenticatedSocket;
     setSocket(authenticatedSocket);
     if (!authenticatedSocket) return undefined;
 
-    // listen for report:new event
-    authenticatedSocket.emit("join", { projectId: id, isChat: true });
+    // Join the authenticated project room used by project updates and chat.
+    const leaveProjectRoom = joinProjectRoom(authenticatedSocket, id, { isChat: true });
     const handleNewReport = (data) => {
-      console.log("New report received:", data);
-      // update the project state with the new report
->>>>>>> features/socket.io-refactoring
       setProject((prevData) => {
         if (!prevData) return prevData;
         const reports = Array.isArray(prevData.reports) ? prevData.reports : [];
@@ -916,17 +905,8 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
         }
       });
     };
-<<<<<<< HEAD
     const handleMiscNew = (data) => {
       toast.info(`New misc expense added: ${data.itemName}`);
-=======
-
-    const handleMiscNew = (data) => {
-
-      toast.info(
-        `New misc expense added: ${data.itemName}`
-      );
->>>>>>> features/socket.io-refactoring
       fetchProject();
     };
     const handleReportReviewed = (data) => {
@@ -961,39 +941,25 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
       toast.info(`Expense ${data.itemName} was ${data.status}`);
     };
 
-<<<<<<< HEAD
-    socketRef.current.on("report:new", handleNewReport);
-    socketRef.current.on("misc:new", handleMiscNew);
-    socketRef.current.on("report:reviewed", handleReportReviewed);
-    socketRef.current.on("project:completed", handleProjectCompleted);
-    socketRef.current.on("project:deleted", handleProjectDeleted);
-    socketRef.current.on("project:titleUpdated", handleTitleUpdated);
-    socketRef.current.on("misc:updated", handleMiscUpdated);
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off("report:new", handleNewReport);
-        socketRef.current.off("misc:new", handleMiscNew);
-        socketRef.current.off("report:reviewed", handleReportReviewed);
-        socketRef.current.off("project:completed", handleProjectCompleted);
-        socketRef.current.off("project:deleted", handleProjectDeleted);
-        socketRef.current.off("project:titleUpdated", handleTitleUpdated);
-        socketRef.current.off("misc:updated", handleMiscUpdated);
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-=======
-    };
     authenticatedSocket.on("report:new", handleNewReport);
     authenticatedSocket.on("misc:new", handleMiscNew);
+    authenticatedSocket.on("report:reviewed", handleReportReviewed);
+    authenticatedSocket.on("project:completed", handleProjectCompleted);
+    authenticatedSocket.on("project:deleted", handleProjectDeleted);
+    authenticatedSocket.on("project:titleUpdated", handleTitleUpdated);
+    authenticatedSocket.on("misc:updated", handleMiscUpdated);
 
     return () => {
-      authenticatedSocket.emit("leave", { projectId: id });
+      leaveProjectRoom();
       authenticatedSocket.off("report:new", handleNewReport);
       authenticatedSocket.off("misc:new", handleMiscNew);
+      authenticatedSocket.off("report:reviewed", handleReportReviewed);
+      authenticatedSocket.off("project:completed", handleProjectCompleted);
+      authenticatedSocket.off("project:deleted", handleProjectDeleted);
+      authenticatedSocket.off("project:titleUpdated", handleTitleUpdated);
+      authenticatedSocket.off("misc:updated", handleMiscUpdated);
       authenticatedSocket.disconnect();
       socketRef.current = null;
->>>>>>> features/socket.io-refactoring
     };
   }, [id, isSiteEngineer, navigate, projectListPath]);
 
@@ -1043,7 +1009,9 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
             ))}
             <ChatModal
               projectId={id}
+              participants={[project?.contractor, ...getAssignedSiteEngineers(project)].filter(Boolean)}
               showIcon
+              socket={socket}
               buttonClassName="project-overview-rail-chat"
               buttonStyle={{
                 width: "auto",
@@ -1436,34 +1404,6 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
                   </Typography>
                 )}
 
-<<<<<<< HEAD
-=======
-                <Box sx={{ position: "relative" }}>
-                  {false ? (
-                    <Button
-                      className="overview-chat-button"
-                      variant="outlined"
-                      sx={{
-                        opacity: 0.6,
-                        position: "relative"
-                      }}
-                      onClick={() => {}}
-                    >
-                      Chat
-                      <LockIcon
-                        fontSize="small"
-                        sx={{
-                          ml: 1,
-                          fontSize: 16,
-                          color: "#ff9800"
-                        }}
-                      />
-                    </Button>
-                  ) : (
-                    <span className="overview-chat-button"><ChatModal projectId={id} showIcon socket={socket} /></span>
-                  )}
-                </Box>
->>>>>>> features/socket.io-refactoring
               </Box>
             </Box>
           </>

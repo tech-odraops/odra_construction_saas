@@ -22,3 +22,19 @@ export const createAuthenticatedSocket = () => {
 
     return socket;
 };
+
+export const joinProjectRoom = (socket, projectId, { isChat = false } = {}) => {
+    if (!socket || !projectId) return () => {};
+
+    const joinRoom = () => socket.emit("join", { projectId, isChat });
+    socket.on("connect", joinRoom);
+
+    if (socket.connected) {
+        joinRoom();
+    }
+
+    return () => {
+        socket.off("connect", joinRoom);
+        if (socket.connected) socket.emit("leave", { projectId });
+    };
+};

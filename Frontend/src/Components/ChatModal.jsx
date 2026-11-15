@@ -23,6 +23,7 @@ const style = {
 
 export default function ChatModal({
   projectId,
+  participants = [],
   showIcon = false,
   socket,
   buttonLabel = "Chat",
@@ -72,11 +73,13 @@ export default function ChatModal({
   React.useEffect(() => {
     if (!projectId) return;
 
+    setUnreadCount(0);
     fetchUnreadCount();
 
     if (!socket) return;
 
-    const handleNewMessage = async () => {
+    const handleNewMessage = async (data) => {
+      if (String(data?.projectId) !== String(projectId)) return;
 
       // Modal is open: mark messages as read
       if (open) {
@@ -149,6 +152,7 @@ export default function ChatModal({
         <Box sx={style}>
           <ProjectChat
             projectId={projectId}
+            participants={participants}
             onMessageSent={markAsRead}
             socket={socket}
           />
