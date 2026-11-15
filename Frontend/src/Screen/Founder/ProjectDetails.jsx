@@ -31,6 +31,17 @@ import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import Reports from "./Reports";
 import CreateTaskForm from "./CreateTaskForm";
 import TaskProgressDetails from "./TaskProgressDetails";
+import TaskCategoriesManager from "./TaskCategoriesManager";
+import {
+  createTask,
+  deleteTask,
+  getTask,
+  getTaskCategories,
+  getTasks,
+  getTaskUnits,
+  updateTask,
+  uploadTaskAttachments,
+} from "../../services/taskService";
 
 function getAssignedSiteEngineers(project) {
   const engineers = [
@@ -90,10 +101,15 @@ import FullScreenLoader from "../../Components/FullScreenLoader"
 export default function ProjectDetails({ isSiteEngineer = false }) {
   const [openMiscModal, setOpenMiscModal] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
-  const [createdTasks, setCreatedTasks] = useState([]);
-  const [deletedTaskIds, setDeletedTaskIds] = useState(() => new Set());
+  const [tasks, setTasks] = useState([]);
+  const [tasksLoading, setTasksLoading] = useState(false);
+  const [taskDetailsLoading, setTaskDetailsLoading] = useState(false);
+  const [taskSearch, setTaskSearch] = useState("");
+  const [taskCategories, setTaskCategories] = useState([]);
+  const [taskCategoriesManagerOpen, setTaskCategoriesManagerOpen] = useState(false);
+  const [taskUnits, setTaskUnits] = useState([]);
+  const [taskMetaLoading, setTaskMetaLoading] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [taskOverrides, setTaskOverrides] = useState({});
   const [openInventoryModal, setOpenInventoryModal] = useState(false);
   const [inventoryForm, setInventoryForm] = useState({
     name: "",
@@ -147,15 +163,62 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
     { label: "Misc Expenses", icon: MonetizationOnOutlinedIcon },
   ];
 
-  const mockTasks = [
-    { id: "TSK000003", name: "shd trial", progress: 7, status: "In Progress" },
-    { id: "TSK000001", name: "building", progress: 10, status: "Completed", issueCount: 2, issueRange: "10/10/26 - 25/10/26" },
-    { id: "TSK000002", name: "work 2", progress: 55, status: "In Progress" },
-  ];
-  const allTasks = [...mockTasks, ...createdTasks].filter((task) => !deletedTaskIds.has(task.id)).map((task) => ({ ...task, ...taskOverrides[task.id] }));
-  const visibleTasks = statusFilter.length
-    ? allTasks.filter((task) => statusFilter.includes(task.status))
-    : allTasks;
+  const allTasks = tasks.map((task) => ({
+    ...task,
+    id: task._id,
+    name: task.title,
+    progress: task.totalQuantity > 0 ? Math.min(100, Math.round((task.progressQuantity / task.totalQuantity) * 100)) : 0,
+    category: typeof task.categoryId === "object" ? task.categoryId?.name : "",
+  }));
+  const visibleTasks = allTasks.filter((task) => {
+    const matchesStatus = !statusFilter.length || statusFilter.includes(task.status);
+    const matchesCategory = !categoryFilter.length || categoryFilter.includes(task.category);
+    const query = taskSearch.trim().toLowerCase();
+    const matchesSearch = !query || `${task.taskNumber} ${task.title}`.toLowerCase().includes(query);
+    return matchesStatus && matchesCategory && matchesSearch;
+  });
+
+  useEffect(() => {
+    let active = true;
+    setTasksLoading(true);
+    getTasks(id)
+      .then((nextTasks) => { if (active) setTasks(nextTasks); })
+      .catch((error) => {
+        if (active) toast.error(error.response?.data?.message || "Could not load project tasks.");
+      })
+      .finally(() => { if (active) setTasksLoading(false); });
+    return () => { active = false; };
+  }, [id]);
+
+  useEffect(() => {
+    if (!socket) return undefined;
+    const refreshIfProjectTask = (payload) => {
+      const task = payload?.task || payload;
+      const eventProjectId = task?.projectId?._id || task?.projectId;
+      const isKnownTask = tasks.some((item) => item._id === String(payload?.taskId || task?._id || ""));
+      if (String(eventProjectId || "") === String(id) || isKnownTask) {
+        getTasks(id).then(setTasks).catch((error) => toast.error(error.response?.data?.message || "Could not refresh tasks."));
+      }
+    };
+    ["task:created", "task:updated", "task:deleted", "task:assignee-added", "task:assignee-removed", "task:progress-updated", "task:attachment-added", "task:attachment-removed"].forEach((eventName) => socket.on(eventName, refreshIfProjectTask));
+    return () => {
+      ["task:created", "task:updated", "task:deleted", "task:assignee-added", "task:assignee-removed", "task:progress-updated", "task:attachment-added", "task:attachment-removed"].forEach((eventName) => socket.off(eventName, refreshIfProjectTask));
+    };
+  }, [socket, id, tasks]);
+
+  useEffect(() => {
+    let active = true;
+    setTaskMetaLoading(true);
+    Promise.all([getTaskCategories(), getTaskUnits()])
+      .then(([categories, units]) => {
+        if (!active) return;
+        setTaskCategories(categories);
+        setTaskUnits(units);
+      })
+      .catch((error) => toast.error(error.response?.data?.message || "Could not load task categories and units."))
+      .finally(() => { if (active) setTaskMetaLoading(false); });
+    return () => { active = false; };
+  }, [id]);
 
   const renderTasksSection = () => (
     <Box sx={{ width: "100%", pt: 1 }}>
@@ -191,6 +254,8 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
           <Box
             component="input"
             placeholder="Search by ID or task name"
+            value={taskSearch}
+            onChange={(event) => setTaskSearch(event.target.value)}
             sx={{
               width: "100%",
               border: "none",
@@ -409,7 +474,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
           slotProps={{ paper: { className: "task-schedule-popover task-status-popover" } }}
         >
           <Box className="task-schedule-popover__options task-status-popover__options" role="group" aria-label="Task status filters">
-            {["Not Started", "In Progress", "Completed"].map((option) => (
+            {["Pending", "In Progress", "Completed"].map((option) => (
               <label className="task-schedule-option" key={option}>
                 <Checkbox
                   checked={statusDraft.includes(option)}
@@ -441,7 +506,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
           slotProps={{ paper: { className: "task-schedule-popover task-category-popover" } }}
         >
           <Box className="task-schedule-popover__options task-category-popover__options" role="group" aria-label="Task category filters">
-            {["Ceiling", "Civil", "Electrical", "General"].map((option) => (
+            {Array.from(new Set([...taskCategories.map((category) => category.name), ...allTasks.map((task) => task.category).filter(Boolean)])).map((option) => (
               <label className="task-schedule-option" key={option}>
                 <Checkbox
                   checked={categoryDraft.includes(option)}
@@ -468,17 +533,27 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1.4 }}>
         <Typography sx={{ fontSize: 14, fontWeight: 700, color: "#111827", mb: 0.3 }}>
-          {visibleTasks.length} {visibleTasks.length === 1 ? "Task" : "Tasks"}
+          {tasksLoading ? "Loading tasks…" : `${visibleTasks.length} ${visibleTasks.length === 1 ? "Task" : "Tasks"}`}
         </Typography>
 
-        {visibleTasks.length === 0 ? (
-          <Typography sx={{ py: 3, color: "#6b7280", textAlign: "center" }}>No tasks match the selected status.</Typography>
+        {!tasksLoading && visibleTasks.length === 0 ? (
+          <Typography sx={{ py: 3, color: "#6b7280", textAlign: "center" }}>{tasks.length ? "No tasks match the selected filters." : "No tasks have been created for this project yet."}</Typography>
         ) : visibleTasks.map((task, index) => (
           <Box
             key={task.id}
             component="button"
             type="button"
-            onClick={() => setSelectedTask(task)}
+            onClick={async () => {
+              setSelectedTask(null);
+              setTaskDetailsLoading(true);
+              try {
+                setSelectedTask(await getTask(task._id));
+              } catch (error) {
+                toast.error(error.response?.data?.message || "Could not load task details.");
+              } finally {
+                setTaskDetailsLoading(false);
+              }
+            }}
             aria-label={`Open ${task.name} task progress`}
             sx={{
               display: "flex",
@@ -519,7 +594,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
 
               <Box sx={{ minWidth: 0 }}>
                 <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#6b7280", letterSpacing: "0.12em", textTransform: "uppercase", mb: 0.2 }}>
-                  {task.id}
+                  {task.taskNumber}
                 </Typography>
                 <Typography sx={{ fontSize: 16, fontWeight: 700, color: "#111827", lineHeight: 1.2 }}>
                   {task.name}
@@ -618,7 +693,13 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
         ))}
       </Box>
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2.25 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2, mt: 2.25, flexWrap: "wrap" }}>
+        <Button
+          onClick={() => setTaskCategoriesManagerOpen(true)}
+          style={{ color: "#ff642d", fontWeight: 600, textTransform: "none" }}
+        >
+          Manage Categories
+        </Button>
         <Box
           component="button"
           type="button"
@@ -867,25 +948,13 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   useEffect(() => {
     fetchProject();
 
-<<<<<<< HEAD
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ['websocket']
-    });
-    socketRef.current.emit("join", { projectId: id });
-
-    const handleNewReport = (data) => {
-=======
     const authenticatedSocket = createAuthenticatedSocket();
     socketRef.current = authenticatedSocket;
     setSocket(authenticatedSocket);
     if (!authenticatedSocket) return undefined;
 
-    // listen for report:new event
     authenticatedSocket.emit("join", { projectId: id, isChat: true });
     const handleNewReport = (data) => {
-      console.log("New report received:", data);
-      // update the project state with the new report
->>>>>>> features/socket.io-refactoring
       setProject((prevData) => {
         if (!prevData) return prevData;
         const reports = Array.isArray(prevData.reports) ? prevData.reports : [];
@@ -916,17 +985,8 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
         }
       });
     };
-<<<<<<< HEAD
     const handleMiscNew = (data) => {
       toast.info(`New misc expense added: ${data.itemName}`);
-=======
-
-    const handleMiscNew = (data) => {
-
-      toast.info(
-        `New misc expense added: ${data.itemName}`
-      );
->>>>>>> features/socket.io-refactoring
       fetchProject();
     };
     const handleReportReviewed = (data) => {
@@ -961,39 +1021,25 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
       toast.info(`Expense ${data.itemName} was ${data.status}`);
     };
 
-<<<<<<< HEAD
-    socketRef.current.on("report:new", handleNewReport);
-    socketRef.current.on("misc:new", handleMiscNew);
-    socketRef.current.on("report:reviewed", handleReportReviewed);
-    socketRef.current.on("project:completed", handleProjectCompleted);
-    socketRef.current.on("project:deleted", handleProjectDeleted);
-    socketRef.current.on("project:titleUpdated", handleTitleUpdated);
-    socketRef.current.on("misc:updated", handleMiscUpdated);
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off("report:new", handleNewReport);
-        socketRef.current.off("misc:new", handleMiscNew);
-        socketRef.current.off("report:reviewed", handleReportReviewed);
-        socketRef.current.off("project:completed", handleProjectCompleted);
-        socketRef.current.off("project:deleted", handleProjectDeleted);
-        socketRef.current.off("project:titleUpdated", handleTitleUpdated);
-        socketRef.current.off("misc:updated", handleMiscUpdated);
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-=======
-    };
     authenticatedSocket.on("report:new", handleNewReport);
     authenticatedSocket.on("misc:new", handleMiscNew);
+    authenticatedSocket.on("report:reviewed", handleReportReviewed);
+    authenticatedSocket.on("project:completed", handleProjectCompleted);
+    authenticatedSocket.on("project:deleted", handleProjectDeleted);
+    authenticatedSocket.on("project:titleUpdated", handleTitleUpdated);
+    authenticatedSocket.on("misc:updated", handleMiscUpdated);
 
     return () => {
       authenticatedSocket.emit("leave", { projectId: id });
       authenticatedSocket.off("report:new", handleNewReport);
       authenticatedSocket.off("misc:new", handleMiscNew);
+      authenticatedSocket.off("report:reviewed", handleReportReviewed);
+      authenticatedSocket.off("project:completed", handleProjectCompleted);
+      authenticatedSocket.off("project:deleted", handleProjectDeleted);
+      authenticatedSocket.off("project:titleUpdated", handleTitleUpdated);
+      authenticatedSocket.off("misc:updated", handleMiscUpdated);
       authenticatedSocket.disconnect();
       socketRef.current = null;
->>>>>>> features/socket.io-refactoring
     };
   }, [id, isSiteEngineer, navigate, projectListPath]);
 
@@ -1436,34 +1482,6 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
                   </Typography>
                 )}
 
-<<<<<<< HEAD
-=======
-                <Box sx={{ position: "relative" }}>
-                  {false ? (
-                    <Button
-                      className="overview-chat-button"
-                      variant="outlined"
-                      sx={{
-                        opacity: 0.6,
-                        position: "relative"
-                      }}
-                      onClick={() => {}}
-                    >
-                      Chat
-                      <LockIcon
-                        fontSize="small"
-                        sx={{
-                          ml: 1,
-                          fontSize: 16,
-                          color: "#ff9800"
-                        }}
-                      />
-                    </Button>
-                  ) : (
-                    <span className="overview-chat-button"><ChatModal projectId={id} showIcon socket={socket} /></span>
-                  )}
-                </Box>
->>>>>>> features/socket.io-refactoring
               </Box>
             </Box>
           </>
@@ -1475,42 +1493,52 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
           showCreateTask ? (
             <CreateTaskForm
               siteEngineers={assignedSiteEngineers}
+              categories={taskCategories}
+              units={taskUnits}
+              onUnitsChange={setTaskUnits}
+              loading={taskMetaLoading}
+              allowAssignment={!isSiteEngineer}
               onBack={() => setShowCreateTask(false)}
-              onDone={(task) => {
-                setCreatedTasks((current) => [{
-                  ...task,
-                  id: `TSK${Date.now().toString().slice(-6)}`,
-                  status: "Not Started",
-                }, ...current]);
+              onDone={async ({ attachments, ...taskData }) => {
+                const createdTask = await createTask({ ...taskData, projectId: id });
+                if (attachments.length) {
+                  try {
+                    await uploadTaskAttachments(createdTask._id, attachments);
+                  } catch (error) {
+                    toast.error(error.response?.data?.message || "Task created, but photo upload failed.");
+                  }
+                }
+                setTasks(await getTasks(id));
+                toast.success("Task created successfully.");
                 setShowCreateTask(false);
               }}
             />
+          ) : taskDetailsLoading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}><CircularProgress /></Box>
           ) : selectedTask ? (
             <TaskProgressDetails
               task={selectedTask}
               projectId={id}
               projectName={project?.title}
               assignees={getAssignedSiteEngineers(project)}
+              categories={taskCategories}
+              units={taskUnits}
+              canDelete={!isSiteEngineer}
+              canRemoveAssignees={!isSiteEngineer}
+              canEdit={!isSiteEngineer || (selectedTask.assignees || []).some((person) => String(person?._id || person) === String(localStorage.getItem("User_id")))}
+              socket={socket}
               onBack={() => setSelectedTask(null)}
-              onUpdateProgress={(progress) => {
-                const status = progress >= 100 ? "Completed" : progress > 0 ? "In Progress" : "Not Started";
-                setTaskOverrides((current) => ({ ...current, [selectedTask.id]: { progress, status } }));
-                setSelectedTask((current) => ({ ...current, progress, status }));
+              onTaskUpdated={async (changes) => {
+                if (changes && Object.keys(changes).length) await updateTask(selectedTask._id, changes);
+                const refreshedTask = await getTask(selectedTask._id);
+                setSelectedTask(refreshedTask);
+                setTasks((current) => current.map((task) => task._id === refreshedTask._id ? refreshedTask : task));
               }}
-              onUpdateTaskName={(name) => {
-                setTaskOverrides((current) => ({ ...current, [selectedTask.id]: { ...current[selectedTask.id], name } }));
-                setSelectedTask((current) => ({ ...current, name }));
-              }}
-              onDeleteTask={() => {
-                const taskId = selectedTask.id;
-                setDeletedTaskIds((current) => new Set(current).add(taskId));
-                setCreatedTasks((current) => current.filter((task) => task.id !== taskId));
-                setTaskOverrides((current) => {
-                  const next = { ...current };
-                  delete next[taskId];
-                  return next;
-                });
+              onDeleteTask={async () => {
+                await deleteTask(selectedTask._id);
+                setTasks((current) => current.filter((task) => task._id !== selectedTask._id));
                 setSelectedTask(null);
+                toast.success("Task deleted successfully.");
               }}
             />
           ) : renderTasksSection()
@@ -1672,6 +1700,12 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
         </DialogActions>
 
       </Dialog>}
+
+      <TaskCategoriesManager
+        open={taskCategoriesManagerOpen}
+        onClose={() => setTaskCategoriesManagerOpen(false)}
+        onCategoriesChange={setTaskCategories}
+      />
 
     </Box>
   );

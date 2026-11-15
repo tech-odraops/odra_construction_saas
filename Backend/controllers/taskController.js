@@ -2934,7 +2934,7 @@ exports.getTaskActivity = async (req, res) => {
         // Verify active organization
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -2948,7 +2948,7 @@ exports.getTaskActivity = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
