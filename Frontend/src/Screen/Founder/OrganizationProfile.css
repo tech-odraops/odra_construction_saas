@@ -244,6 +244,10 @@
   border-radius: 0.9rem;
 }
 
+.site-engineer-picture-dialog.MuiPaper-root {
+  max-width: 28rem;
+}
+
 .organization-logo-dialog__heading {
   display: flex;
   align-items: center;
@@ -263,6 +267,17 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   padding: 0;
+}
+
+.site-engineer-picture-dialog__options.MuiDialogContent-root {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0;
+}
+
+.site-engineer-picture-option {
+  width: 100%;
 }
 
 .organization-logo-option {
@@ -426,6 +441,10 @@
   }
 
   .organization-logo-dialog__options.MuiDialogContent-root {
+    grid-template-columns: 1fr;
+  }
+
+  .site-engineer-picture-dialog__options.MuiDialogContent-root {
     grid-template-columns: 1fr;
   }
 

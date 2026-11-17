@@ -1,6 +1,5 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { Avatar, Box, CircularProgress, Typography } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
@@ -9,6 +8,11 @@ import Button from "../../Components/atoms/Button/Button";
 import Input from "../../Components/atoms/Input/Input";
 import usePopup from "../../contexts/usePopup";
 import axiosInstance from "../../utils/axiosInstance";
+import { Dialog, DialogContent } from "@mui/material";
+import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
+import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
+import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
 import "./OrganizationProfile.css";
 
 const MAX_LOGO_BYTES = 5 * 1024 * 1024;
@@ -44,21 +48,9 @@ export default function OrganizationProfile() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const cameraStreamRef = useRef(null);
-  const [organizationName, setOrganizationName] = useState(
-    () => localStorage.getItem("organizationName") || localStorage.getItem("name") || "",
-  );
-  const [savedLogo, setSavedLogo] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(ORGANIZATION_LOGO_KEY) || "null");
-    } catch {
-      return null;
-    }
-  });
-  const [selectedLogo, setSelectedLogo] = useState(null);
   const [logoDialogOpen, setLogoDialogOpen] = useState(false);
   const [cameraCaptureOpen, setCameraCaptureOpen] = useState(false);
   const [cameraError, setCameraError] = useState("");
-  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -126,8 +118,6 @@ export default function OrganizationProfile() {
     };
   }, [cameraCaptureOpen, showPopup]);
 
-  const logo = selectedLogo || savedLogo;
-
   function stopCameraStream() {
     if (cameraStreamRef.current) {
       cameraStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -143,6 +133,12 @@ export default function OrganizationProfile() {
     setCameraCaptureOpen(false);
     setCameraError("");
     setLogoDialogOpen(false);
+  }
+
+  function openLogoOptions() {
+    setCameraError("");
+    setCameraCaptureOpen(false);
+    setLogoDialogOpen(true);
   }
 
   function selectImage(file) {
@@ -213,7 +209,7 @@ export default function OrganizationProfile() {
       setName(profile.name || name.trim());
       setSelectedLogo(null);
       localStorage.setItem("organizationName", profile.name || name.trim());
-      window.dispatchEvent(new CustomEvent("profile:updated", { detail: { name: profile.name || name.trim(), avatarUrl: profile.logoUrl || null } }));
+      window.dispatchEvent(new CustomEvent("profile:updated", { detail: { name: profile.name || name.trim(), avatarUrl: profile.logoThumbnailUrl || null } }));
       showPopup({ variant: "success", title: "Changes saved", message: data.message || "Your organization profile has been updated." });
     } catch (error) {
       showPopup({ variant: "error", title: "Save failed", message: error.response?.data?.message || "Could not update your organization profile. Please try again." });
@@ -227,6 +223,7 @@ export default function OrganizationProfile() {
   const logoUrl = selectedLogoUrl || organization.logoUrl;
 
   return (
+    <>
     <main className="organization-profile">
       <Box className="organization-profile__heading">
         <Button iconOnly border={false} hover={false} aria-label="Back to dashboard" onClick={() => navigate(-1)} className="organization-profile__back"><ArrowBackRoundedIcon /></Button>
@@ -238,7 +235,7 @@ export default function OrganizationProfile() {
       <Box component="form" className="organization-profile__form" onSubmit={handleSave}>
         {loading ? <Box sx={{ minHeight: 240, display: "grid", placeItems: "center" }}><CircularProgress /></Box> : <>
           <Box className="organization-profile__details">
-            <button className="organization-profile__logo-picker" type="button" onClick={() => fileInputRef.current?.click()} aria-label="Upload organization logo">
+            <button className="organization-profile__logo-picker" type="button" onClick={openLogoOptions} aria-label="Upload organization logo">
               <Avatar className="organization-profile__logo-circle" src={logoUrl || undefined} alt="Organization logo" sx={{ width: 128, height: 128 }}>{!logoUrl && <AddRoundedIcon />}</Avatar>
               <span className="organization-profile__logo-add"><AddRoundedIcon /></span>
               <span className="organization-profile__logo-title">Upload Organisation Logo</span>
@@ -253,14 +250,8 @@ export default function OrganizationProfile() {
           <Button type="submit" variant="contained" disabled={saving} className="organization-profile__save">{saving ? "Saving…" : "Save Changes"}</Button>
         </>}
       </Box>
-      <input ref={fileInputRef} className="organization-profile__file-input" type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { selectImage(event.target.files?.[0]); event.target.value = ""; }} />
     </main>
 
-          <Button type="submit" variant="contained" disabled={saving} className="organization-profile__save">
-            {saving ? "Saving…" : "Save Changes"}
-          </Button>
-        </Box>
-      </main>
 
       <input
         ref={fileInputRef}
@@ -280,7 +271,7 @@ export default function OrganizationProfile() {
       >
         <Box className="organization-logo-dialog__heading">
           <Typography component="h2">Add Organisation Logo</Typography>
-          <Button iconOnly aria-label="Close logo options" onClick={closeLogoDialog}>
+          <Button iconOnly border={false} aria-label="Close logo options" onClick={closeLogoDialog}>
             <CloseRoundedIcon />
           </Button>
         </Box>
