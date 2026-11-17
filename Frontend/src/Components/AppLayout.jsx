@@ -9,6 +9,7 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import Button from "./atoms/Button/Button";
 import AppNavbar from "./AppNavbar";
+import { clearSiteEngineerProfileCache } from "../utils/siteEngineerProfileCache";
 
 const contractorMenuItems = [
   { label: "Home", path: "/founder/home", Icon: HomeOutlinedIcon },
@@ -41,6 +42,7 @@ export default function AppLayout() {
     : contractorMenuItems;
 
   const logout = () => {
+    clearSiteEngineerProfileCache();
     localStorage.removeItem("token");
     localStorage.removeItem("IsLogin");
     localStorage.removeItem("User_id");
