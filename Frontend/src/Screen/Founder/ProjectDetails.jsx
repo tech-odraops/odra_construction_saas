@@ -5,7 +5,6 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import Button from '../../Components/atoms/Button/Button';
 import { toast } from 'react-toastify';
-import { io } from 'socket.io-client';
 import ChatModal from '../../Components/ChatModal';
 import axiosInstance from '../../utils/axiosInstance';
 import { useTranslation } from "react-i18next";
@@ -27,6 +26,7 @@ import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
+import { createAuthenticatedSocket, joinProjectRoom } from "../../utils/socket";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import Reports from "./Reports";
 import CreateTaskForm from "./CreateTaskForm";
@@ -91,6 +91,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   const [openMiscModal, setOpenMiscModal] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [createdTasks, setCreatedTasks] = useState([]);
+  const [deletedTaskIds, setDeletedTaskIds] = useState(() => new Set());
   const [selectedTask, setSelectedTask] = useState(null);
   const [taskOverrides, setTaskOverrides] = useState({});
   const [openInventoryModal, setOpenInventoryModal] = useState(false);
@@ -129,6 +130,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   const [categoryFilter, setCategoryFilter] = useState([]);
   const { id } = useParams();
   const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const projectListPath = isSiteEngineer ? "/site-engineer/projects" : "/founder/project";
@@ -150,7 +152,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
     { id: "TSK000001", name: "building", progress: 10, status: "Completed", issueCount: 2, issueRange: "10/10/26 - 25/10/26" },
     { id: "TSK000002", name: "work 2", progress: 55, status: "In Progress" },
   ];
-  const allTasks = [...mockTasks, ...createdTasks].map((task) => ({ ...task, ...taskOverrides[task.id] }));
+  const allTasks = [...mockTasks, ...createdTasks].filter((task) => !deletedTaskIds.has(task.id)).map((task) => ({ ...task, ...taskOverrides[task.id] }));
   const visibleTasks = statusFilter.length
     ? allTasks.filter((task) => statusFilter.includes(task.status))
     : allTasks;
@@ -865,11 +867,13 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   useEffect(() => {
     fetchProject();
 
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ['websocket']
-    });
-    socketRef.current.emit("join", { projectId: id });
+    const authenticatedSocket = createAuthenticatedSocket();
+    socketRef.current = authenticatedSocket;
+    setSocket(authenticatedSocket);
+    if (!authenticatedSocket) return undefined;
 
+    // Join the authenticated project room used by project updates and chat.
+    const leaveProjectRoom = joinProjectRoom(authenticatedSocket, id, { isChat: true });
     const handleNewReport = (data) => {
       setProject((prevData) => {
         if (!prevData) return prevData;
@@ -937,26 +941,25 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
       toast.info(`Expense ${data.itemName} was ${data.status}`);
     };
 
-    socketRef.current.on("report:new", handleNewReport);
-    socketRef.current.on("misc:new", handleMiscNew);
-    socketRef.current.on("report:reviewed", handleReportReviewed);
-    socketRef.current.on("project:completed", handleProjectCompleted);
-    socketRef.current.on("project:deleted", handleProjectDeleted);
-    socketRef.current.on("project:titleUpdated", handleTitleUpdated);
-    socketRef.current.on("misc:updated", handleMiscUpdated);
+    authenticatedSocket.on("report:new", handleNewReport);
+    authenticatedSocket.on("misc:new", handleMiscNew);
+    authenticatedSocket.on("report:reviewed", handleReportReviewed);
+    authenticatedSocket.on("project:completed", handleProjectCompleted);
+    authenticatedSocket.on("project:deleted", handleProjectDeleted);
+    authenticatedSocket.on("project:titleUpdated", handleTitleUpdated);
+    authenticatedSocket.on("misc:updated", handleMiscUpdated);
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.off("report:new", handleNewReport);
-        socketRef.current.off("misc:new", handleMiscNew);
-        socketRef.current.off("report:reviewed", handleReportReviewed);
-        socketRef.current.off("project:completed", handleProjectCompleted);
-        socketRef.current.off("project:deleted", handleProjectDeleted);
-        socketRef.current.off("project:titleUpdated", handleTitleUpdated);
-        socketRef.current.off("misc:updated", handleMiscUpdated);
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
+      leaveProjectRoom();
+      authenticatedSocket.off("report:new", handleNewReport);
+      authenticatedSocket.off("misc:new", handleMiscNew);
+      authenticatedSocket.off("report:reviewed", handleReportReviewed);
+      authenticatedSocket.off("project:completed", handleProjectCompleted);
+      authenticatedSocket.off("project:deleted", handleProjectDeleted);
+      authenticatedSocket.off("project:titleUpdated", handleTitleUpdated);
+      authenticatedSocket.off("misc:updated", handleMiscUpdated);
+      authenticatedSocket.disconnect();
+      socketRef.current = null;
     };
   }, [id, isSiteEngineer, navigate, projectListPath]);
 
@@ -1006,7 +1009,9 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
             ))}
             <ChatModal
               projectId={id}
+              participants={[project?.contractor, ...getAssignedSiteEngineers(project)].filter(Boolean)}
               showIcon
+              socket={socket}
               buttonClassName="project-overview-rail-chat"
               buttonStyle={{
                 width: "auto",
@@ -1424,11 +1429,28 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
             <TaskProgressDetails
               task={selectedTask}
               projectId={id}
+              projectName={project?.title}
+              assignees={getAssignedSiteEngineers(project)}
               onBack={() => setSelectedTask(null)}
               onUpdateProgress={(progress) => {
                 const status = progress >= 100 ? "Completed" : progress > 0 ? "In Progress" : "Not Started";
                 setTaskOverrides((current) => ({ ...current, [selectedTask.id]: { progress, status } }));
                 setSelectedTask((current) => ({ ...current, progress, status }));
+              }}
+              onUpdateTaskName={(name) => {
+                setTaskOverrides((current) => ({ ...current, [selectedTask.id]: { ...current[selectedTask.id], name } }));
+                setSelectedTask((current) => ({ ...current, name }));
+              }}
+              onDeleteTask={() => {
+                const taskId = selectedTask.id;
+                setDeletedTaskIds((current) => new Set(current).add(taskId));
+                setCreatedTasks((current) => current.filter((task) => task.id !== taskId));
+                setTaskOverrides((current) => {
+                  const next = { ...current };
+                  delete next[taskId];
+                  return next;
+                });
+                setSelectedTask(null);
               }}
             />
           ) : renderTasksSection()

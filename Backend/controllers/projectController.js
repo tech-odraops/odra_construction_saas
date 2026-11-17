@@ -7,6 +7,11 @@ const bcrypt = require("bcrypt");
 const express = require("express");
 const env = require("dotenv").config();
 const ChatMessage = require("../models/chatMessage")
+const {
+    emitToRooms,
+    projectRoom,
+    clearRoom
+} = require("../utils/socketRooms");
 const InventoryItem = require("../models/inventoryItem");
 const InventoryUsage = require("../models/InventoryUsage");
 const Attendance = require("../models/Attendance");
@@ -490,17 +495,10 @@ exports.completeProject = async (req, res) => {
         const io = req.app.get("io");
 
         if (io) {
-            io.to(`project-${projectId}`).emit("project:completed", {
+            emitToRooms(io, "project:completed", { projectId }, {
+                userIds: [project.contractor, ...(project.siteEngineers || [])],
                 projectId
             });
-
-            // Notify all assigned Site Engineers.
-            for (const engineerId of project.siteEngineers || []) {
-                io.to(`siteEngineer-${engineerId}`).emit(
-                    "project:completed",
-                    { projectId }
-                );
-            }
         }
 
         return res.status(200).json({
@@ -536,6 +534,7 @@ exports.deleteProject = async (req, res) => {
         session = await mongoose.startSession();
 
         let projectName;
+        let projectOwnerId;
         let uniqueSiteEngineerIds = [];
 
         await session.withTransaction(async () => {
@@ -562,6 +561,7 @@ exports.deleteProject = async (req, res) => {
             }
 
             projectName = project.title;
+            projectOwnerId = project.contractor;
 
             uniqueSiteEngineerIds = [
                 ...new Set(
@@ -682,20 +682,14 @@ exports.deleteProject = async (req, res) => {
         const io = req.app.get("io");
 
         if (io) {
-            for (const siteEngineerId of uniqueSiteEngineerIds) {
-                io.to(`siteEngineer-${siteEngineerId}`).emit(
-                    "project:deleted",
-                    {
-                        project_id: id,
-                        project_name: projectName
-                    }
-                );
-            }
-
-            io.to(`project-${id}`).emit("project:deleted", {
+            emitToRooms(io, "project:deleted", {
                 project_id: id,
                 project_name: projectName
+            }, {
+                userIds: [projectOwnerId, ...uniqueSiteEngineerIds],
+                projectId: id
             });
+            await clearRoom(io, projectRoom(id));
         }
 
         return res.status(200).json({
@@ -987,7 +981,7 @@ exports.addMiscellaneousItem = async (req, res) => {
         // SOCKET NOTIFICATION PLACE
         const io = req.app.get("io");
 
-        io.to(`project-${projectId}`)
+        io.to(projectRoom(projectId))
             .emit("misc:new", {
                 projectId,
                 itemName,
@@ -1054,7 +1048,7 @@ exports.updateMiscellaneousStatus = async (req, res) => {
         // SOCKET NOTIFICATION PLACE
         const io = req.app.get("io");
 
-        io.to(`project-${projectId}`)
+        io.to(projectRoom(projectId))
             .emit("misc:updated", {
                 projectId,
                 itemName: item.itemName,
@@ -1131,20 +1125,13 @@ exports.updateProjectTitle = async (req, res) => {
         const io = req.app.get("io");
 
         if (io) {
-            io.to(`project-${projectId}`).emit("project:titleUpdated", {
+            emitToRooms(io, "project:titleUpdated", {
                 projectId,
                 title: project.title
+            }, {
+                userIds: [project.contractor, ...(project.siteEngineers || [])],
+                projectId
             });
-
-            for (const engineerId of project.siteEngineers || []) {
-                io.to(`siteEngineer-${engineerId}`).emit(
-                    "project:titleUpdated",
-                    {
-                        projectId,
-                        title: project.title
-                    }
-                );
-            }
         }
 
         return res.status(200).json({

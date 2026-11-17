@@ -9,8 +9,8 @@ import Paper from "@mui/material/Paper";
 import { useTranslation } from "react-i18next";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
-import { io } from "socket.io-client";
 import Button from "../../Components/atoms/Button/Button";
+import { createAuthenticatedSocket } from "../../utils/socket";
 
 export default function SubmitReport() {
   const navigate = useNavigate();
@@ -26,36 +26,29 @@ export default function SubmitReport() {
     issuesFound: "",
   });
 
-  // checking for access and setting io connection
-  useEffect(() => {
-
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"]
-    })
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-    }
-  }, []);
-
   const { id } = useParams();
 
   useEffect(() => {
-    // Check if socket is initialized before using it
-    if (!socketRef.current || !id) return;
+    if (!id) return undefined;
 
-    // join the room
-    socketRef.current.emit("join", { projectId: id });
+    const socket = createAuthenticatedSocket();
+    if (!socket) return undefined;
 
-    socketRef.current.on("project:deleted", (data) => {
+    socketRef.current = socket;
+    socket.emit("join", { projectId: id });
+
+    const handleProjectDeleted = () => {
       toast.info("Project has been deleted");
       navigate(`/site-engineer/projects`);
-    });
+    };
+    socket.on("project:deleted", handleProjectDeleted);
 
-  }, [id])
+    return () => {
+      socket.off("project:deleted", handleProjectDeleted);
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

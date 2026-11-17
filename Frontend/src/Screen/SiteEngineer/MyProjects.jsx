@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import { jwtDecode } from "jwt-decode";
-import { io } from "socket.io-client";
 import { useRef } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import { toast } from "react-toastify";
@@ -17,6 +15,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import Button from "../../Components/atoms/Button/Button";
 import { Icon } from "../../Components/atoms/Icon/Icon";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
+import { createAuthenticatedSocket } from "../../utils/socket";
 
 function ProjectBuildingIcon() {
   return (
@@ -39,9 +38,6 @@ export default function MyProjects() {
   const { t } = useTranslation();
 
   if (!token) return;
-  const decoded = jwtDecode(token);
-  const siteEngineerId = decoded.User_id;
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -58,16 +54,11 @@ export default function MyProjects() {
     fetchData();
 
     // socket connection
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ["websocket"],
-    });
+    socketRef.current = createAuthenticatedSocket();
 
     if (!socketRef.current) return;
-    socketRef.current.emit("join", {
-      siteEngineerId,
-    });
 
-    socketRef.current.on("project:assigned", (data) => {
+    const handleProjectAssigned = (data) => {
       setProjects((prev) => [...prev, data.newProject]);
       toast.info(
         `New project assigned: ${data.newProject.title} by Founder`,
@@ -79,15 +70,15 @@ export default function MyProjects() {
           },
         },
       );
-    });
+    };
 
-    socketRef.current.on("project:deleted", (data) => {
+    const handleProjectDeleted = (data) => {
       setProjects((prev) => prev.filter((pro) => pro._id !== data.project_id));
 
       toast.info(`Founder deleted the project ${data.project_name}`);
-    });
+    };
 
-    socketRef.current.on("project:titleUpdated", (data) => {
+    const handleProjectTitleUpdated = (data) => {
       setProjects((prev) =>
         prev.map((project) =>
           project._id === data.projectId
@@ -97,11 +88,16 @@ export default function MyProjects() {
       );
 
       toast.info("Title Updated");
-    });
+    };
+    socketRef.current.on("project:assigned", handleProjectAssigned);
+    socketRef.current.on("project:deleted", handleProjectDeleted);
+    socketRef.current.on("project:titleUpdated", handleProjectTitleUpdated);
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.off("project:assigned");
+        socketRef.current.off("project:assigned", handleProjectAssigned);
+        socketRef.current.off("project:deleted", handleProjectDeleted);
+        socketRef.current.off("project:titleUpdated", handleProjectTitleUpdated);
         socketRef.current.disconnect();
         socketRef.current = null;
       }

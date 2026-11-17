@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../utils/axiosInstance"
-import { io } from "socket.io-client";
 import { jwtDecode } from "jwt-decode";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -11,7 +10,7 @@ import { toast } from "react-toastify";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Checkbox, FormControlLabel, IconButton, MenuItem } from "@mui/material";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
-export default function ProjectChat({ projectId, onMessageSent }) {
+export default function ProjectChat({ projectId, participants = [], onMessageSent, socket }) {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [page, setPage] = useState(0);
@@ -27,22 +26,15 @@ export default function ProjectChat({ projectId, onMessageSent }) {
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
 
-    // checking access and making the connection
-    useEffect(() => {
-
-    }, []);
-
     // 🔐 get current user id from JWT
     const token = localStorage.getItem("token");
-    if (!token) return null;
-    const decoded = jwtDecode(token);
-    const currentUserId = decoded.User_id;
+    const currentUserId = token ? String(jwtDecode(token).User_id || "") : "";
 
     /* -------------------------
        1️⃣ Load old chat messages
     -------------------------- */
     const fetchChats = async (pageNumber = 0,container = null) => {
-        if (loading) return;
+        if (loading || !projectId) return;
 
         try {
             console.log("New load call hit");
@@ -57,7 +49,7 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                 `/chat/${projectId}?page=${pageNumber}&limit=20${activeConversation ? `&conversationId=${activeConversation}` : ""}`
             );
 
-            const newChats = res.data.chats;
+            const newChats = Array.isArray(res.data.chats) ? res.data.chats : [];
 
             if (pageNumber === 0) {
                 setMessages(newChats) //initial load
@@ -118,26 +110,34 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                 organizationId: decoded.organizationId,
                 isChat: true,
                 conversationId: activeConversation
+        if (!socket || !projectId) return undefined;
+
+        const handleNewMessage = (data) => {
+            if (String(data?.projectId) !== String(projectId)) return;
+            setMessages((prev) => {
+                const messageId = data?._id;
+                if (messageId && prev.some((message) => String(message._id) === String(messageId))) return prev;
+                return [...prev, data];
             });
-        });
+        };
 
-        socket.on("chat:new", (data) => {
-            setMessages((prev) => [...prev, data]);
-        });
-
-        socketRef.current.on("project:deleted", (data) => {
+        const handleProjectDeleted = () => {
             toast.info("Project has been deleted");
             navigate(`/site-engineer/projects`);
-        });
+        };
+        socket.on("chat:new", handleNewMessage);
+        const handleChatError = (error) => toast.error(error?.message || "Message could not be sent.");
+        socket.on("chat:error", handleChatError);
+        socket.on("project:deleted", handleProjectDeleted);
 
 
         return () => {
-            socket.emit("leave", { projectId });
-            socket.off("chat:new");
-            socket.disconnect();
-            socketRef.current = null;
+            socket.off("chat:new", handleNewMessage);
+            socket.off("chat:error", handleChatError);
+            socket.off("project:deleted", handleProjectDeleted);
         };
     }, [projectId, activeConversation]);
+    }, [projectId, navigate, socket]);
 
     /* -------------------------
        3️⃣ Send message
@@ -145,11 +145,17 @@ export default function ProjectChat({ projectId, onMessageSent }) {
     const sendMessage = () => {
         if (!newMessage.trim()) return;
 
-        socketRef.current.emit("chat:new", {
+        if (!socket?.connected) {
+            toast.error("Chat connection is unavailable.");
+            return;
+        }
+
+        socket.emit("chat:new", {
             projectId,
             senderId: currentUserId,
             message: newMessage,
             conversationId: activeConversation
+            message: newMessage.trim()
         });
 
         setNewMessage("");
@@ -330,7 +336,6 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                             ? msg.senderId
                             : msg.senderId?._id;
                     const senderName = typeof msg.senderId === "object" ? msg.senderId?.name : "";
-
                     const isMine = senderId === currentUserId;
                     const sentAt = msg.createdAt ? new Date(msg.createdAt) : null;
                     const sentAtLabel = sentAt && !Number.isNaN(sentAt.getTime())
@@ -339,6 +344,12 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                             timeStyle: "short",
                         }).format(sentAt)
                         : "";
+                    const isMine = String(senderId || "") === currentUserId;
+                    const participant = participants.find((member) => {
+                        const memberId = typeof member === "string" ? member : member?._id;
+                        return String(memberId || "") === String(senderId || "");
+                    });
+                    const senderName = msg.senderId?.name || msg.senderName || participant?.name;
 
                     return (
                         <Box
@@ -373,6 +384,10 @@ export default function ProjectChat({ projectId, onMessageSent }) {
                                         }}
                                     >
                                         {senderName}
+                                {!isMine && senderId && (
+                                    <Typography sx={{ fontSize: 11, fontWeight: 700, mb: 0.35, opacity: 0.75 }}>
+                                        {senderName || "Project member"}
+
                                     </Typography>
                                 )}
                                 <Typography sx={{ fontSize: 14, lineHeight: 1.5 }}>
