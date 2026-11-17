@@ -77,66 +77,6 @@ io.on('connection', (socket) => {
         socket.data.authUser = null;
     }
 
-<<<<<<< HEAD
-    // listen for joining room events
-    socket.on('join', async ({ contractorId, projectId, siteEngineerId, organizationId, isChat, conversationId }) => {
-        console.log('Join event received:', { contractorId, projectId, siteEngineerId });
-        if (contractorId) {
-            socket.join(`contractor-${contractorId}`);
-            console.log(`Socket ${socket.id} joined contractor-${contractorId}`);
-        }
-        if (projectId) {
-            // Project feature sockets also use this room for live reports,
-            // attendance, inventory, and project updates.
-            if (!isChat) socket.join(`project-${projectId}`);
-            socket.data.chatAccess = false; // ✅ default
-            console.log("Is chat = ", isChat)
-            if (isChat) {
-                try {
-                    // ✅ Check project ONCE
-                    const project = await Project.findOne({ _id: projectId, organizationId }).select("status contractor siteEngineers");
-                    const authUser = socket.data.authUser;
-                    const userId = authUser?.User_id;
-                    const activeUser = authUser && await User.findOne({ _id: userId, organizationId, status: "active", role: authUser.role }).select("_id");
-                    const assigned = project?.siteEngineers?.some(id => String(id) === String(userId));
-                    const isFounder = project?.contractor && String(project.contractor) === String(userId);
-                    let canChat = Boolean(activeUser && authUser && String(authUser.organizationId) === String(organizationId) && project && project.status !== "Completed" && (assigned || isFounder));
-                    if (conversationId) {
-                        canChat = canChat && Boolean(await ChatConversation.exists({ _id: conversationId, projectId, organizationId, participants: userId }));
-                    }
-
-                    // ✅ Store in socket (VERY IMPORTANT)
-                    socket.data.chatAccess = canChat;
-                    socket.data.projectId = projectId;
-                    socket.data.organizationId = organizationId;
-                    socket.data.userId = userId;
-                    socket.data.conversationId = conversationId || null;
-                    if (canChat && conversationId) socket.join(`conversation-${conversationId}`);
-                    if (canChat && !conversationId) socket.join(`project-${projectId}`);
-
-                } catch (err) {
-                    console.error("Join validation error:", err);
-                    socket.data.chatAccess = false;
-                }
-            }
-
-        }
-        if (siteEngineerId) {
-            socket.join(`siteEngineer-${siteEngineerId}`);
-            console.log(`Socket ${socket.id} joined siteEngineer-${siteEngineerId}`);
-        }
-    })
-
-    // if they leave the room
-    socket.on('leave', ({ contractorId, projectId, siteEngineerId }) => {
-        if (contractorId) socket.leave(`contractor-${contractorId}`);
-        if (projectId) socket.leave(`project-${projectId}`);
-        if (siteEngineerId) socket.leave(`siteEngineer-${siteEngineerId}`);
-    })
-
-    // listening for new messages
-    socket.on("chat:new", async ({ projectId, senderId, message, conversationId }) => {
-=======
     try {
         const joined = socket.join(userRoom(socket.data.user.userId));
         if (joined && typeof joined.catch === "function") {
@@ -152,24 +92,10 @@ io.on('connection', (socket) => {
     }
 
     // Join an authorized project room
-    socket.on("join", async ({ projectId, isChat } = {}) => {
->>>>>>> de23023b77771a8147f43650d67c4e92494422dd
+    socket.on("join", async ({ projectId } = {}) => {
         try {
-            const { userId, role, organizationId } = socket.data.user;
+            const { userId, organizationId } = socket.data.user;
 
-<<<<<<< HEAD
-            if (!socket.data.chatAccess || String(senderId) !== String(socket.data.userId) || String(projectId) !== String(socket.data.projectId) || String(conversationId || "") !== String(socket.data.conversationId || "")) {
-                socket.emit("chat:error", { message: "Chat not allowed" });
-                return;
-            }
-
-            const savedChat = await ChatMessage.create({
-                projectId,
-                senderId,
-                message,
-                organizationId: socket.data.organizationId,
-                conversationId: conversationId || null
-=======
             if (!mongoose.isValidObjectId(projectId)) {
                 socket.emit("room:error", {
                     message: "Invalid project ID."
@@ -191,18 +117,11 @@ io.on('connection', (socket) => {
             }
 
             // Verify project membership
-            let hasAccess = false;
-
-            if (role === "Founder") {
-                hasAccess =
-                    project.contractor.toString() === userId;
-            }
-
-            if (role === "Site Engineer") {
-                hasAccess = project.siteEngineers.some(
-                    (engineerId) => engineerId.toString() === userId
+            const hasAccess =
+                String(project.contractor) === userId ||
+                (project.siteEngineers || []).some(
+                    (engineerId) => String(engineerId) === userId
                 );
-            }
 
             if (!hasAccess) {
                 socket.emit("room:error", {
@@ -214,17 +133,6 @@ io.on('connection', (socket) => {
             // Join the server-generated room name
             const roomName = projectRoom(project._id);
             await socket.join(roomName);
-
-            // Track chat access separately for each project
-            if (!socket.data.chatProjects) {
-                socket.data.chatProjects = new Set();
-            }
-
-            if (isChat === true && project.status !== "Completed") {
-                socket.data.chatProjects.add(project._id.toString());
-            } else {
-                socket.data.chatProjects.delete(project._id.toString());
-            }
 
             console.log(`Socket ${socket.id} joined ${roomName}`);
 
@@ -248,8 +156,6 @@ io.on('connection', (socket) => {
 
             await socket.leave(roomName);
 
-            socket.data.chatProjects?.delete(projectId.toString());
-
             console.log(`Socket ${socket.id} left ${roomName}`);
 
         } catch (error) {
@@ -260,7 +166,7 @@ io.on('connection', (socket) => {
     // Join an authorized task room
     socket.on("task:join", async ({ taskId } = {}) => {
         try {
-            const { userId, role, organizationId } = socket.data.user;
+            const { userId, organizationId } = socket.data.user;
 
             if (!mongoose.isValidObjectId(taskId)) {
                 socket.emit("room:error", {
@@ -351,7 +257,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on("chat:new", async ({ projectId, message } = {}) => {
+    socket.on("chat:new", async ({ projectId, message, conversationId } = {}) => {
         try {
             const { userId, role, organizationId } = socket.data.user;
 
@@ -364,14 +270,6 @@ io.on('connection', (socket) => {
             ) {
                 socket.emit("chat:error", {
                     message: "Invalid chat message."
-                });
-                return;
-            }
-
-            // Confirm that this socket has joined this project's chat
-            if (!socket.data.chatProjects?.has(projectId.toString())) {
-                socket.emit("chat:error", {
-                    message: "You are not authorized to send messages in this project."
                 });
                 return;
             }
@@ -389,15 +287,11 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            const isFounder =
-                role === "Founder" &&
-                project.contractor.toString() === userId;
-
-            const isSiteEngineer =
-                role === "Site Engineer" &&
-                project.siteEngineers.some(
-                    (engineerId) => engineerId.toString() === userId
-                );
+            console.log(project);
+            const isFounder = String(project.contractor) === userId;
+            const isSiteEngineer = (project.siteEngineers || []).some(
+                (engineerId) => String(engineerId) === userId
+            );
 
             if (!isFounder && !isSiteEngineer) {
                 socket.emit("chat:error", {
@@ -406,49 +300,52 @@ io.on('connection', (socket) => {
                 return;
             }
 
-            // Save message using authenticated identity
-            const chat = await ChatMessage.create({
+            let conversation = null;
+            if (conversationId) {
+                if (!mongoose.isValidObjectId(conversationId)) {
+                    socket.emit("chat:error", {
+                        message: "Conversation not found or access denied."
+                    });
+                    return;
+                }
+
+                conversation = await ChatConversation.findOne({
+                    _id: conversationId,
+                    projectId,
+                    organizationId,
+                    participants: userId
+                }).select("participants");
+
+                if (!conversation) {
+                    socket.emit("chat:error", {
+                        message: "Conversation not found or access denied."
+                    });
+                    return;
+                }
+            }
+
+            const savedChat = await ChatMessage.create({
                 projectId,
                 senderId: userId,
                 message: message.trim(),
-                organizationId
->>>>>>> de23023b77771a8147f43650d67c4e92494422dd
+                organizationId,
+                conversationId: conversation?._id || null
             });
             const chat = await ChatMessage.findById(savedChat._id).populate("senderId", "name email").lean();
 
-<<<<<<< HEAD
-            const chatRoom = conversationId ? `conversation-${conversationId}` : `project-${projectId}`;
-            io.to(chatRoom).emit("chat:new", chat);
-
-            // sendign the fcm message
-            // Find project
-            const project = await Project.findById(projectId)
-                .select("contractor siteEngineer siteEngineers");
-
-            // Determine receiver
-            const recipientIds = conversationId
-                ? (await ChatConversation.findById(conversationId).select("participants")).participants.filter(id => String(id) !== String(senderId))
-                : (String(senderId) === String(project.contractor)
-                    ? (project.siteEngineers || [project.siteEngineer]).filter(Boolean)
-                    : [project.contractor]);
-
-            // Fetch receiver's FCM token
-            const sender = await User.findById(senderId).select("name");
-            for (const receiverId of recipientIds) {
-                const receiver = await User.findById(receiverId).select("fcmToken");
-                if (receiver?.fcmToken) await sendToUser({ token: receiver.fcmToken, title: sender?.name || "Project chat", body: message, data: { type: "chat", projectId, senderId, receiverId: String(receiverId), conversationId: conversationId || "" } });
+            if (conversation) {
+                io.to(conversation.participants.map(userRoom)).emit("chat:new", chat);
+            } else {
+                io.to(projectRoom(projectId))
+                    .to(userRoom(userId))
+                    .emit("chat:new", chat);
             }
 
-        } catch (err) {
-            console.error("Chat socket error:", err);
-=======
-            // Broadcast to authorized project-room members
-            io.to(projectRoom(projectId)).emit("chat:new", chat);
-
             // Determine notification recipients
-            let recipientIds = [];
-
-            if (isFounder) {
+            let recipientIds;
+            if (conversation) {
+                recipientIds = conversation.participants.map(id => id.toString());
+            } else if (isFounder) {
                 recipientIds = project.siteEngineers.map(
                     (engineerId) => engineerId.toString()
                 );
@@ -482,7 +379,8 @@ io.on('connection', (socket) => {
                                 type: "chat",
                                 projectId: projectId.toString(),
                                 senderId: userId,
-                                receiverId: recipient._id.toString()
+                                receiverId: recipient._id.toString(),
+                                conversationId: conversation?._id.toString() || ""
                             }
                         })
                     )
@@ -494,7 +392,6 @@ io.on('connection', (socket) => {
             socket.emit("chat:error", {
                 message: "Unable to send chat message."
             });
->>>>>>> de23023b77771a8147f43650d67c4e92494422dd
         }
     });
 

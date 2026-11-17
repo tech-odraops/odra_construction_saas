@@ -1,3 +1,4 @@
+const { createHash } = require("crypto");
 const messageModel = require('../models/chatMessage');
 const ChatConversation = require('../models/chatConversation');
 const Project = require('../models/project');
@@ -43,10 +44,51 @@ exports.createConversation = async (req, res) => {
             return res.status(400).json({ success: false, message: "Choose at least one engineer assigned to this project." });
         }
         const creator = String(req.user.User_id);
-        const participants = [...new Set([creator, ...requested])];
-        const conversation = await ChatConversation.create({ projectId, organizationId: req.user.organizationId, name, createdBy: creator, participants });
+        const participants = [...new Set([creator, ...requested])].sort();
+        const creationKey = createHash("sha256").update(JSON.stringify([
+            String(projectId),
+            String(req.user.organizationId),
+            creator,
+            name.toLowerCase(),
+            participants
+        ])).digest("hex");
+
+        let conversation = await ChatConversation.findOne({
+            projectId,
+            organizationId: req.user.organizationId,
+            createdBy: creator,
+            name,
+            participants: { $all: participants, $size: participants.length }
+        });
+        let responseStatus = 200;
+
+        if (!conversation) {
+            try {
+                const upsertResult = await ChatConversation.findOneAndUpdate(
+                    { creationKey },
+                    {
+                        $setOnInsert: {
+                            projectId,
+                            organizationId: req.user.organizationId,
+                            name,
+                            createdBy: creator,
+                            participants,
+                            creationKey
+                        }
+                    },
+                    { new: true, upsert: true, runValidators: true, includeResultMetadata: true }
+                );
+                conversation = upsertResult.value;
+                responseStatus = upsertResult.lastErrorObject?.updatedExisting ? 200 : 201;
+            } catch (error) {
+                if (error.code !== 11000) throw error;
+                conversation = await ChatConversation.findOne({ creationKey });
+                if (!conversation) throw error;
+            }
+        }
+
         const result = await ChatConversation.findById(conversation._id).populate("participants", "name role").lean();
-        return res.status(201).json({ success: true, conversation: result });
+        return res.status(responseStatus).json({ success: true, conversation: result });
     } catch (error) {
         console.error("Error creating chat group:", error);
         return res.status(500).json({ success: false, message: "Unable to create group chat." });

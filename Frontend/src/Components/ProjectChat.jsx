@@ -20,8 +20,10 @@ export default function ProjectChat({ projectId, participants = [], onMessageSen
     const [activeConversation, setActiveConversation] = useState(null);
     const [groupDialog, setGroupDialog] = useState(false);
     const [groupName, setGroupName] = useState("");
+    const [creatingGroup, setCreatingGroup] = useState(false);
     const [members, setMembers] = useState([]);
     const [selectedMembers, setSelectedMembers] = useState([]);
+    const creatingGroupRef = useRef(false);
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
 
@@ -98,6 +100,7 @@ export default function ProjectChat({ projectId, participants = [], onMessageSen
 
         const handleNewMessage = (data) => {
             if (String(data?.projectId) !== String(projectId)) return;
+            if (String(data?.conversationId || "") !== String(activeConversation || "")) return;
             setMessages((prev) => {
                 const messageId = data?._id;
                 if (messageId && prev.some((message) => String(message._id) === String(messageId))) return prev;
@@ -120,7 +123,7 @@ export default function ProjectChat({ projectId, participants = [], onMessageSen
             socket.off("chat:error", handleChatError);
             socket.off("project:deleted", handleProjectDeleted);
         };
-    }, [projectId, navigate, socket]);
+    }, [projectId, activeConversation, navigate, socket]);
 
     /* -------------------------
        3️⃣ Send message
@@ -149,10 +152,16 @@ export default function ProjectChat({ projectId, participants = [], onMessageSen
     };
 
     const createGroup = async () => {
+        if (creatingGroupRef.current) return;
+        creatingGroupRef.current = true;
+        setCreatingGroup(true);
+
         try {
             const response = await axiosInstance.post(`/chat/${projectId}/conversations`, { name: groupName, participantIds: selectedMembers });
             const conversation = response.data.conversation;
-            setConversations(current => [conversation, ...current]);
+            setConversations(current => current.some(item => String(item._id) === String(conversation._id))
+                ? current
+                : [conversation, ...current]);
             setActiveConversation(conversation._id);
             setGroupDialog(false);
             setGroupName("");
@@ -160,6 +169,9 @@ export default function ProjectChat({ projectId, participants = [], onMessageSen
             toast.success("Group chat created");
         } catch (error) {
             toast.error(error.response?.data?.message || "Unable to create group chat");
+        } finally {
+            creatingGroupRef.current = false;
+            setCreatingGroup(false);
         }
     };
 
@@ -395,7 +407,7 @@ export default function ProjectChat({ projectId, participants = [], onMessageSen
                     {members.length === 0 && <Typography color="text.secondary">No other assigned site engineers are available for this project.</Typography>}
                     {members.map(member => <FormControlLabel key={member._id} control={<Checkbox checked={selectedMembers.includes(member._id)} onChange={event => setSelectedMembers(current => event.target.checked ? [...current, member._id] : current.filter(id => id !== member._id))} />} label={member.name} />)}
                 </DialogContent>
-                <DialogActions><Button onClick={() => setGroupDialog(false)}>Cancel</Button><Button variant="contained" disabled={!groupName.trim() || selectedMembers.length === 0} onClick={createGroup}>Create group</Button></DialogActions>
+                <DialogActions><Button onClick={() => setGroupDialog(false)}>Cancel</Button><Button variant="contained" disabled={creatingGroup || !groupName.trim() || selectedMembers.length === 0} onClick={createGroup}>{creatingGroup ? "Creating..." : "Create group"}</Button></DialogActions>
             </Dialog>
 
             <Box
