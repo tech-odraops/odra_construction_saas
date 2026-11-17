@@ -7,6 +7,7 @@ const messageSchema = new Schema({
         type:Schema.Types.ObjectId,
         ref:'Project'
     },
+    conversationId: { type: Schema.Types.ObjectId, ref: "ChatConversation", default: null },
     organizationId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Organization",

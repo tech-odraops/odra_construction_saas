@@ -76,6 +76,13 @@ export default function ChatModal({
     setUnreadCount(0);
     fetchUnreadCount();
 
+    // Set up socket to listen for new messages
+    const socket = io(import.meta.env.VITE_API_URL, {
+      transports: ["websocket"],
+      auth: { token: localStorage.getItem("token") }
+    });
+
+    socketRef.current = socket;
     if (!socket) return;
 
     const handleNewMessage = async (data) => {
