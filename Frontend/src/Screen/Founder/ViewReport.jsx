@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import Footer from "../../Components/Footer";
-import { io } from "socket.io-client";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { toast } from "react-toastify";
@@ -20,26 +19,7 @@ export default function ViewReport() {
   const [comment, setComment] = useState("");
   const [aiReport, setAiReport] = useState();
   const [reviewed, setReviewed] = useState(false);
-  const socketRef = useRef(null);
-  const navigate = useNavigate();
   const { t } = useTranslation();
-
-  useEffect(() => {
-
-  }, []);
-
-  useEffect(() => {
-    socketRef.current = io(import.meta.env.VITE_API_URL, {
-      transports: ['websocket']
-    });
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-    }
-  }, [])
 
   useEffect(() => {
 
@@ -56,16 +36,6 @@ export default function ViewReport() {
     fetchReport();
 
   }, [id]);
-
-  useEffect(() => {
-    if (!report.projectId) return;
-
-    socketRef.current.emit("join", {
-      projectId: report.projectId
-    });
-
-
-  }, [report.projectId])
 
   const handleAction = async (status) => {
     try {

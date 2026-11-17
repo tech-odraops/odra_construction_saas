@@ -1,15 +1,13 @@
+
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from './atoms/Button/Button';
-import Typography from '@mui/material/Typography';
-import Modal from '@mui/material/Modal';
 import Badge from '@mui/material/Badge';
+import Modal from '@mui/material/Modal';
 import axiosInstance from "../utils/axiosInstance";
-import { io } from 'socket.io-client';
 import ProjectChat from './ProjectChat';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
-import { useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import Button from './atoms/Button/Button';
+import { io } from 'socket.io-client';
 
 const style = {
   position: 'absolute',
@@ -20,31 +18,25 @@ const style = {
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
-  borderRadius:"2em",
+  borderRadius: "2em",
   p: 4,
 };
 
 export default function ChatModal({
   projectId,
+  participants = [],
   showIcon = false,
+  socket,
   buttonLabel = "Chat",
   buttonClassName = "",
   buttonSx = {},
   buttonStyle = {},
 }) {
+
   const [open, setOpen] = React.useState(false);
   const [unreadCount, setUnreadCount] = React.useState(0);
-  const socketRef = React.useRef(null);
 
-  // 🔐 get current user id from JWT
-  const token = localStorage.getItem("token");
-  if (!token) return null;
-  const decoded = jwtDecode(token);
-
-  useEffect(() => {
-
-  }, []);
-
+  // Fetch unread message count
   const fetchUnreadCount = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -53,12 +45,15 @@ export default function ChatModal({
       const res = await axiosInstance.get(
         `/chat/${projectId}/unread`
       );
+
       setUnreadCount(res.data.count || 0);
+
     } catch (error) {
       console.error('Failed to fetch unread count:', error);
     }
   };
 
+  // Mark messages as read
   const markAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -68,7 +63,9 @@ export default function ChatModal({
         `/chat/${projectId}/read`,
         {}
       );
+
       setUnreadCount(0);
+
     } catch (error) {
       console.error('Failed to mark as read:', error);
     }
@@ -77,6 +74,7 @@ export default function ChatModal({
   React.useEffect(() => {
     if (!projectId) return;
 
+    setUnreadCount(0);
     fetchUnreadCount();
 
     // Set up socket to listen for new messages
@@ -84,40 +82,24 @@ export default function ChatModal({
       transports: ["websocket"],
       auth: { token: localStorage.getItem("token") }
     });
+    if (!socket) return;
 
-    socketRef.current = socket;
+    const handleNewMessage = async (data) => {
+      if (String(data?.projectId) !== String(projectId)) return;
 
-    socket.on("connect", () => {
-      socket.emit("join", {
-        projectId,
-        organizationId: decoded.organizationId,
-        isChat: true
-       });
-    });
-
-    socket.on("chat:new", async (data) => {
-      // If modal is open, mark the message as read immediately
+      // Modal is open: mark messages as read
       if (open) {
-        try {
-          const token = localStorage.getItem('token');
-          if (token) {
-            // Mark this specific message as read using axiosInstance
-            await axiosInstance.post(
-              `/chat/${projectId}/read`,
-              {}
-            );
-            setUnreadCount(0);
-          }
-        } catch (error) {
-          console.error('Failed to mark message as read:', error);
-        }
-      } else {
-        // If modal is closed, update unread count
+        await markAsRead();
+      } 
+      // Modal is closed: update unread count
+      else {
         fetchUnreadCount();
       }
-    });
+    };
 
-    // Refresh unread count periodically (only when modal is closed)
+    socket.on("chat:new", handleNewMessage);
+
+    // Periodically refresh unread count
     const interval = setInterval(() => {
       if (!open) {
         fetchUnreadCount();
@@ -125,10 +107,11 @@ export default function ChatModal({
     }, 5000);
 
     return () => {
-      socket.disconnect();
+      socket.off("chat:new", handleNewMessage);
       clearInterval(interval);
     };
-  }, [projectId, open]);
+
+  }, [projectId, open, socket]);
 
   const handleOpen = () => {
     setOpen(true);
@@ -136,32 +119,36 @@ export default function ChatModal({
   };
 
   const handleClose = async () => {
-    // Mark all messages as read before closing (to catch any missed ones)
     await markAsRead();
     setOpen(false);
-    // Small delay to ensure markAsRead completes, then refresh count
-    setTimeout(() => {
-      fetchUnreadCount();
-    }, 100);
   };
 
   return (
     <div>
       <Badge badgeContent={unreadCount} color="error">
+
         <Button
           className={buttonClassName}
           onClick={handleOpen}
           variant="contained"
           color="primary"
           size="small"
-          startIcon={showIcon ? <ChatBubbleOutlineIcon /> : undefined}
-          sx={{ borderRadius: 5, padding: 0, ...buttonSx }}
+          startIcon={
+            showIcon ? <ChatBubbleOutlineIcon /> : undefined
+          }
+          sx={{
+            borderRadius: 5,
+            padding: 0,
+            ...buttonSx
+          }}
           style={buttonStyle}
           border={false}
         >
           {buttonLabel}
         </Button>
+
       </Badge>
+
       <Modal
         open={open}
         onClose={handleClose}
@@ -169,9 +156,15 @@ export default function ChatModal({
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <ProjectChat projectId={projectId} onMessageSent={markAsRead} />
+          <ProjectChat
+            projectId={projectId}
+            participants={participants}
+            onMessageSent={markAsRead}
+            socket={socket}
+          />
         </Box>
       </Modal>
+
     </div>
   );
 }

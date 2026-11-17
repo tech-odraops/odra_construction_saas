@@ -67,7 +67,14 @@ const organizationSchema = new mongoose.Schema(
                 type: Boolean,
                 default: false
             }
-        }
+        },
+
+        taskSequence: {
+            type: Number,
+            default: 0,
+            min: 0
+        },
+
     },
     {
         timestamps: true
