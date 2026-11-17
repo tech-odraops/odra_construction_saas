@@ -10,7 +10,6 @@ const helmet = require('helmet')
 const { Server } = require('socket.io')
 const { createServer } = require('http');
 const http = require('http');
-const jwt = require("jsonwebtoken");
 const reportRoute = require('./routes/reportsRoute');
 const projectRoute = require('./routes/projectRoutes');
 const siteMemberRoutes = require("./routes/siteMemberRoutes");
@@ -18,7 +17,6 @@ const attendanceRoute = require('./routes/attendanceRoute');
 const chatRouter = require('./routes/chatRouter');
 const workerRoutes = require('./routes/workerRoutes');
 const ChatMessage = require("./models/chatMessage");
-const ChatConversation = require("./models/chatConversation");
 const Project = require("./models/project")
 const inventoryRoute = require('./routes/inventoryRoutes');
 const adminRoutes = require("./routes/adminRoutes");
@@ -69,54 +67,7 @@ io.use(socketAuth);
 // listening for socket coonection & client
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-    try {
-        const token = socket.handshake.auth?.token;
-        const decoded = token && jwt.verify(token, process.env.secret_key, { algorithms: ["HS256"] });
-        if (decoded?.isLoggedIn === true && decoded.User_id) socket.data.authUser = decoded;
-    } catch (_) {
-        socket.data.authUser = null;
-    }
 
-    // listen for joining room events
-    socket.on('join', async ({ contractorId, projectId, siteEngineerId, organizationId, isChat, conversationId }) => {
-        console.log('Join event received:', { contractorId, projectId, siteEngineerId });
-        if (contractorId) {
-            socket.join(`contractor-${contractorId}`);
-            console.log(`Socket ${socket.id} joined contractor-${contractorId}`);
-        }
-        if (projectId) {
-            // Project feature sockets also use this room for live reports,
-            // attendance, inventory, and project updates.
-            if (!isChat) socket.join(`project-${projectId}`);
-            socket.data.chatAccess = false; // ✅ default
-            console.log("Is chat = ", isChat)
-            if (isChat) {
-                try {
-                    // ✅ Check project ONCE
-                    const project = await Project.findOne({ _id: projectId, organizationId }).select("status contractor siteEngineers");
-                    const authUser = socket.data.authUser;
-                    const userId = authUser?.User_id;
-                    const activeUser = authUser && await User.findOne({ _id: userId, organizationId, status: "active", role: authUser.role }).select("_id");
-                    const assigned = project?.siteEngineers?.some(id => String(id) === String(userId));
-                    const isFounder = project?.contractor && String(project.contractor) === String(userId);
-                    let canChat = Boolean(activeUser && authUser && String(authUser.organizationId) === String(organizationId) && project && project.status !== "Completed" && (assigned || isFounder));
-                    if (conversationId) {
-                        canChat = canChat && Boolean(await ChatConversation.exists({ _id: conversationId, projectId, organizationId, participants: userId }));
-                    }
-
-                    // ✅ Store in socket (VERY IMPORTANT)
-                    socket.data.chatAccess = canChat;
-                    socket.data.projectId = projectId;
-                    socket.data.organizationId = organizationId;
-                    socket.data.userId = userId;
-                    socket.data.conversationId = conversationId || null;
-                    if (canChat && conversationId) socket.join(`conversation-${conversationId}`);
-                    if (canChat && !conversationId) socket.join(`project-${projectId}`);
-
-                } catch (err) {
-                    console.error("Join validation error:", err);
-                    socket.data.chatAccess = false;
-                }
     try {
         const joined = socket.join(userRoom(socket.data.user.userId));
         if (joined && typeof joined.catch === "function") {
@@ -252,8 +203,6 @@ io.on('connection', (socket) => {
                 organizationId
             }).select("contractor siteEngineers");
 
-    // listening for new messages
-    socket.on("chat:new", async ({ projectId, senderId, message, conversationId }) => {
             if (!project) {
                 socket.emit("room:error", {
                     message: "Parent project not found."
@@ -361,17 +310,6 @@ io.on('connection', (socket) => {
                 role === "Founder" &&
                 project.contractor.toString() === userId;
 
-            if (!socket.data.chatAccess || String(senderId) !== String(socket.data.userId) || String(projectId) !== String(socket.data.projectId) || String(conversationId || "") !== String(socket.data.conversationId || "")) {
-                socket.emit("chat:error", { message: "Chat not allowed" });
-                return;
-            }
-
-            const savedChat = await ChatMessage.create({
-                projectId,
-                senderId,
-                message,
-                organizationId: socket.data.organizationId,
-                conversationId: conversationId || null
             const isSiteEngineer =
                 role === "Site Engineer" &&
                 project.siteEngineers.some(
@@ -392,29 +330,7 @@ io.on('connection', (socket) => {
                 message: message.trim(),
                 organizationId
             });
-            const chat = await ChatMessage.findById(savedChat._id).populate("senderId", "name email").lean();
 
-            const chatRoom = conversationId ? `conversation-${conversationId}` : `project-${projectId}`;
-            io.to(chatRoom).emit("chat:new", chat);
-
-            // sendign the fcm message
-            // Find project
-            const project = await Project.findById(projectId)
-                .select("contractor siteEngineer siteEngineers");
-
-            // Determine receiver
-            const recipientIds = conversationId
-                ? (await ChatConversation.findById(conversationId).select("participants")).participants.filter(id => String(id) !== String(senderId))
-                : (String(senderId) === String(project.contractor)
-                    ? (project.siteEngineers || [project.siteEngineer]).filter(Boolean)
-                    : [project.contractor]);
-
-            // Fetch receiver's FCM token
-            const sender = await User.findById(senderId).select("name");
-            for (const receiverId of recipientIds) {
-                const receiver = await User.findById(receiverId).select("fcmToken");
-                if (receiver?.fcmToken) await sendToUser({ token: receiver.fcmToken, title: sender?.name || "Project chat", body: message, data: { type: "chat", projectId, senderId, receiverId: String(receiverId), conversationId: conversationId || "" } });
-            }
             // Broadcast to authorized project-room members
             io.to(projectRoom(projectId)).emit("chat:new", chat);
 
