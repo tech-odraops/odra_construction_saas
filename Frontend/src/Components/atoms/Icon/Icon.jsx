@@ -22,7 +22,7 @@ const iconSizeNames = {
  * @param {string} [props.className]  Use for colour: `.danger { color: … }`
  */
 export function Icon({ variant, size = 'md', gradient = 'success', label, className = '', style }) {
-  if (import.meta.env.DEV && !ICON_NAMES.includes(variant)) {
+  if (import.meta.env.DEV && variant !== 'universal-material' && !ICON_NAMES.includes(variant)) {
     console.warn(`[Icon] Unknown icon "${variant}" — add public/icons/icon-${variant}.svg and run "npm run icons".`);
   }
 
@@ -36,6 +36,18 @@ export function Icon({ variant, size = 'md', gradient = 'success', label, classN
     '--icon-gradient-success': colors.inputSuccess, 
     ...style,
   };
+
+  if (variant === 'universal-material') {
+    return (
+      <img
+        className={`icon icon--${size} icon--universal-material ${className}`.trim()}
+        src={`${BASE}icons/universal-material.png`}
+        alt={label || ''}
+        style={iconStyle}
+        {...a11y}
+      />
+    );
+  }
 
   if (gradient) {
     return (

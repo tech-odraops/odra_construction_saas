@@ -3636,3 +3636,26 @@ main,
     grid-template-columns: 1fr;
   }
 }
+.delivery-mode-radio {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+  margin: 3px 2px;
+  border: 2px solid var(--palette-primary-main);
+  border-radius: 50%;
+  background: var(--palette-background-paper);
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+}
+
+.delivery-mode-radio:checked {
+  background: radial-gradient(circle, var(--palette-primary-main) 0 4px, var(--palette-background-paper) 4.5px);
+}
+
+.delivery-mode-radio:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--palette-primary-main) 30%, transparent);
+  outline-offset: 2px;
+}
