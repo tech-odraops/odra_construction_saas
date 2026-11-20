@@ -477,7 +477,7 @@ exports.getTaskIssueById = async (req, res) => {
         // Verify active organization
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -491,7 +491,7 @@ exports.getTaskIssueById = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
@@ -626,7 +626,7 @@ exports.updateTaskIssue = async (req, res) => {
 
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -639,7 +639,7 @@ exports.updateTaskIssue = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
@@ -819,7 +819,7 @@ exports.reassignTaskIssue = async (req, res) => {
 
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -832,7 +832,7 @@ exports.reassignTaskIssue = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
@@ -895,7 +895,7 @@ exports.reassignTaskIssue = async (req, res) => {
             _id: assignedTo,
             organizationId,
             role: "Site Engineer",
-            isActive: true
+            status: "active"
         });
 
         if (!newAssignee) {
@@ -1035,7 +1035,7 @@ exports.updateTaskIssueStatus = async (req, res) => {
 
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -1048,7 +1048,7 @@ exports.updateTaskIssueStatus = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
@@ -1236,7 +1236,7 @@ exports.uploadTaskIssueAttachments = async (req, res) => {
 
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -1249,7 +1249,7 @@ exports.uploadTaskIssueAttachments = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
@@ -1467,7 +1467,7 @@ exports.removeTaskIssueAttachment = async (req, res) => {
 
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -1480,7 +1480,7 @@ exports.removeTaskIssueAttachment = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
