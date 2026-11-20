@@ -22,8 +22,16 @@ const ALLOWED_MIME_TYPES = [
     "image/webp"
 ];
 
+const ALLOWED_FILE_TYPES = {
+    ".pdf": ["application/pdf"],
+    ".xlsx": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+    ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    ".txt": ["text/plain"],
+    ".md": ["text/markdown", "text/plain"]
+};
+
 // Upload an image to S3
-const uploadImage = async ({ file, folder }) => {
+const uploadImage = async ({ file, folder, maxFileSize = MAX_FILE_SIZE }) => {
     if (!file || !Buffer.isBuffer(file.buffer)) {
         throw new Error("A valid image file is required");
     }
@@ -36,8 +44,8 @@ const uploadImage = async ({ file, folder }) => {
         throw new Error("Only JPG, PNG and WEBP images are allowed");
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-        throw new Error("Image size cannot exceed 5 MB");
+    if (file.size > maxFileSize) {
+        throw new Error(`Image size cannot exceed ${maxFileSize / (1024 * 1024)} MB`);
     }
 
     const extension = path.extname(file.originalname).toLowerCase();
@@ -60,6 +68,39 @@ const uploadImage = async ({ file, folder }) => {
     };
 };
 
+const uploadFile = async ({ file, folder }) => {
+    if (!file || !Buffer.isBuffer(file.buffer)) {
+        throw new Error("A valid file is required");
+    }
+
+    if (!folder) {
+        throw new Error("Upload folder is required");
+    }
+
+    const extension = path.extname(file.originalname).toLowerCase();
+    const allowedMimeTypes = ALLOWED_FILE_TYPES[extension];
+    if (!allowedMimeTypes || !allowedMimeTypes.includes(file.mimetype)) {
+        throw new Error("Only PDF, XLSX, DOCX, TXT and MD files are allowed");
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+        throw new Error("File size cannot exceed 10 MB");
+    }
+
+    const safeFolder = folder.replace(/^\/+|\/+$/g, "");
+    const key = `${safeFolder}/${crypto.randomUUID()}${extension}`;
+
+    await s3Client.send(new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        CacheControl: "max-age=31536000"
+    }));
+
+    return { key };
+};
+
 const createThumbnailBuffer = (buffer) => sharp(buffer)
     .rotate()
     .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, { fit: "cover" })
@@ -78,8 +119,8 @@ const uploadThumbnail = async ({ key, buffer }) => {
     }));
 };
 
-const uploadImageWithThumbnail = async ({ file, folder }) => {
-    const original = await uploadImage({ file, folder });
+const uploadImageWithThumbnail = async ({ file, folder, maxFileSize = MAX_FILE_SIZE }) => {
+    const original = await uploadImage({ file, folder, maxFileSize });
     const thumbnailKey = getThumbnailKey(original.key);
 
     try {
@@ -154,6 +195,7 @@ const getImageUrl = async (key, expiresIn = 900) => {
 
 module.exports = {
     uploadImage,
+    uploadFile,
     uploadImageWithThumbnail,
     ensureImageThumbnail,
     deleteImage,

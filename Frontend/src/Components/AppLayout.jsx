@@ -7,6 +7,7 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import AddCircleRoundedIcon from "@mui/icons-material/AddCircleRounded";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
+import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
 import Button from "./atoms/Button/Button";
 import AppNavbar from "./AppNavbar";
 import PageLoader from "./PageLoader";
@@ -18,6 +19,7 @@ const contractorMenuItems = [
   { label: "Projects", path: "/founder/project", Icon: FolderOpenOutlinedIcon },
   { label: "Team", path: "/founder/workers", Icon: GroupsOutlinedIcon },
   { label: "Add New Project", path: "/founder/add-project", Icon: AddCircleRoundedIcon },
+  { label: "Assets", path: "/founder/assets", Icon: PermMediaOutlinedIcon },
   { label: "Add Worker", path: "/founder/add-worker", Icon: PersonAddAltOutlinedIcon },
 ];
 
@@ -28,10 +30,12 @@ export default function AppLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = React.useState(false);
   const isSiteEngineer = pathname.startsWith("/site-engineer");
   const isProjectDetails = pathname.startsWith("/founder/project/");
+  const isGalleryPage = pathname.endsWith("/assets");
   const menuItems = isSiteEngineer
     ? [
       { label: "Home", path: "/site-engineer/home", Icon: HomeOutlinedIcon },
       { label: "Projects", path: "/site-engineer/projects", Icon: FolderOpenOutlinedIcon },
+      { label: "Assets", path: "/site-engineer/assets", Icon: PermMediaOutlinedIcon },
     ]
     : contractorMenuItems;
 
@@ -130,7 +134,7 @@ export default function AppLayout() {
             onMobileMenuClick={() => setMobileSidebarOpen(true)}
             showMobileDrawer={false}
           />
-          <Box component="main" sx={{ flex: 1, minWidth: 0, minHeight: 0, borderLeft: "1px solid var(--color-dashboard-border)" }}>
+          <Box component="main" sx={{ flex: 1, minWidth: 0, minHeight: 0, borderLeft: "1px solid var(--color-dashboard-border)", boxSizing: "border-box", p: isGalleryPage ? "22px" : 0 }}>
             <Suspense fallback={<PageLoader />}>
               <Outlet />
             </Suspense>

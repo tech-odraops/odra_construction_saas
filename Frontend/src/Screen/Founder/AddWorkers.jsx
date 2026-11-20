@@ -61,10 +61,10 @@ export default function AddWorkers() {
           </Typography>
           <Typography component="p" className="add-worker-subtitle">{t("workers.add_worker_desc")}</Typography>
           <form className="add-worker-form" onSubmit={handleSubmit}>
-            <Input className="add-worker-field" placeholder={`${t("workers.worker_name")} *`} value={name} onChange={(e) => setName(e.target.value)} required disabled={loading} />
-            <Input className="add-worker-field" placeholder={t("workers.phone_optional")} value={phone} onChange={(e) => setPhone(e.target.value)} disabled={loading} />
-            <Input className="add-worker-field" placeholder="Daily Wage *" type="number" value={dailyWage} onChange={(e) => setDailyWage(e.target.value)} required disabled={loading} />
-            <Input className="add-worker-field add-worker-payout" select label="Payout Type" value={payoutType} onChange={(e) => setPayoutType(e.target.value)} disabled={loading}>
+            <Input className="add-worker-field" placeholder={`${t("workers.worker_name")} *`} value={name} onChange={(e) => setName(e.target.value)} size="free" required disabled={loading} />
+            <Input className="add-worker-field" placeholder={t("workers.phone_optional")} value={phone} onChange={(e) => setPhone(e.target.value)}  size="free" disabled={loading} />
+            <Input className="add-worker-field" placeholder="Daily Wage *" type="number" value={dailyWage} onChange={(e) => setDailyWage(e.target.value)} required  size="free" disabled={loading} />
+            <Input className="add-worker-field add-worker-payout" select label="Payout Type" value={payoutType} onChange={(e) => setPayoutType(e.target.value)}  size="free" disabled={loading}>
               <option value="daily">Daily</option>
               <option value="monthly">Monthly</option>
             </Input>

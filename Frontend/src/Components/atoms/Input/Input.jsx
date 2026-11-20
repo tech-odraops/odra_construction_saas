@@ -23,6 +23,8 @@ export default function Input({
   label,
   looksGood = true,
   required = false,
+  size = "md",
+  style,
   type = "text",
   rows = 4,
   validationState,
@@ -49,6 +51,7 @@ export default function Input({
 
   const classes = [
     "input-atom",
+    `input-atom--size-${size}`,
     isTextarea && "input-atom--textarea",
     isSelect && "input-atom--select",
     disabled && "input-atom--disabled",
@@ -76,7 +79,7 @@ export default function Input({
         </label>
       )}
 
-      <div className={classes}>
+      <div className={classes} style={style}>
         {(disabled || icon) && (
           <Icon
             variant={disabled ? "lock" : icon}

@@ -31,6 +31,7 @@ const { sendToUser } = require("./services/notification.service");
 const { password } = require("./routes/auth/password");
 const User = require("./models/user");
 const profileRoutes = require("./routes/profileRoutes");
+const assetRoutes = require("./routes/assetRoutes");
 const taskCategoryRoutes = require("./routes/taskCategoryRoutes");
 const taskUnitRoutes = require("./routes/taskUnitRoutes");
 const taskRoutes = require("./routes/taskRoutes");
@@ -475,6 +476,9 @@ app.use("/notification", notificationRoutes);
 
 // Profile management
 app.use("/profile", profileRoutes);
+
+// Project asset management
+app.use("/assets", assetRoutes);
 
 // Task Category Management
 app.use("/task-categories", taskCategoryRoutes);

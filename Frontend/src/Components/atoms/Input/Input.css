@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 8px;
-  width: 100%;
+  /* width: 100%; */
 }
 
 .input-atom__label {
@@ -26,7 +26,7 @@
   display: flex;
   align-items: center;
   gap: var(--input-icon-gap);
-  width: 100%;
+  /* width: 100%; */
   height: var(--input-height);
   border: var(--input-border-width) solid #d7dce0;
   border-radius: 5px;
@@ -39,6 +39,22 @@
   transition:
     border-color var(--motion-fast-duration) var(--motion-easing),
     background-color var(--motion-fast-duration) var(--motion-easing);
+}
+
+.input-atom--size-sm {
+  width: min(100%, 10rem);
+}
+
+.input-atom--size-md {
+  width: min(100%, var(--input-width));
+}
+
+.input-atom--size-lg {
+  width: min(100%, 18rem);
+}
+
+.input-atom--size-free {
+  width: 100%;
 }
 
 .input-atom:focus-within {

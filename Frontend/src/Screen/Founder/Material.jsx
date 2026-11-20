@@ -296,7 +296,7 @@ export default function Material({ embedded = false, projectId, projectName, soc
             {loading && <Typography sx={{ py: 3, textAlign: "center", color: "var(--color-dashboard-muted-text)" }}>Loading indents...</Typography>}
             {indents.map((item) => <Paper key={item.id} sx={{ ...surfaceSx, display: "grid", gridTemplateColumns: { xs: "1fr auto", md: "minmax(190px, 1.35fr) repeat(3, minmax(125px, .8fr)) auto" }, alignItems: "center", gap: { xs: 1.25, md: 2 }, px: { xs: 1.25, sm: 1.75 }, py: 1.25 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
-                <Avatar variant="rounded" sx={{ width: 40, height: 40, flexShrink: 0, bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)" }}><Icon variant="universal-material" size="lg" gradient={null} /></Avatar>
+                <Avatar variant="rounded" sx={{ width: 40, height: 40, flexShrink: 0, bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)" }}><Icon variant="universal-material" size="lg" gradient="primary" /></Avatar>
                 <Box sx={{ minWidth: 0 }}><Typography component="button" onClick={() => setSelectedIndent(item)} sx={{ p: 0, border: 0, bgcolor: "transparent", cursor: "pointer", textAlign: "left", font: "inherit", fontWeight: "var(--font-weight-bold)", color: "var(--color-organization-profile-text)", "&:hover": { color: "var(--palette-primary-main)" } }}>{item.id}</Typography><Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", mt: 0.5 }}><Status label={item.status} /><Status label={item.delivery} /></Box></Box>
               </Box>
               <Info label="Created By" value={item.createdBy} sub={item.created} />
@@ -404,7 +404,7 @@ function IndentDetail({ item, projectName, onBack, onCreatePO, onMarkClosed, onD
           </Box>
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr 1fr", lg: "minmax(180px, 1.2fr) minmax(175px, 1.2fr) repeat(2, minmax(120px, 1fr)) auto" }, alignItems: "center", gap: 1.5, p: 1.5 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Avatar variant="rounded" sx={{ width: 52, height: 52, bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)" }}><Icon variant="universal-material" size="lg" gradient={null} /></Avatar>
+              <Avatar variant="rounded" sx={{ width: 52, height: 52, bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)" }}><Icon variant="universal-material" size="lg" gradient="primary" /></Avatar>
               <Box><Typography sx={{ fontWeight: "var(--font-weight-bold)" }}>{item.material || "Brick"}</Typography><Typography sx={{ color: "var(--color-dashboard-muted-text)", fontSize: "var(--font-caption-font-size)" }}>Item code: 23345</Typography><Typography sx={{ color: "var(--color-dashboard-muted-text)", fontSize: "var(--font-caption-font-size)" }}>UOM: set</Typography></Box>
             </Box>
             <Box sx={{ display: "flex", gridColumn: { xs: "1 / -1", lg: "auto" }, alignItems: "center", gap: 0.75, flexWrap: "nowrap", whiteSpace: "nowrap" }}><Status label={closed ? "Fulfilled" : "Not Fulfilled"} /><Status label="Not delivered" /></Box>
