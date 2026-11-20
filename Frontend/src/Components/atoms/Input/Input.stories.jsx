@@ -18,6 +18,10 @@ export default {
       control: 'select',
       options: ['text', 'email', 'password', 'date', 'number'],
     },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg', 'free'],
+    },
     icon: {
       control: 'select',
       options: ICON_NAMES,

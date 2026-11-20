@@ -37,18 +37,6 @@ export function Icon({ variant, size = 'md', gradient = 'success', label, classN
     ...style,
   };
 
-  if (variant === 'universal-material') {
-    return (
-      <img
-        className={`icon icon--${size} icon--universal-material ${className}`.trim()}
-        src={`${BASE}icons/universal-material.png`}
-        alt={label || ''}
-        style={iconStyle}
-        {...a11y}
-      />
-    );
-  }
-
   if (gradient) {
     return (
       <span

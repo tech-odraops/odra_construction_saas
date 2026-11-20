@@ -25,6 +25,7 @@ const AssignWorker = lazy(() => import("./Screen/Founder/AssignWorker"));
 const ProjectInventory = lazy(() => import("./Screen/Founder/ProjectInventory"));
 const InventoryHistory = lazy(() => import("./Screen/Founder/InventoryHistory"));
 const Material = lazy(() => import("./Screen/Founder/Material"));
+const Gallery = lazy(() => import("./Screen/Founder/Gallery"));
 import ActivateAccount from './Screen/ActivateAccount'
 const Dashboard = lazy(() => import("./Screen/Dashboard"));
 const MyProjects = lazy(() => import("./Screen/SiteEngineer/MyProjects"));
@@ -189,6 +190,7 @@ function App() {
               <Route path="/founder/edit-organization-profile" element={<OrganizationProfile />} />
               <Route path="/organization-profile" element={<OrganizationProfile />} />
               <Route path="/founder/project" element={<Project />} />
+              <Route path="/founder/assets" element={<Gallery />} />
               <Route path="/founder/project/:id" element={<ProjectDetails />} />
               <Route path="/founder/add-project" element={<AddProject />} />
               <Route path="/founder/view-report/:id" element={<ViewReport />} />
@@ -201,6 +203,7 @@ function App() {
               <Route path="/site-engineer/home" element={<Dashboard />} />
               <Route path="/site-engineer/profile" element={<SiteEngineerProfile />} />
               <Route path="/site-engineer/projects" element={<MyProjects></MyProjects>} />
+              <Route path="/site-engineer/assets" element={<Gallery />} />
               <Route path="/site-engineer/projects/:id" element={<ProjectDetails isSiteEngineer />} />
               <Route path='/site-engineer/projects/:id/report' element={<SubmitReport />}></Route>
               <Route path="/site-engineer/projects/:id/attendance" element={<Attendance />} />

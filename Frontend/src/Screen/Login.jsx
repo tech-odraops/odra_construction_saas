@@ -381,6 +381,7 @@ export default function Login() {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     required
+                    size="free"
                     validationState={validationStates.email}
                     validationMessage={validationMessages.email}
                   />
@@ -401,6 +402,7 @@ export default function Login() {
                     onChange={handleChange}
                     onBlur={handleBlur}
                     required
+                    size="free"
                     minLength={5}
                     validationState={validationStates.password}
                   />
@@ -453,6 +455,7 @@ export default function Login() {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   required
+                  size="free"
                   validationState={validationStates.email}
                   validationMessage={validationMessages.email}
                 />
@@ -501,6 +504,7 @@ export default function Login() {
                   className="auth-input"
                   placeholder="Enter new password"
                   required
+                  size="free"
                   value={passwordData.password}
                   onChange={(event) =>
                     setPasswordData((current) => ({
@@ -518,6 +522,7 @@ export default function Login() {
                   className="auth-input"
                   placeholder="Confirm new password"
                   required
+                  size="free"
                   value={passwordData.confirmPassword}
                   onChange={(event) =>
                     setPasswordData((current) => ({
