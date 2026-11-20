@@ -23,6 +23,11 @@ const userSchema = new Schema(
             default: null
         },
 
+        profilePictureThumbnailKey: {
+            type: String,
+            default: null
+        },
+
         phoneNumber: {
             type: String,
             trim: true,

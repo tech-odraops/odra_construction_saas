@@ -16,6 +16,11 @@ const organizationSchema = new mongoose.Schema(
             default: null
         },
 
+        logoThumbnailKey: {
+            type: String,
+            default: null
+        },
+
         // Unique customer subdomain, e.g. "abc" for abc.yourdomain.com.
         // Optional for now so existing organizations remain compatible.
         slug: {

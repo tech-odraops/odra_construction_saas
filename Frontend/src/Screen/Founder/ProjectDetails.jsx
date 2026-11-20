@@ -26,7 +26,7 @@ import FilterAltOutlinedIcon from "@mui/icons-material/FilterAltOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import ExpandMoreOutlinedIcon from "@mui/icons-material/ExpandMoreOutlined";
 import AddOutlinedIcon from "@mui/icons-material/AddOutlined";
-import { createAuthenticatedSocket } from "../../utils/socket";
+import { createAuthenticatedSocket, joinProjectRoom } from "../../utils/socket";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import Reports from "./Reports";
 import CreateTaskForm from "./CreateTaskForm";
@@ -953,7 +953,8 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
     setSocket(authenticatedSocket);
     if (!authenticatedSocket) return undefined;
 
-    authenticatedSocket.emit("join", { projectId: id, isChat: true });
+    // Join the authenticated project room used by project updates and chat.
+    const leaveProjectRoom = joinProjectRoom(authenticatedSocket, id, { isChat: true });
     const handleNewReport = (data) => {
       setProject((prevData) => {
         if (!prevData) return prevData;
@@ -1030,7 +1031,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
     authenticatedSocket.on("misc:updated", handleMiscUpdated);
 
     return () => {
-      authenticatedSocket.emit("leave", { projectId: id });
+      leaveProjectRoom();
       authenticatedSocket.off("report:new", handleNewReport);
       authenticatedSocket.off("misc:new", handleMiscNew);
       authenticatedSocket.off("report:reviewed", handleReportReviewed);
@@ -1089,7 +1090,9 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
             ))}
             <ChatModal
               projectId={id}
+              participants={[project?.contractor, ...getAssignedSiteEngineers(project)].filter(Boolean)}
               showIcon
+              socket={socket}
               buttonClassName="project-overview-rail-chat"
               buttonStyle={{
                 width: "auto",
