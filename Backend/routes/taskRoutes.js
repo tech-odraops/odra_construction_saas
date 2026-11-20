@@ -177,7 +177,7 @@ router.get(
  * /tasks/{id}:
  *   get:
  *     summary: Get task details by ID
- *     description: Retrieves a single task after verifying organization and project access.
+ *     description: Retrieves a single task after verifying organization and project access. Assigned engineers include a temporary profilePictureThumbnailUrl, or null when no profile image is set.
  *     tags: [Task Management]
  *     security:
  *       - bearerAuth: []

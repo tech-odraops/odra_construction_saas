@@ -13,7 +13,8 @@ const TaskProgress = require("../models/TaskProgress");
 const {
     uploadImage,
     deleteImage,
-    getImageUrl
+    getImageUrl,
+    ensureImageThumbnail
 } = require("../services/s3Service");
 const {
     emitToRooms,
@@ -606,7 +607,10 @@ exports.getTaskById = async (req, res) => {
         })
             .populate("categoryId", "name description icon")
             .populate("progressUnitId", "name abbreviation description")
-            .populate("assignees", "name email role status")
+            .populate(
+                "assignees",
+                "name email role status profilePictureKey profilePictureThumbnailKey"
+            )
             .populate("createdBy", "name email role")
             .populate(
                 "projectId",
@@ -651,6 +655,32 @@ exports.getTaskById = async (req, res) => {
 
         // Generate temporary URLs for task attachments
         const taskData = task.toObject();
+
+        taskData.assignees = await Promise.all(
+            (task.assignees || []).map(async assignee => {
+                if (!assignee || typeof assignee.toObject !== "function") {
+                    return assignee;
+                }
+
+                let thumbnailKey = assignee.profilePictureThumbnailKey;
+                if (!thumbnailKey && assignee.profilePictureKey) {
+                    thumbnailKey = await ensureImageThumbnail(assignee.profilePictureKey);
+                    assignee.profilePictureThumbnailKey = thumbnailKey;
+                    await assignee.save();
+                }
+
+                const assigneeData = assignee.toObject();
+                delete assigneeData.profilePictureKey;
+                delete assigneeData.profilePictureThumbnailKey;
+
+                return {
+                    ...assigneeData,
+                    profilePictureThumbnailUrl: thumbnailKey
+                        ? await getImageUrl(thumbnailKey)
+                        : null
+                };
+            })
+        );
 
         taskData.attachments = await Promise.all(
             (taskData.attachments || []).map(async attachment => ({
@@ -2934,7 +2964,7 @@ exports.getTaskActivity = async (req, res) => {
         // Verify active organization
         const organization = await Organization.findOne({
             _id: organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!organization) {
@@ -2948,7 +2978,7 @@ exports.getTaskActivity = async (req, res) => {
         const user = await User.findOne({
             _id: userId,
             organizationId,
-            isActive: true
+            status: "active"
         });
 
         if (!user) {
