@@ -261,7 +261,9 @@ exports.uploadAsset = async (req, res) => {
         const upload = await uploadImageWithThumbnail({
             file: req.file,
             folder: `organizations/${user.organizationId}/projects/${context.project._id}/assets`,
-            maxFileSize: MAX_ASSET_IMAGE_SIZE
+            maxFileSize: MAX_ASSET_IMAGE_SIZE,
+            thumbnailSize: 512,
+            thumbnailQuality: 75
         });
         uploadedKeys = [upload.key, upload.thumbnailKey];
 
