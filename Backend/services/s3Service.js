@@ -101,10 +101,13 @@ const uploadFile = async ({ file, folder }) => {
     return { key };
 };
 
-const createThumbnailBuffer = (buffer) => sharp(buffer)
+const createThumbnailBuffer = (
+    buffer,
+    { size = THUMBNAIL_SIZE, quality = THUMBNAIL_QUALITY } = {}
+) => sharp(buffer)
     .rotate()
-    .resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, { fit: "cover" })
-    .webp({ quality: THUMBNAIL_QUALITY })
+    .resize(size, size, { fit: "cover" })
+    .webp({ quality })
     .toBuffer();
 
 const getThumbnailKey = (key) => `${key}.thumbnail.webp`;
@@ -119,12 +122,21 @@ const uploadThumbnail = async ({ key, buffer }) => {
     }));
 };
 
-const uploadImageWithThumbnail = async ({ file, folder, maxFileSize = MAX_FILE_SIZE }) => {
+const uploadImageWithThumbnail = async ({
+    file,
+    folder,
+    maxFileSize = MAX_FILE_SIZE,
+    thumbnailSize = THUMBNAIL_SIZE,
+    thumbnailQuality = THUMBNAIL_QUALITY
+}) => {
     const original = await uploadImage({ file, folder, maxFileSize });
     const thumbnailKey = getThumbnailKey(original.key);
 
     try {
-        const thumbnailBuffer = await createThumbnailBuffer(file.buffer);
+        const thumbnailBuffer = await createThumbnailBuffer(file.buffer, {
+            size: thumbnailSize,
+            quality: thumbnailQuality
+        });
         await uploadThumbnail({ key: thumbnailKey, buffer: thumbnailBuffer });
         return { key: original.key, thumbnailKey };
     } catch (error) {
