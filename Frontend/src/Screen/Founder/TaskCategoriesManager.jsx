@@ -15,13 +15,14 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { toast } from "react-toastify";
+import usePopup from "../../contexts/usePopup";
 import { createTaskCategory, deleteTaskCategory, getTaskCategories, updateTaskCategory } from "../../services/taskService";
 
 const emptyForm = { name: "", description: "", icon: "" };
 const errorMessage = (error, fallback) => error.response?.data?.message || fallback;
 
 export default function TaskCategoriesManager({ open, onClose, onCategoriesChange }) {
+  const { showPopup } = usePopup();
   const [categories, setCategories] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -47,10 +48,14 @@ export default function TaskCategoriesManager({ open, onClose, onCategoriesChang
         setCategories(nextCategories);
         onCategoriesChange?.(nextCategories);
       })
-      .catch((error) => toast.error(errorMessage(error, "Could not load task categories.")))
+      .catch((error) => showPopup({
+        variant: "error",
+        title: "Could not load task categories",
+        message: errorMessage(error, "Could not load task categories."),
+      }))
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [open, onCategoriesChange]);
+  }, [open, onCategoriesChange, showPopup]);
 
   function resetForm() {
     setForm(emptyForm);
@@ -74,15 +79,19 @@ export default function TaskCategoriesManager({ open, onClose, onCategoriesChang
     try {
       if (editingId) {
         await updateTaskCategory(editingId, payload);
-        toast.success("Task category updated.");
+        showPopup({ variant: "success", title: "Task category updated", message: "Changes were saved." });
       } else {
         await createTaskCategory(payload);
-        toast.success("Task category created.");
+        showPopup({ variant: "success", title: "Task category created", message: "The new category is ready to use." });
       }
       resetForm();
       await refreshCategories();
     } catch (error) {
-      toast.error(errorMessage(error, "Could not save task category."));
+      showPopup({
+        variant: "error",
+        title: "Could not save task category",
+        message: errorMessage(error, "Could not save task category."),
+      });
     } finally {
       setSaving(false);
     }
@@ -92,9 +101,17 @@ export default function TaskCategoriesManager({ open, onClose, onCategoriesChang
     try {
       await updateTaskCategory(category._id, { isActive: category.isActive === false });
       await refreshCategories();
-      toast.success(category.isActive === false ? "Task category activated." : "Task category deactivated.");
+      showPopup({
+        variant: "success",
+        title: category.isActive === false ? "Task category activated" : "Task category deactivated",
+        message: `${category.name} is now ${category.isActive === false ? "active" : "inactive"}.`,
+      });
     } catch (error) {
-      toast.error(errorMessage(error, "Could not update task category status."));
+      showPopup({
+        variant: "error",
+        title: "Could not update task category",
+        message: errorMessage(error, "Could not update task category status."),
+      });
     }
   }
 
@@ -106,9 +123,13 @@ export default function TaskCategoriesManager({ open, onClose, onCategoriesChang
       setDeleteTarget(null);
       if (editingId === deleteTarget._id) resetForm();
       await refreshCategories();
-      toast.success("Task category deleted.");
+      showPopup({ variant: "success", title: "Task category deleted", message: "The category was removed." });
     } catch (error) {
-      toast.error(errorMessage(error, "Could not delete task category."));
+      showPopup({
+        variant: "error",
+        title: "Could not delete task category",
+        message: errorMessage(error, "Could not delete task category."),
+      });
     } finally {
       setDeleting(false);
     }

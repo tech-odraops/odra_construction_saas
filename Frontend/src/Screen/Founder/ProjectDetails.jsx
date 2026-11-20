@@ -694,12 +694,6 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
       </Box>
 
       <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 2, mt: 2.25, flexWrap: "wrap" }}>
-        <Button
-          onClick={() => setTaskCategoriesManagerOpen(true)}
-          style={{ color: "#ff642d", fontWeight: 600, textTransform: "none" }}
-        >
-          Manage Categories
-        </Button>
         <Box
           component="button"
           type="button"
@@ -1499,6 +1493,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
               categories={taskCategories}
               units={taskUnits}
               onUnitsChange={setTaskUnits}
+              onManageCategories={() => setTaskCategoriesManagerOpen(true)}
               loading={taskMetaLoading}
               allowAssignment={!isSiteEngineer}
               onBack={() => setShowCreateTask(false)}

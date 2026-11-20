@@ -15,12 +15,13 @@ import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
-import { toast } from "react-toastify";
+import usePopup from "../../contexts/usePopup";
 import { createTaskUnit, deleteTaskUnit, getTaskUnits, updateTaskUnit } from "../../services/taskService";
 
 const emptyForm = { name: "", abbreviation: "", description: "" };
 
 export default function TaskUnitsManager({ open, onClose, onUnitsChange }) {
+  const { showPopup } = usePopup();
   const [units, setUnits] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
@@ -46,10 +47,14 @@ export default function TaskUnitsManager({ open, onClose, onUnitsChange }) {
         setUnits(nextUnits);
         onUnitsChange?.(nextUnits);
       })
-      .catch((error) => toast.error(error.response?.data?.message || "Could not load task units."))
+      .catch((error) => showPopup({
+        variant: "error",
+        title: "Could not load task units",
+        message: error.response?.data?.message || "Could not load task units.",
+      }))
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [open, onUnitsChange]);
+  }, [open, onUnitsChange, showPopup]);
 
   function resetForm() {
     setForm(emptyForm);
@@ -73,15 +78,19 @@ export default function TaskUnitsManager({ open, onClose, onUnitsChange }) {
     try {
       if (editingId) {
         await updateTaskUnit(editingId, payload);
-        toast.success("Task unit updated.");
+        showPopup({ variant: "success", title: "Task unit updated", message: "Changes were saved." });
       } else {
         await createTaskUnit(payload);
-        toast.success("Task unit created.");
+        showPopup({ variant: "success", title: "Task unit created", message: "The new unit is ready to use." });
       }
       resetForm();
       await refreshUnits();
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not save task unit.");
+      showPopup({
+        variant: "error",
+        title: "Could not save task unit",
+        message: error.response?.data?.message || "Could not save task unit.",
+      });
     } finally {
       setSaving(false);
     }
@@ -91,9 +100,17 @@ export default function TaskUnitsManager({ open, onClose, onUnitsChange }) {
     try {
       await updateTaskUnit(unit._id, { isActive: unit.isActive === false });
       await refreshUnits();
-      toast.success(unit.isActive === false ? "Task unit activated." : "Task unit deactivated.");
+      showPopup({
+        variant: "success",
+        title: unit.isActive === false ? "Task unit activated" : "Task unit deactivated",
+        message: `${unit.name} is now ${unit.isActive === false ? "active" : "inactive"}.`,
+      });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not update task unit status.");
+      showPopup({
+        variant: "error",
+        title: "Could not update task unit",
+        message: error.response?.data?.message || "Could not update task unit status.",
+      });
     }
   }
 
@@ -105,9 +122,13 @@ export default function TaskUnitsManager({ open, onClose, onUnitsChange }) {
       setDeleteTarget(null);
       if (editingId === deleteTarget._id) resetForm();
       await refreshUnits();
-      toast.success("Task unit deleted.");
+      showPopup({ variant: "success", title: "Task unit deleted", message: "The unit was removed." });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not delete task unit.");
+      showPopup({
+        variant: "error",
+        title: "Could not delete task unit",
+        message: error.response?.data?.message || "Could not delete task unit.",
+      });
     } finally {
       setDeleting(false);
     }

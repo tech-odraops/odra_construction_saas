@@ -130,6 +130,50 @@ Use an existing atom before using MUI. Use MUI only when no existing atom suppor
   />
   ```
 
+### CameraCapture
+
+- Source: `Frontend/src/Components/atoms/CameraCapture/CameraCapture.jsx`
+- Styles: `Frontend/src/Components/atoms/CameraCapture/CameraCapture.css`
+- Use it whenever a screen needs live photo capture instead of implementing `getUserMedia` locally.
+- Props:
+  - `open`: controls whether the camera dialog is open.
+  - `onCapture(file)`: receives the captured JPEG or accepted crop `File`. Return `false` to keep the current capture step open when validation fails.
+  - `onClose(reason)`: called when the user cancels or a photo is accepted; `reason` is `cancel` or `captured`.
+  - `facingMode`: `environment` by default; pass `user` for selfie/profile capture.
+  - `title`: optional dialog title.
+- `cropImage`: defaults to `false`. Set it to `true` to open the built-in `ImageCropDialog` immediately after capture.
+- The atom stops active camera tracks when closed or unmounted and reports camera access/capture failures through Popup.
+
+  ```jsx
+  <CameraCapture
+    open={cameraOpen}
+    facingMode="user"
+    cropImage={true}
+    onCapture={(file) => selectImage(file)}
+    onClose={() => setCameraOpen(false)}
+  />
+  ```
+
+### ImageCropDialog
+
+- Source: `Frontend/src/Components/atoms/ImageCropDialog/ImageCropDialog.jsx`
+- Styles: `Frontend/src/Components/atoms/ImageCropDialog/ImageCropDialog.css`
+- Use it to draw a free-form crop over an image. The crop can use any aspect ratio.
+- It can be rendered independently for gallery/file selection. `CameraCapture` uses it internally when `cropImage` is `true`.
+- Props: `open`, `file`, `onClose`, `onCrop(croppedFile)`, `onUseOriginal(file)`, and optional `title`.
+- `onCrop` and `onUseOriginal` are responsible for accepting the image and updating the controlled dialog state.
+- Cropped images are returned as JPEG `File` objects with their longest edge capped at 1600 pixels.
+
+  ```jsx
+  <ImageCropDialog
+    open={Boolean(fileToCrop)}
+    file={fileToCrop}
+    onClose={closeCrop}
+    onCrop={replaceSelectedFile}
+    onUseOriginal={useSelectedFile}
+  />
+  ```
+
 ### StatusChips
 
 - Source: `Frontend/src/Components/atoms/StatusChips/StatusChips.jsx`

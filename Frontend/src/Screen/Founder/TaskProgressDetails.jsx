@@ -1,5 +1,5 @@
 import { createElement, useEffect, useRef, useState } from "react";
-import { Box, Button, Dialog, IconButton, MenuItem, TextField, Typography } from "@mui/material";
+import { Avatar, Box, Button, Dialog, IconButton, MenuItem, TextField, Tooltip, Typography } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -56,6 +56,15 @@ function DetailPanel({ title, action, icon: Icon, children, className = "" }) {
 const formatDate = (value) => value
   ? new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value))
   : "Not set";
+
+function getPersonId(person) {
+  const id = person && typeof person === "object" ? person._id || person.id : person;
+  return id == null ? "" : String(id);
+}
+
+function getInitials(name) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toUpperCase() || "SE";
+}
 
 export default function TaskProgressDetails({
   task,
@@ -180,6 +189,15 @@ export default function TaskProgressDetails({
   const progressPercent = totalQuantity > 0 ? Math.min(100, Math.round((currentQuantity / totalQuantity) * 100)) : 0;
   const assignedIds = new Set((task?.assignees || []).map((person) => String(person?._id || person)));
   const availableAssignees = assignees.filter((person) => !assignedIds.has(String(person?._id || person)));
+  const assignedProfiles = (task?.assignees || []).map((assignment) => {
+    const id = getPersonId(assignment);
+    const projectProfile = assignees.find((person) => getPersonId(person) === id);
+    return {
+      ...(projectProfile && typeof projectProfile === "object" ? projectProfile : {}),
+      ...(assignment && typeof assignment === "object" ? assignment : {}),
+      _id: id,
+    };
+  });
 
   async function handleRecordProgress(event) {
     event.preventDefault();
@@ -364,23 +382,58 @@ export default function TaskProgressDetails({
             <InfoCell icon={CategoryOutlinedIcon} label="Work Category">{taskCategory}</InfoCell>
             <InfoCell icon={PersonOutlineRoundedIcon} label="Assigned To">
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, alignItems: "center" }}>
-                {(task.assignees || []).map((person) => {
-                  const personId = person?._id || person;
-                  const name = person?.name || "Site Engineer";
-                  return <Box key={String(personId)} component="span" className="task-progress-assignee" title={name}>{name}</Box>;
-                })}
-                {!task.assignees?.length && <span>Unassigned</span>}
+                <Box className="task-progress-assignees">
+                  {assignedProfiles.map((person, index) => {
+                    const personId = person._id || `assignee-${index}`;
+                    const name = person.name || "Site Engineer";
+                    const details = [
+                      person.email,
+                      person.phoneNumber,
+                      person.role || "Site Engineer",
+                    ].filter(Boolean);
+                    return (
+                      <Box key={personId} className="task-progress-assignee-item">
+                        <Tooltip
+                          arrow
+                          placement="top"
+                          title={(
+                            <Box sx={{ display: "grid", gap: 0.25, color: "inherit" }}>
+                              <Typography component="span" sx={{ color: "inherit", fontSize: 13, fontWeight: 700 }}>{name}</Typography>
+                              {details.map((detail, detailIndex) => (
+                                <Typography key={`${detailIndex}-${detail}`} component="span" sx={{ color: "inherit", fontSize: 11 }}>{detail}</Typography>
+                              ))}
+                            </Box>
+                          )}
+                        >
+                          <Avatar
+                            alt={name}
+                            src={person.profilePictureThumbnailUrl || undefined}
+                            className="task-progress-assignee-avatar"
+                          >
+                            {getInitials(name)}
+                          </Avatar>
+                        </Tooltip>
+                        {canRemoveAssignees && person._id && (
+                          <IconButton
+                            size="small"
+                            className="task-progress-assignee-remove"
+                            aria-label={`Remove ${name}`}
+                            onClick={() => handleRemoveAssignee(person._id)}
+                            disabled={savingAssignees}
+                          >
+                            <CloseRoundedIcon fontSize="inherit" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    );
+                  })}
+                  {!assignedProfiles.length && <span>Unassigned</span>}
+                </Box>
                 <TextField select size="small" value={selectedAssignee} onChange={(event) => setSelectedAssignee(event.target.value)} SelectProps={{ displayEmpty: true }} sx={{ minWidth: 150 }} disabled={!canEdit}>
                   <MenuItem value="">Add Site Engineer</MenuItem>
                   {availableAssignees.map((person) => <MenuItem key={person._id} value={person._id}>{person.name || person.email}</MenuItem>)}
                 </TextField>
                 <Button size="small" onClick={handleAddAssignee} disabled={!canEdit || !selectedAssignee || savingAssignees}>Add</Button>
-                {canRemoveAssignees && (task.assignees || []).map((person) => {
-                  const personId = person?._id || person;
-                  return <Button key={`remove-${personId}`} size="small" color="error" onClick={() => handleRemoveAssignee(personId)} disabled={savingAssignees} aria-label={`Remove ${person?.name || "assignee"}`}>
-                    Remove {person?.name || "engineer"}
-                  </Button>;
-                })}
               </Box>
             </InfoCell>
             <InfoCell icon={CalendarMonthOutlinedIcon} label="Start Date">{task.startDate ? new Date(task.startDate).toLocaleDateString() : "Not set"}</InfoCell>
