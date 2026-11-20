@@ -1463,7 +1463,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
             />
           </Box>
         ) : activeTab === "Material" ? (
-          <MaterialPage embedded />
+          <MaterialPage embedded projectId={id} projectName={project?.title} socket={socket} />
         ) : activeTab !== "Overview" ? (
           renderComingSoonSection()
         ) : null}

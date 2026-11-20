@@ -21,6 +21,7 @@ const ChatMessage = require("./models/chatMessage");
 const ChatConversation = require("./models/chatConversation");
 const Project = require("./models/project")
 const inventoryRoute = require('./routes/inventoryRoutes');
+const inventoryWorkflowRoute = require('./routes/inventoryWorkflowRoutes');
 const adminRoutes = require("./routes/adminRoutes");
 const tokenValidation = require('./routes/tokenValiditiCheaker');
 const adminDashboardRoutes = require("./routes/adminDashboardRoutes");
@@ -456,6 +457,7 @@ app.use('/reports', reportRoute);
 app.use('/attendance', attendanceRoute);
 app.use('/chat', chatRouter);
 app.use('/workers', workerRoutes);
+app.use('/inventory', inventoryWorkflowRoute);
 app.use('/inventory', inventoryRoute);
 
 // Site Member management 

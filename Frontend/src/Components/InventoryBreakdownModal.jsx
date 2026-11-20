@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Modal,
   Box,
@@ -16,8 +15,13 @@ import Button from "./atoms/Button/Button";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
 import LockIcon from "@mui/icons-material/Lock";
+
+const getPurchasedValue = (item) =>
+  Number(item.totalPurchasedValue ?? item.totalQuantity * item.pricePerUnit);
+
+const getRemainingValue = (item) =>
+  Number(item.remainingStockValue ?? item.availableQuantity * item.pricePerUnit);
 
 const style = {
   position: "absolute",
@@ -37,16 +41,19 @@ export default function InventoryBreakdownModal({open,handleClose,items}) {
   console.log(items)
   const { t } = useTranslation();
   const totalPurchased = items.reduce(
-    (sum, item) => sum + item.totalQuantity * item.pricePerUnit,
+    (sum, item) => sum + getPurchasedValue(item),
     0
   );
 
   const totalRemaining = items.reduce(
-    (sum, item) => sum + item.availableQuantity * item.pricePerUnit,
+    (sum, item) => sum + getRemainingValue(item),
     0
   );
 
-  const totalUsed = totalPurchased - totalRemaining;
+  const totalUsed = items.reduce(
+    (sum, item) => sum + Number(item.totalUsedCost ?? getPurchasedValue(item) - getRemainingValue(item)),
+    0
+  );
 
   const exportPDF = () => {
     if (!items || items.length === 0) return;
@@ -87,8 +94,8 @@ export default function InventoryBreakdownModal({open,handleClose,items}) {
       item.pricePerUnit.toLocaleString(),
       item.totalQuantity,
       item.availableQuantity,
-      (item.totalQuantity * item.pricePerUnit).toLocaleString(),
-      (item.availableQuantity * item.pricePerUnit).toLocaleString()
+      getPurchasedValue(item).toLocaleString(),
+      getRemainingValue(item).toLocaleString()
     ]);
 
     autoTable(doc, {
@@ -219,10 +226,10 @@ doc.text(
                   <TableCell>{item.totalQuantity}</TableCell>
                   <TableCell>{item.availableQuantity}</TableCell>
                   <TableCell>
-                    ₹ {item.totalQuantity * item.pricePerUnit}
+                    ₹ {getPurchasedValue(item)}
                   </TableCell>
                   <TableCell>
-                    ₹ {item.availableQuantity * item.pricePerUnit}
+                    ₹ {getRemainingValue(item)}
                   </TableCell>
                 </TableRow>
               ))}

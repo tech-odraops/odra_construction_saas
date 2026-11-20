@@ -14,7 +14,7 @@ const {validateRoles} = require("../middleware/roles");
  *     tags:
  *       - Inventory
  *     summary: Get inventory cost summary
- *     description: Manager only.
+ *     description: Founder who owns the project.
  *     responses:
  *       "200":
  *         description: Purchase, usage, and remaining-stock values.
@@ -84,7 +84,7 @@ router.get(
  *     tags:
  *       - Inventory
  *     summary: Record inventory material usage
- *     description: Site engineer only.
+ *     description: Assigned Site Engineer only.
  *     requestBody:
  *       required: true
  *       content:
@@ -103,6 +103,7 @@ router.get(
  *                 type: string
  *               usedQty:
  *                 type: number
+ *                 exclusiveMinimum: 0
  *               date:
  *                 type: string
  *                 format: date
@@ -144,7 +145,7 @@ router.post(
  *     tags:
  *       - Inventory
  *     summary: Get inventory purchase history
- *     description: Manager only.
+ *     description: Founder who owns the project.
  *     responses:
  *       "200":
  *         description: Purchase history with populated item and creator.
@@ -178,7 +179,7 @@ router.get(
  *     tags:
  *       - Inventory
  *     summary: Add or replenish a project inventory item
- *     description: Manager or site engineer. A purchase record is created for each call.
+ *     description: Founder who owns the project or an assigned Site Engineer. Repeated calls replenish existing stock and create purchase records.
  *     requestBody:
  *       required: true
  *       content:
@@ -188,7 +189,10 @@ router.get(
  *             required:
  *               - name
  *               - unit
+ *               - supplierName
+ *               - companyName
  *               - quantity
+ *               - pricePerUnit
  *               - purchaseDate
  *             properties:
  *               name:
@@ -197,8 +201,10 @@ router.get(
  *                 type: string
  *               quantity:
  *                 type: number
+ *                 exclusiveMinimum: 0
  *               pricePerUnit:
  *                 type: number
+ *                 minimum: 0
  *               supplierName:
  *                 type: string
  *               companyName:
@@ -249,7 +255,7 @@ router.post(
  *     tags:
  *       - Inventory
  *     summary: Get project inventory
- *     description: Manager or site engineer. Each item includes an isLowStock flag.
+ *     description: Founder who owns the project or an assigned Site Engineer. Each item includes an isLowStock flag and value totals.
  *     responses:
  *       "200":
  *         description: Project inventory items.

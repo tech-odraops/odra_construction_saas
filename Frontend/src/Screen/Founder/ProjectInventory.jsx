@@ -1,24 +1,60 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "../../utils/axiosInstance";
 import InventoryHistory from "./InventoryHistory";
 import Footer from "../../Components/Footer";
 import { useTranslation } from "react-i18next";
-
 import {
   Typography,
   Paper
 } from "@mui/material";
 import { toast } from "react-toastify";
 import InventoryBreakdownModal from "../../Components/InventoryBreakdownModal";
+import InventoryWorkflowPanel from "./InventoryWorkflowPanel";
 import Button from "../../Components/atoms/Button/Button";
 import Input from "../../Components/atoms/Input/Input";
 import { createAuthenticatedSocket } from "../../utils/socket";
 
-
 export default function ProjectInventory() {
   const { id: projectId } = useParams();
   const { t } = useTranslation();
+  const inventoryWorkflowApi = useMemo(() => ({
+    listLocations: () => axios.get("/inventory/locations"),
+    getLocationInventory: (locationId) =>
+      axios.get(`/inventory/locations/${locationId}/inventory`),
+    listMaterials: (includeInactive) =>
+      axios.get(`/inventory/materials${includeInactive ? "?includeInactive=true" : ""}`),
+    listVendors: (includeInactive) =>
+      axios.get(`/inventory/vendors${includeInactive ? "?includeInactive=true" : ""}`),
+    listIndents: (locationId) =>
+      axios.get(`/inventory/indents?locationId=${encodeURIComponent(locationId)}`),
+    listTransfers: (locationId) =>
+      axios.get(`/inventory/transfers?locationId=${encodeURIComponent(locationId)}`),
+    listPurchaseOrders: (locationId) =>
+      axios.get(`/inventory/purchase-orders?locationId=${encodeURIComponent(locationId)}`),
+    listGoodsReceipts: (locationId) =>
+      axios.get(`/inventory/goods-receipts?locationId=${encodeURIComponent(locationId)}`),
+    createMaterial: (payload) => axios.post("/inventory/materials", payload),
+    updateMaterial: (materialId, payload) =>
+      axios.patch(`/inventory/materials/${materialId}`, payload),
+    createVendor: (payload) => axios.post("/inventory/vendors", payload),
+    updateVendor: (vendorId, payload) =>
+      axios.patch(`/inventory/vendors/${vendorId}`, payload),
+    createWarehouse: (payload) => axios.post("/inventory/locations", payload),
+    createIndent: (payload) => axios.post("/inventory/indents", payload),
+    fulfillIndent: (indentId, payload) =>
+      axios.patch(`/inventory/indents/${indentId}/fulfillment`, payload),
+    cancelIndent: (indentId) => axios.patch(`/inventory/indents/${indentId}/cancel`),
+    updateTransfer: (transferId, action) =>
+      axios.patch(`/inventory/transfers/${transferId}/${action}`),
+    dispatchTransfer: (transferId) =>
+      axios.post(`/inventory/transfers/${transferId}/dispatch`, {}),
+    receiveTransfer: (transferId, payload) =>
+      axios.post(`/inventory/transfers/${transferId}/receive`, payload),
+    cancelPurchaseOrder: (purchaseOrderId) =>
+      axios.patch(`/inventory/purchase-orders/${purchaseOrderId}/cancel`),
+    createGoodsReceipt: (payload) => axios.post("/inventory/goods-receipts", payload)
+  }), []);
   const [items, setItems] = useState([]);
   const [breakdownOpen, setBreakdownOpen] = useState(false);
   const [name, setName] = useState("");
@@ -34,13 +70,13 @@ export default function ProjectInventory() {
     remainingStockValue: 0
   });
 
-  const fetchInventory = async () => {
+  const fetchInventory = useCallback(async () => {
     const res = await axios.get(`/inventory/${projectId}`);
     setItems(res.data.items);
-  };
+  }, [projectId]);
 
   // Refresh summary after any inventory change
-  const refreshSummary = async () => {
+  const refreshSummary = useCallback(async () => {
     try {
       const res = await axios.get(`/inventory/summary/${projectId}`);
       setSummary({
@@ -51,7 +87,7 @@ export default function ProjectInventory() {
     } catch (err) {
       console.error("Failed to refresh summary", err);
     }
-  };
+  }, [projectId]);
 
   // socket connection
   useEffect(() => {
@@ -74,7 +110,6 @@ export default function ProjectInventory() {
     };
 
     const handleInventoryItemAdded = () => {
-      console.log("Called added");
       fetchInventory();
       refreshSummary();
     };
@@ -86,33 +121,16 @@ export default function ProjectInventory() {
       socket.off("inventory:item-added", handleInventoryItemAdded);
       socket.disconnect();
     };
-  }, [projectId]);
+  }, [projectId, fetchInventory, refreshSummary]);
 
 
   useEffect(() => {
     fetchInventory();
-  }, []);
+  }, [fetchInventory]);
 
-
-  // fetch summary
   useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        const res = await axios.get(`/inventory/summary/${projectId}`);
-        setSummary({
-          totalPurchasedValue: res.data.totalPurchasedValue || 0,
-          totalUsedCost: res.data.totalUsedCost || 0,
-          remainingStockValue: res.data.remainingStockValue || 0
-        });
-      } catch (err) {
-        console.error("Failed to fetch summary", err);
-      }
-    };
-
-    fetchSummary();
-  }, [projectId]);
-
-
+    refreshSummary();
+  }, [refreshSummary]);
   const addItem = async () => {
     try {
       await axios.post(`/inventory/${projectId}`, {
@@ -126,6 +144,7 @@ export default function ProjectInventory() {
       });
 
       toast.success("Material added");
+      await Promise.all([fetchInventory(), refreshSummary()]);
       setName("");
       setUnit("");
       setQuantity("");
@@ -189,6 +208,7 @@ export default function ProjectInventory() {
           </section>
         </div>
       </main>
+      <InventoryWorkflowPanel projectId={projectId} api={inventoryWorkflowApi} />
       <InventoryBreakdownModal
         open={breakdownOpen}
         handleClose={() => setBreakdownOpen(false)}
@@ -197,6 +217,4 @@ export default function ProjectInventory() {
 
     </>
   );
-
-
 }
