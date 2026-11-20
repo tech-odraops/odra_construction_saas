@@ -5,6 +5,7 @@ import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { clearLastVisitedProjectTabs } from "../utils/projectDetailsTabStorage";
 import { getFCMToken } from "../services/notificationService";
 import Input from "../Components/atoms/Input/Input";
 import {
@@ -171,6 +172,7 @@ export default function Login() {
         const destination = roleDestinations[response.data.role];
 
         if (!destination) {
+          clearLastVisitedProjectTabs();
           localStorage.removeItem("token");
           localStorage.removeItem("User_id");
           localStorage.removeItem("IsLogin");

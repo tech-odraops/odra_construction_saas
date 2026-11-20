@@ -5,7 +5,17 @@ const inventoryItemSchema = new mongoose.Schema(
     projectId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
-      required: true
+      default: null
+    },
+    locationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "InventoryLocation",
+      default: null
+    },
+    materialId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "InventoryMaterial",
+      default: null
     },
     organizationId: {
       type: mongoose.Schema.Types.ObjectId,

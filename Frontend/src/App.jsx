@@ -24,6 +24,7 @@ const FounderWorkers = lazy(() => import("./Screen/Founder/FounderWorkers"));
 const AssignWorker = lazy(() => import("./Screen/Founder/AssignWorker"));
 const ProjectInventory = lazy(() => import("./Screen/Founder/ProjectInventory"));
 const InventoryHistory = lazy(() => import("./Screen/Founder/InventoryHistory"));
+const Material = lazy(() => import("./Screen/Founder/Material"));
 import ActivateAccount from './Screen/ActivateAccount'
 const Dashboard = lazy(() => import("./Screen/Dashboard"));
 const MyProjects = lazy(() => import("./Screen/SiteEngineer/MyProjects"));
@@ -183,6 +184,7 @@ function App() {
             <Route path="/reset-password" element={<Login />} />
             <Route element={<ProtectedRoleLayout />}>
               <Route path="/founder/home" element={<Dashboard />} />
+              <Route path="/founder/material" element={<Material />} />
               <Route path="/founder/organization-profile" element={<OrganizationProfile />} />
               <Route path="/founder/edit-organization-profile" element={<OrganizationProfile />} />
               <Route path="/organization-profile" element={<OrganizationProfile />} />

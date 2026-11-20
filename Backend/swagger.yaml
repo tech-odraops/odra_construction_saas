@@ -161,6 +161,8 @@ components:
       properties:
         _id: { type: string }
         projectId: { oneOf: [{ type: string }, { type: object }] }
+        locationId: { oneOf: [{ type: string }, { type: object }] }
+        materialId: { oneOf: [{ type: string }, { type: object }] }
         name: { type: string }
         unit: { type: string }
         supplierName: { type: string }
@@ -169,11 +171,17 @@ components:
         totalQuantity: { type: number }
         availableQuantity: { type: number }
         isLowStock: { type: boolean }
+        totalPurchasedValue: { type: number }
+        transferredInValue: { type: number }
+        totalUsedCost: { type: number }
+        remainingStockValue: { type: number }
     InventoryUsage:
       type: object
       additionalProperties: true
       properties:
         projectId: { type: string }
+        locationId: { type: string }
+        materialId: { type: string }
         inventoryItemId: { oneOf: [{ type: string }, { type: object }] }
         usedQty: { type: number }
         costAtThatTime: { type: number }
@@ -183,12 +191,113 @@ components:
       additionalProperties: true
       properties:
         projectId: { type: string }
+        locationId: { type: string }
+        materialId: { type: string }
+        purchaseOrderId: { type: string }
+        goodsReceiptId: { type: string }
         inventoryItemId: { oneOf: [{ type: string }, { type: object }] }
         purchaseDate: { type: string, format: date-time }
         quantity: { type: number }
         pricePerUnit: { type: number }
         supplierName: { type: string }
         companyName: { type: string }
+    InventoryMaterial:
+      type: object
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        category: { type: string }
+        unit: { type: string }
+        specifications: { type: object, additionalProperties: true }
+        isActive: { type: boolean }
+    InventoryLocation:
+      type: object
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        type: { type: string, enum: [project_site, warehouse] }
+        projectId: { type: string, nullable: true }
+        code: { type: string }
+        address: { type: string }
+        isActive: { type: boolean }
+    InventoryIndent:
+      type: object
+      properties:
+        _id: { type: string }
+        locationId: { type: string }
+        status:
+          type: string
+          enum: [submitted, sourcing, partially_fulfilled, fulfilled, rejected, cancelled]
+        requiredDate: { type: string, format: date }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              materialId: { type: string }
+              materialName: { type: string }
+              unit: { type: string }
+              requestedQuantity: { type: number }
+              fulfilledQuantity: { type: number }
+              allocatedQuantity: { type: number }
+    InventoryTransfer:
+      type: object
+      properties:
+        _id: { type: string }
+        sourceLocationId: { type: string }
+        destinationLocationId: { type: string }
+        status:
+          type: string
+          enum: [requested, approved, in_transit, partially_received, received, rejected, cancelled]
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              materialId: { type: string }
+              requestedQuantity: { type: number }
+              dispatchedQuantity: { type: number }
+              receivedQuantity: { type: number }
+              unitCost: { type: number }
+    InventoryVendor:
+      type: object
+      properties:
+        _id: { type: string }
+        name: { type: string }
+        contactName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        taxId: { type: string }
+        address: { type: string }
+        isActive: { type: boolean }
+    InventoryPurchaseOrder:
+      type: object
+      properties:
+        _id: { type: string }
+        indentId: { type: string }
+        locationId: { type: string }
+        vendorId: { type: string }
+        status: { type: string, enum: [issued, partially_received, received, cancelled] }
+        deliveryDate: { type: string, format: date }
+        subtotal: { type: number }
+        taxAmount: { type: number }
+        shippingCost: { type: number }
+        totalAmount: { type: number }
+    InventoryGoodsReceipt:
+      type: object
+      properties:
+        _id: { type: string }
+        purchaseOrderId: { type: string }
+        locationId: { type: string }
+        receivedDate: { type: string, format: date }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              materialId: { type: string }
+              receivedQuantity: { type: number }
+              unitPrice: { type: number }
   responses:
     InternalServerError:
       description: An internal server error occurred.

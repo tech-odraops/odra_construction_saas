@@ -9,7 +9,9 @@ import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import Button from "./atoms/Button/Button";
 import AppNavbar from "./AppNavbar";
+import PageLoader from "./PageLoader";
 import { clearSiteEngineerProfileCache } from "../utils/siteEngineerProfileCache";
+import { clearLastVisitedProjectTabs } from "../utils/projectDetailsTabStorage";
 
 const contractorMenuItems = [
   { label: "Home", path: "/founder/home", Icon: HomeOutlinedIcon },
@@ -18,14 +20,6 @@ const contractorMenuItems = [
   { label: "Add New Project", path: "/founder/add-project", Icon: AddCircleRoundedIcon },
   { label: "Add Worker", path: "/founder/add-worker", Icon: PersonAddAltOutlinedIcon },
 ];
-
-function PageLoader() {
-  return (
-    <Box sx={{ minHeight: "calc(100vh - var(--dashboard-header-height))", display: "grid", placeItems: "center", color: "var(--color-dashboard-muted-text)" }}>
-      Loading...
-    </Box>
-  );
-}
 
 export default function AppLayout() {
   const { pathname } = useLocation();
@@ -43,6 +37,7 @@ export default function AppLayout() {
 
   const logout = () => {
     clearSiteEngineerProfileCache();
+    clearLastVisitedProjectTabs();
     localStorage.removeItem("token");
     localStorage.removeItem("IsLogin");
     localStorage.removeItem("User_id");

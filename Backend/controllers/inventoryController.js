@@ -1,8 +1,118 @@
 const InventoryItem = require("../models/inventoryItem");
-const Project = require("../models/project");
 const InventoryUsage = require("../models/InventoryUsage");
 const InventoryPurchase = require("../models/InventoryPurchase");
-const { default: mongoose } = require("mongoose");
+const InventoryMaterial = require("../models/InventoryMaterial");
+const InventoryTransfer = require("../models/InventoryTransfer");
+const mongoose = require("mongoose");
+const {
+  getAuthorizedProject,
+  getProjectLocation
+} = require("../utils/inventoryWorkflow");
+const { isDateOnly: isValidDateOnly } = require("../utils/inventoryWorkflowRules");
+
+const getInventorySnapshot = async (projectId, organizationId, locationId) => {
+  const projectObjectId = new mongoose.Types.ObjectId(projectId);
+  const organizationObjectId = new mongoose.Types.ObjectId(organizationId);
+  const filter = { projectId: projectObjectId, organizationId: organizationObjectId };
+
+  const [items, purchases, usages, transfers] = await Promise.all([
+    InventoryItem.find(filter)
+      .populate({
+        path: "projectId",
+        select: "title contractor",
+        populate: { path: "contractor", select: "name" }
+      })
+      .lean(),
+    InventoryPurchase.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: "$inventoryItemId",
+          totalPurchasedValue: {
+            $sum: { $multiply: ["$quantity", "$pricePerUnit"] }
+          }
+        }
+      }
+    ]),
+    InventoryUsage.aggregate([
+      { $match: filter },
+      {
+        $group: {
+          _id: "$inventoryItemId",
+          totalUsedCost: { $sum: "$costAtThatTime" }
+        }
+      }
+    ]),
+    InventoryTransfer.aggregate([
+      {
+        $match: {
+          organizationId: organizationObjectId,
+          destinationLocationId: new mongoose.Types.ObjectId(String(locationId))
+        }
+      },
+      { $unwind: "$receipts" },
+      { $unwind: "$receipts.items" },
+      {
+        $group: {
+          _id: "$receipts.items.inventoryItemId",
+          transferredInValue: {
+            $sum: {
+              $multiply: ["$receipts.items.quantity", "$receipts.items.unitCost"]
+            }
+          }
+        }
+      }
+    ])
+  ]);
+
+  const purchasesByItem = new Map(
+    purchases.map((purchase) => [String(purchase._id), purchase.totalPurchasedValue])
+  );
+  const usagesByItem = new Map(
+    usages.map((usage) => [String(usage._id), usage.totalUsedCost])
+  );
+  const transfersByItem = new Map(
+    transfers.map((transfer) => [String(transfer._id), transfer.transferredInValue])
+  );
+
+  const valuedItems = items.map((item) => {
+    const key = String(item._id);
+    const totalPurchasedValue = purchasesByItem.has(key)
+      ? purchasesByItem.get(key)
+      : transfersByItem.has(key)
+        ? 0
+        : item.totalQuantity * item.pricePerUnit;
+    const totalUsedCost = usagesByItem.get(key) || 0;
+    const remainingStockValue = item.availableQuantity * item.pricePerUnit;
+
+    return {
+      ...item,
+      isLowStock: item.availableQuantity <= item.totalQuantity * 0.2,
+      totalPurchasedValue,
+      transferredInValue: transfersByItem.get(key) || 0,
+      totalUsedCost,
+      remainingStockValue
+    };
+  });
+
+  const totalPurchasedValue =
+    [...purchasesByItem.values()].reduce((total, value) => total + value, 0) +
+    items.reduce((total, item) => {
+      const key = String(item._id);
+      return total + (purchasesByItem.has(key) || transfersByItem.has(key)
+        ? 0
+        : item.totalQuantity * item.pricePerUnit);
+    }, 0);
+
+  return {
+    items: valuedItems,
+    summary: {
+      totalPurchasedValue,
+      totalUsedCost: [...usagesByItem.values()].reduce((total, value) => total + value, 0),
+      remainingStockValue: valuedItems.reduce((total, item) => total + item.remainingStockValue, 0)
+    }
+  };
+};
 
 /* --------------------------------
    Add material to project
@@ -10,91 +120,147 @@ const { default: mongoose } = require("mongoose");
 exports.addInventoryItem = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const { name, unit, quantity, pricePerUnit, supplierName, companyName ,purchaseDate} = req.body;
+    const {
+      name,
+      unit,
+      quantity,
+      pricePerUnit,
+      supplierName,
+      companyName,
+      purchaseDate
+    } = req.body;
+    const qty = Number(quantity);
+    const price = Number(pricePerUnit);
 
-    if (!name || !unit || quantity == null || !purchaseDate) {
+    if (
+      typeof name !== "string" ||
+      !name.trim() ||
+      typeof unit !== "string" ||
+      !unit.trim() ||
+      typeof supplierName !== "string" ||
+      !supplierName.trim() ||
+      typeof companyName !== "string" ||
+      !companyName.trim() ||
+      !Number.isFinite(qty) ||
+      qty <= 0 ||
+      pricePerUnit === "" ||
+      pricePerUnit == null ||
+      !Number.isFinite(price) ||
+      price < 0 ||
+      !isValidDateOnly(purchaseDate)
+    ) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required"
+        message: "Enter a material, unit, supplier, company, positive quantity, valid price, and purchase date"
       });
     }
 
-    const project = await Project.findOne({ _id: projectId, organizationId: req.user.organizationId });
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
+    const access = await getAuthorizedProject(projectId, req.user);
+    if (access.error) {
+      return res.status(access.error.status).json({
+        success: false,
+        message: access.error.message
+      });
     }
+    const project = access.project;
 
-    //  Only contractor who owns project
-    // if (project.contractor.toString() !== req.user.User_id.toString()) {
-    //   return res.status(403).json({ message: "Not authorized" });
-    // }
-
-    // 🔒 Lock inventory if project completed
     if (project.status === "Completed") {
       return res.status(400).json({
+        success: false,
         message: "Inventory is locked for completed projects"
       });
     }
 
+    const location = await getProjectLocation(project);
     const normalizedName = name.trim().toLowerCase();
     const normalizedUnit = unit.trim().toLowerCase();
-    const qty = Number(quantity);
-    const price = Number(pricePerUnit);
-
-    // 🔍 Check if item already exists
+    const material = await InventoryMaterial.findOne({
+      organizationId: req.user.organizationId,
+      normalizedName,
+      normalizedUnit
+    });
     let item = await InventoryItem.findOne({
       projectId,
+      organizationId: req.user.organizationId,
       name: normalizedName,
       unit: normalizedUnit
     });
+    const previousItem = item && {
+      totalQuantity: item.totalQuantity,
+      availableQuantity: item.availableQuantity,
+      pricePerUnit: item.pricePerUnit,
+      supplierName: item.supplierName,
+      companyName: item.companyName,
+      locationId: item.locationId,
+      materialId: item.materialId
+    };
 
     if (item) {
-      // 🔁 RENEW EXISTING MATERIAL
+      const newAvailableQuantity = item.availableQuantity + qty;
+      item.pricePerUnit =
+        (item.availableQuantity * item.pricePerUnit + qty * price) / newAvailableQuantity;
       item.totalQuantity += qty;
-      item.availableQuantity += qty;
+      item.availableQuantity = newAvailableQuantity;
+      item.supplierName = supplierName.trim();
+      item.companyName = companyName.trim();
+      item.locationId = location._id;
+      if (material) item.materialId = material._id;
       await item.save();
     } else {
-      // ➕ CREATE NEW MATERIAL
       item = await InventoryItem.create({
         projectId,
+        locationId: location._id,
+        materialId: material?._id || null,
+        organizationId: req.user.organizationId,
         name: normalizedName,
-        supplierName,
-        companyName,
+        supplierName: supplierName.trim(),
+        companyName: companyName.trim(),
         unit: normalizedUnit,
         pricePerUnit: price,
         totalQuantity: qty,
         availableQuantity: qty,
-        createdBy: req.user.User_id,
-        organizationId: req.user.organizationId,
+        createdBy: req.user.User_id
       });
     }
 
-    // for refill or new item always create inventory purchase. 
-    await InventoryPurchase.create({
-      projectId,
-      organizationId: req.user.organizationId,
-      inventoryItemId: item._id,
-      purchaseDate,
-      quantity: qty,
-      pricePerUnit: price,
-      supplierName,
-      companyName,
-      createdBy: req.user.User_id
-    });
+    try {
+      await InventoryPurchase.create({
+        projectId,
+        locationId: location._id,
+        materialId: material?._id || null,
+        organizationId: req.user.organizationId,
+        inventoryItemId: item._id,
+        purchaseDate,
+        quantity: qty,
+        pricePerUnit: price,
+        supplierName: supplierName.trim(),
+        companyName: companyName.trim(),
+        createdBy: req.user.User_id
+      });
+    } catch (error) {
+      if (previousItem) {
+        await InventoryItem.updateOne({ _id: item._id }, { $set: previousItem });
+      } else {
+        await InventoryItem.deleteOne({ _id: item._id });
+      }
+      throw error;
+    }
 
-    // 🔔 Emit socket event (both add & renew)
+    const inventoryItem = {
+      ...item.toObject(),
+      isLowStock: item.availableQuantity <= item.totalQuantity * 0.2
+    };
     const io = req.app.get("io");
     if (io) {
       io.to(`project-${projectId}`).emit("inventory:item-added", {
-        item
+        item: inventoryItem
       });
     }
 
     return res.status(200).json({
       success: true,
-      item
+      item: inventoryItem
     });
-
   } catch (err) {
     console.error(err);
     return res.status(500).json({
@@ -110,32 +276,27 @@ exports.addInventoryItem = async (req, res) => {
 exports.getProjectInventory = async (req, res) => {
   try {
     const { projectId } = req.params;
+    const access = await getAuthorizedProject(projectId, req.user);
+    if (access.error) {
+      return res.status(access.error.status).json({
+        success: false,
+        message: access.error.message
+      });
+    }
 
-    const items = await InventoryItem.find({ projectId, organizationId: req.user.organizationId }).populate({
-      path: "projectId",
-      select: "title contractor",
-      populate: {
-        path: "contractor",
-        select: "name"
-      }
-    });
-
-    const itemsWithLowStock = items.map(item => {
-      const lowStockThreshold = item.totalQuantity * 0.2;
-      const isLowStock = item.availableQuantity <= lowStockThreshold;
-
-      return {
-        ...item._doc,
-        isLowStock
-      };
-    });
-
-    res.status(200).json({
+    const location = await getProjectLocation(access.project);
+    const inventory = await getInventorySnapshot(
+      projectId,
+      req.user.organizationId,
+      location._id
+    );
+    return res.status(200).json({
       success: true,
-      items: itemsWithLowStock
+      items: inventory.items
     });
   } catch (err) {
-    res.status(500).json({
+    console.error(err);
+    return res.status(500).json({
       success: false,
       message: err.message
     });
@@ -148,65 +309,82 @@ exports.getProjectInventory = async (req, res) => {
 exports.logInventoryUsage = async (req, res) => {
   try {
     const { projectId, inventoryItemId, usedQty, date } = req.body;
-    console.log(req.body);
-    console.log(projectId, inventoryItemId, usedQty, date);
-    if (!projectId || !inventoryItemId || !usedQty || !date) {
+    const quantity = Number(usedQty);
+    if (
+      !mongoose.isValidObjectId(projectId) ||
+      !mongoose.isValidObjectId(inventoryItemId) ||
+      !Number.isFinite(quantity) ||
+      quantity <= 0 ||
+      !isValidDateOnly(date)
+    ) {
       return res.status(400).json({
-        message: "All fields are required 4"
+        success: false,
+        message: "Enter a valid project, material, positive quantity, and usage date"
       });
     }
 
-    const project = await Project.findOne({ _id: projectId, organizationId: req.user.organizationId });
-    if (!project) {
-      return res.status(404).json({ message: "Project not found" });
+    const access = await getAuthorizedProject(projectId, req.user);
+    if (access.error) {
+      return res.status(access.error.status).json({
+        success: false,
+        message: access.error.message
+      });
     }
+    const project = access.project;
 
-    // 🔐 lock if completed
     if (project.status === "Completed") {
       return res.status(400).json({
+        success: false,
         message: "Inventory is locked for completed projects"
       });
     }
 
-    const item = await InventoryItem.findOne({
-      _id: inventoryItemId,
-      organizationId: req.user.organizationId
-    });
+    const item = await InventoryItem.findOneAndUpdate(
+      {
+        _id: inventoryItemId,
+        projectId: project._id,
+        organizationId: req.user.organizationId,
+        availableQuantity: { $gte: quantity }
+      },
+      { $inc: { availableQuantity: -quantity } },
+      { new: true, runValidators: true }
+    );
     if (!item) {
-      return res.status(404).json({ message: "Inventory item not found" });
-    }
-
-    // 🚫 prevent over-usage
-    if (usedQty > item.availableQuantity) {
-      return res.status(400).json({
-        message: "Used quantity exceeds available stock"
+      const existingItem = await InventoryItem.exists({
+        _id: inventoryItemId,
+        projectId: project._id,
+        organizationId: req.user.organizationId
+      });
+      return res.status(existingItem ? 400 : 404).json({
+        success: false,
+        message: existingItem
+          ? "Used quantity exceeds available stock"
+          : "Inventory item not found"
       });
     }
 
-    // 1️⃣ Save usage (audit-safe)
-    const usageCost = usedQty * item.pricePerUnit;
+    try {
+      await InventoryUsage.create({
+        projectId,
+        locationId: item.locationId,
+        materialId: item.materialId,
+        inventoryItemId,
+        organizationId: req.user.organizationId,
+        usedQty: quantity,
+        costAtThatTime: quantity * item.pricePerUnit,
+        usedBy: req.user.User_id,
+        date
+      });
+    } catch (error) {
+      await InventoryItem.updateOne(
+        { _id: item._id, projectId: project._id, organizationId: req.user.organizationId },
+        { $inc: { availableQuantity: quantity } }
+      );
+      throw error;
+    }
 
-    await InventoryUsage.create({
-      projectId,
-      inventoryItemId,
-      organizationId: req.user.organizationId,
-      usedQty,
-      costAtThatTime: usageCost,
-      usedBy: req.user.User_id,
-      date
-    });
-
-    // 2️⃣ Deduct stock
-    item.availableQuantity -= usedQty;
-    await item.save();
-
-    const lowStockThreshold = item.totalQuantity * 0.2;
-    const isLowStock = item.availableQuantity <= lowStockThreshold;
-
-    // emit socket io to client
+    const isLowStock = item.availableQuantity <= item.totalQuantity * 0.2;
     const io = req.app.get("io");
-
-    // 🔴 REAL-TIME UPDATE
     if (io) {
       io.to(`project-${projectId}`).emit("inventory:updated", {
         inventoryItemId,
@@ -216,14 +394,14 @@ exports.logInventoryUsage = async (req, res) => {
       });
     }
 
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Inventory usage recorded"
     });
-
   } catch (err) {
-    res.status(500).json({
+    console.error(err);
+    return res.status(500).json({
+      success: false,
       message: err.message
     });
   }
@@ -235,18 +413,26 @@ exports.logInventoryUsage = async (req, res) => {
 exports.getInventoryUsageHistory = async (req, res) => {
   try {
     const { projectId } = req.params;
+    const access = await getAuthorizedProject(projectId, req.user);
+    if (access.error) {
+      return res.status(access.error.status).json({
+        success: false,
+        message: access.error.message
+      });
+    }
 
     const history = await InventoryUsage.find({ projectId, organizationId: req.user.organizationId })
       .populate("inventoryItemId", "name unit")
       .populate("usedBy", "name")
       .sort({ date: -1 });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       history
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error(err);
+    return res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -257,90 +443,20 @@ exports.getInventoryUsageHistory = async (req, res) => {
 exports.getInventorySummary = async (req, res) => {
   try {
     const { projectId } = req.params;
-
-    const organizationId = req.user.organizationId;
-
-    // inventory aggregation
-    const inventoryAgg = await InventoryItem.aggregate([
-      {
-        $match: {
-          projectId: new mongoose.Types.ObjectId(projectId),
-          organizationId: new mongoose.Types.ObjectId(organizationId)
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalPurchasedValue: {
-            $sum: { $multiply: ["$totalQuantity", "$pricePerUnit"] }
-          },
-          remainingStockValue: {
-            $sum: { $multiply: ["$availableQuantity", "$pricePerUnit"] }
-          }
-        }
-      }
-    ]);
-
-    // usage Aggregation
-    const usageAgg = await InventoryUsage.aggregate([
-      {
-        $match: {
-          projectId: new mongoose.Types.ObjectId(projectId),
-          organizationId: new mongoose.Types.ObjectId(organizationId)
-        }
-      },
-      {
-        $group: {
-          _id: null,
-          totalUsedCost: { $sum: "$costAtThatTime" }
-        }
-      }
-    ]);
-
-    console.log("inventoryAgg = ", inventoryAgg, " usageAgg =", usageAgg);
-
-    // 🔹 3️⃣ Safe fallback (if no data)
-    const totalPurchasedValue = inventoryAgg[0]?.totalPurchasedValue || 0;
-    const remainingStockValue = inventoryAgg[0]?.remainingStockValue || 0;
-    const totalUsedCost = usageAgg[0]?.totalUsedCost || 0;
-
-    return res.status(200).json({
-      success: true,
-      totalPurchasedValue,
-      totalUsedCost,
-      remainingStockValue
-    });
-
-    // // 1️⃣ Get all inventory items
-    // const items = await InventoryItem.find({ projectId ,organizationId: req.user.organizationId});
-
-    // // 2️⃣ Get all usage records
-    // const usageRecords = await InventoryUsage.find({ projectId,organizationId: req.user.organizationId });
-
-    // // 3️⃣ Calculate totals
-
-    // // Total purchased value
-    // const totalPurchasedValue = items.reduce((sum, item) => {
-    //   return sum + (item.totalQuantity * item.pricePerUnit);
-    // }, 0);
-
-    // // Total used cost (already stored snapshot-safe)
-    // const totalUsedCost = usageRecords.reduce((sum, record) => {
-    //   return sum + record.costAtThatTime;
-    // }, 0);
-
-    // // Remaining stock value
-    // const remainingStockValue = items.reduce((sum, item) => {
-    //   return sum + (item.availableQuantity * item.pricePerUnit);
-    // }, 0);
-
-    // return res.status(200).json({
-    //   success: true,
-    //   totalPurchasedValue,
-    //   totalUsedCost,
-    //   remainingStockValue
-    // });
-
+    const access = await getAuthorizedProject(projectId, req.user);
+    if (access.error) {
+      return res.status(access.error.status).json({
+        success: false,
+        message: access.error.message
+      });
+    }
+    const location = await getProjectLocation(access.project);
+    const inventory = await getInventorySnapshot(
+      projectId,
+      req.user.organizationId,
+      location._id
+    );
+    return res.status(200).json({ success: true, ...inventory.summary });
   } catch (err) {
     console.error(err);
     return res.status(500).json({
@@ -354,11 +470,15 @@ exports.getInventorySummary = async (req, res) => {
    Get inventory purchase history
 --------------------------------- */
 exports.getInventoryPurchaseHistory = async (req, res) => {
-
   try {
-
     const { projectId } = req.params;
-
+    const access = await getAuthorizedProject(projectId, req.user);
+    if (access.error) {
+      return res.status(access.error.status).json({
+        success: false,
+        message: access.error.message
+      });
+    }
     const history = await InventoryPurchase.find({
       projectId,
       organizationId: req.user.organizationId
@@ -373,14 +493,10 @@ exports.getInventoryPurchaseHistory = async (req, res) => {
     });
 
   } catch (err) {
-
     console.error(err);
-
     return res.status(500).json({
       success: false,
       message: err.message
     });
-
   }
-
 };

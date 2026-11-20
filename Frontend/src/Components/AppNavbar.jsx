@@ -154,7 +154,6 @@ export default function AppNavbar({
               Dashboard
             </Typography>
           )}
-
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
 
 

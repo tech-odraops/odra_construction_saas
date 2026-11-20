@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import { clearSiteEngineerProfileCache } from "./siteEngineerProfileCache";
+import { clearLastVisitedProjectTabs } from "./projectDetailsTabStorage";
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -24,6 +25,7 @@ axiosInstance.interceptors.response.use(
         if (error?.response?.status === 401) {
             console.log("Got an hit",error)
             clearSiteEngineerProfileCache();
+            clearLastVisitedProjectTabs();
             localStorage.removeItem("token");
             localStorage.removeItem("User_id");
             localStorage.removeItem("IsLogin");
