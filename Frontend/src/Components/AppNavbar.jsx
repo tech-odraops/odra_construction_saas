@@ -26,6 +26,7 @@ import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import axiosInstance from "../utils/axiosInstance";
+import { getCachedOrFetchSiteEngineerProfile } from "../utils/siteEngineerProfileApi";
 
 function getOwnerInitials() {
   const ownerName = (localStorage.getItem("organizationName") || localStorage.getItem("name"))?.trim();
@@ -36,6 +37,28 @@ function getOwnerInitials() {
     .map((part) => part.charAt(0))
     .join("")
     .toUpperCase();
+}
+
+function NavbarAvatar({ avatarUrl, initials, isProfileLoading, ...props }) {
+  const [loadedUrl, setLoadedUrl] = React.useState(null);
+  const isLoading = isProfileLoading || (Boolean(avatarUrl) && loadedUrl !== avatarUrl);
+
+  return (
+    <Avatar
+      {...props}
+      className={`contractor-profile-avatar${isLoading ? " contractor-profile-avatar--loading" : ""}`}
+      src={avatarUrl || undefined}
+      alt=""
+      slotProps={{
+        img: {
+          onLoad: () => setLoadedUrl(avatarUrl),
+          onError: () => setLoadedUrl(avatarUrl),
+        },
+      }}
+    >
+      {initials}
+    </Avatar>
+  );
 }
 
 export default function AppNavbar({
@@ -50,6 +73,7 @@ export default function AppNavbar({
   const navigate = useNavigate();
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [avatarUrl, setAvatarUrl] = React.useState(null);
+  const [avatarRequestLoading, setAvatarRequestLoading] = React.useState(true);
   const [avatarName, setAvatarName] = React.useState(() => localStorage.getItem("name") || "");
 
   React.useEffect(() => {
@@ -63,15 +87,23 @@ export default function AppNavbar({
 
   React.useEffect(() => {
     let active = true;
+    setAvatarRequestLoading(true);
+    setAvatarUrl(null);
     if (!siteEngineer) localStorage.removeItem("organizationLogo");
-    const endpoint = siteEngineer ? "/profile/me" : "/profile/organization";
-    axiosInstance.get(endpoint).then(({ data }) => {
+    const profileRequest = siteEngineer
+      ? getCachedOrFetchSiteEngineerProfile().then((profile) => ({ data: { profile } }))
+      : axiosInstance.get("/profile/organization");
+    profileRequest.then(({ data }) => {
       if (!active) return;
       const person = siteEngineer ? data.profile : data.organization;
-      const url = siteEngineer ? person?.profilePictureUrl : person?.logoUrl;
+      const url = siteEngineer
+        ? person?.profilePictureThumbnailUrl
+        : person?.logoThumbnailUrl;
       setAvatarUrl(url || null);
       if (person?.name) setAvatarName(person.name);
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => {
+      if (active) setAvatarRequestLoading(false);
+    });
     return () => { active = false; };
   }, [siteEngineer]);
 
@@ -148,10 +180,12 @@ export default function AppNavbar({
             </Box>
 
             {/* Avatar */}
-            <Avatar
-              className="contractor-profile-avatar"
+            <NavbarAvatar
               component={Link}
               to={siteEngineer ? "/site-engineer/profile" : "/founder/organization-profile"}
+              avatarUrl={avatarUrl}
+              initials={avatarInitials}
+              isProfileLoading={avatarRequestLoading}
               aria-label={siteEngineer ? "Edit user profile" : "Edit organization profile"}
               sx={{
                 bgcolor: "var(--color-organization-profile-avatar-surface)",
@@ -167,9 +201,7 @@ export default function AppNavbar({
                 "&:hover": { bgcolor: "var(--color-organization-profile-nav-avatar-hover)" },
                 "&:focus-visible": { outline: "var(--control-focus-outline-width) solid var(--palette-primary-main)", outlineOffset: "var(--control-focus-outline-offset)" },
               }}
-            >
-              {avatarUrl ? <img src={avatarUrl} alt="" /> : avatarInitials}
-            </Avatar>
+            />
 
             <Select
               size="small"
@@ -274,18 +306,18 @@ export default function AppNavbar({
                 mb: 2,
               }}
             >
-              <Avatar
-                className="contractor-profile-avatar"
+              <NavbarAvatar
                 component={Link}
                 to={siteEngineer ? "/site-engineer/profile" : "/founder/organization-profile"}
+                avatarUrl={avatarUrl}
+                initials={avatarInitials}
+                isProfileLoading={avatarRequestLoading}
                 onClick={() => {
                   setOpenDrawer(false);
                 }}
                 aria-label={siteEngineer ? "Edit user profile" : "Edit organization profile"}
                 sx={{ bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)", border: 0, cursor: "pointer" }}
-              >
-                {avatarUrl ? <img src={avatarUrl} alt="" /> : avatarInitials}
-              </Avatar>
+              />
 
             </Box>
 

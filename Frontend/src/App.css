@@ -577,6 +577,38 @@ main,
   font-weight: 700;
 }
 
+.contractor-profile-avatar--loading.MuiAvatar-root {
+  position: relative;
+  background-color: #e8ebee;
+  color: transparent;
+}
+
+.contractor-profile-avatar--loading .MuiAvatar-img {
+  opacity: 0;
+}
+
+.contractor-profile-avatar--loading::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, .75) 50%, transparent 75%);
+  content: "";
+  transform: translateX(-100%);
+  animation: contractor-avatar-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes contractor-avatar-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contractor-profile-avatar--loading::after {
+    animation: none;
+    transform: none;
+  }
+}
+
 .contractor-appbar .MuiButton-contained {
   min-height: 28px;
   padding: 4px 12px;

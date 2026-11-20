@@ -4,10 +4,38 @@ const Organization = require("../models/Organization");
 
 const {
     getImageUrl,
-    uploadImage,
+    uploadImageWithThumbnail,
+    ensureImageThumbnail,
     deleteImage
 } = require("../services/s3Service");
 
+const getImageVariants = async (key, thumbnailKey) => {
+    if (!key) {
+        return { originalUrl: null, thumbnailUrl: null, thumbnailKey: null };
+    }
+
+    const resolvedThumbnailKey = thumbnailKey || await ensureImageThumbnail(key);
+    const [originalUrl, thumbnailUrl] = await Promise.all([
+        getImageUrl(key),
+        getImageUrl(resolvedThumbnailKey)
+    ]);
+
+    return {
+        originalUrl,
+        thumbnailUrl,
+        thumbnailKey: resolvedThumbnailKey
+    };
+};
+
+const deleteImagesSafely = async (keys, errorMessage) => {
+    for (const key of keys.filter(Boolean)) {
+        try {
+            await deleteImage(key);
+        } catch (error) {
+            console.error(errorMessage, error);
+        }
+    }
+};
 
 // Validate actual image file signature
 const validateImageContent = (file) => {
@@ -54,7 +82,7 @@ exports.getMyProfile = async (req, res) => {
             role: "Site Engineer",
             status: "active"
         }).select(
-            "name email role phoneNumber profilePictureKey organizationId"
+            "name email role phoneNumber profilePictureKey profilePictureThumbnailKey organizationId"
         );
 
         if (!user) {
@@ -64,12 +92,13 @@ exports.getMyProfile = async (req, res) => {
             });
         }
 
-        let profilePictureUrl = null;
-
-        if (user.profilePictureKey) {
-            profilePictureUrl = await getImageUrl(
-                user.profilePictureKey
-            );
+        const image = await getImageVariants(
+            user.profilePictureKey,
+            user.profilePictureThumbnailKey
+        );
+        if (image.thumbnailKey && !user.profilePictureThumbnailKey) {
+            user.profilePictureThumbnailKey = image.thumbnailKey;
+            await user.save();
         }
 
         return res.status(200).json({
@@ -81,7 +110,8 @@ exports.getMyProfile = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 phoneNumber: user.phoneNumber,
-                profilePictureUrl
+                profilePictureUrl: image.originalUrl,
+                profilePictureThumbnailUrl: image.thumbnailUrl
             }
         });
 
@@ -98,6 +128,7 @@ exports.getMyProfile = async (req, res) => {
 // PATCH: Update logged-in Site Engineer's profile
 exports.updateMyProfile = async (req, res) => {
     let newImageKey = null;
+    let newImageThumbnailKey = null;
     let databaseUpdated = false;
 
     try {
@@ -160,6 +191,7 @@ exports.updateMyProfile = async (req, res) => {
         }
 
         const oldImageKey = user.profilePictureKey;
+        const oldImageThumbnailKey = user.profilePictureThumbnailKey;
 
         // Upload new profile picture
         if (req.file) {
@@ -170,13 +202,15 @@ exports.updateMyProfile = async (req, res) => {
                 });
             }
 
-            const uploadResult = await uploadImage({
+            const uploadResult = await uploadImageWithThumbnail({
                 file: req.file,
                 folder: `organizations/${req.user.organizationId}/users/${user._id}/profile`
             });
 
             newImageKey = uploadResult.key;
+            newImageThumbnailKey = uploadResult.thumbnailKey;
             updates.profilePictureKey = newImageKey;
+            updates.profilePictureThumbnailKey = newImageThumbnailKey;
         }
 
         // Save updated user profile
@@ -186,24 +220,20 @@ exports.updateMyProfile = async (req, res) => {
         databaseUpdated = true;
 
         // Delete previous image after successful database update
-        if (newImageKey && oldImageKey) {
-            try {
-                await deleteImage(oldImageKey);
-            } catch (deleteError) {
-                console.error(
-                    "Old profile image cleanup failed:",
-                    deleteError
-                );
-            }
+        if (newImageKey) {
+            await deleteImagesSafely(
+                [oldImageKey, oldImageThumbnailKey],
+                "Old profile image cleanup failed:"
+            );
         }
 
-        // Generate fresh signed URL
-        let profilePictureUrl = null;
-
-        if (user.profilePictureKey) {
-            profilePictureUrl = await getImageUrl(
-                user.profilePictureKey
-            );
+        const image = await getImageVariants(
+            user.profilePictureKey,
+            user.profilePictureThumbnailKey
+        );
+        if (image.thumbnailKey && !user.profilePictureThumbnailKey) {
+            user.profilePictureThumbnailKey = image.thumbnailKey;
+            await user.save();
         }
 
         return res.status(200).json({
@@ -215,7 +245,8 @@ exports.updateMyProfile = async (req, res) => {
                 email: user.email,
                 role: user.role,
                 phoneNumber: user.phoneNumber,
-                profilePictureUrl
+                profilePictureUrl: image.originalUrl,
+                profilePictureThumbnailUrl: image.thumbnailUrl
             }
         });
 
@@ -224,14 +255,10 @@ exports.updateMyProfile = async (req, res) => {
 
         // Clean up new image only if database update failed
         if (newImageKey && !databaseUpdated) {
-            try {
-                await deleteImage(newImageKey);
-            } catch (cleanupError) {
-                console.error(
-                    "New profile image cleanup failed:",
-                    cleanupError
-                );
-            }
+            await deleteImagesSafely(
+                [newImageKey, newImageThumbnailKey],
+                "New profile image cleanup failed:"
+            );
         }
 
         if (error.code === 11000) {
@@ -255,7 +282,7 @@ exports.getOrganizationProfile = async (req, res) => {
             _id: req.user.organizationId,
             ownerId: req.user.User_id,
             status: "active"
-        }).select("name logoKey ownerId");
+        }).select("name logoKey logoThumbnailKey ownerId");
 
         if (!organization) {
             return res.status(404).json({
@@ -264,10 +291,13 @@ exports.getOrganizationProfile = async (req, res) => {
             });
         }
 
-        let logoUrl = null;
-
-        if (organization.logoKey) {
-            logoUrl = await getImageUrl(organization.logoKey);
+        const image = await getImageVariants(
+            organization.logoKey,
+            organization.logoThumbnailKey
+        );
+        if (image.thumbnailKey && !organization.logoThumbnailKey) {
+            organization.logoThumbnailKey = image.thumbnailKey;
+            await organization.save();
         }
 
         return res.status(200).json({
@@ -276,7 +306,8 @@ exports.getOrganizationProfile = async (req, res) => {
             organization: {
                 organizationId: organization._id,
                 name: organization.name,
-                logoUrl
+                logoUrl: image.originalUrl,
+                logoThumbnailUrl: image.thumbnailUrl
             }
         });
 
@@ -293,6 +324,7 @@ exports.getOrganizationProfile = async (req, res) => {
 // PATCH: Update Founder organization profile
 exports.updateOrganizationProfile = async (req, res) => {
     let newLogoKey = null;
+    let newLogoThumbnailKey = null;
     let databaseUpdated = false;
 
     try {
@@ -330,6 +362,7 @@ exports.updateOrganizationProfile = async (req, res) => {
         }
 
         const oldLogoKey = organization.logoKey;
+        const oldLogoThumbnailKey = organization.logoThumbnailKey;
 
         // Upload new organization logo
         if (req.file) {
@@ -340,13 +373,15 @@ exports.updateOrganizationProfile = async (req, res) => {
                 });
             }
 
-            const uploadResult = await uploadImage({
+            const uploadResult = await uploadImageWithThumbnail({
                 file: req.file,
                 folder: `organizations/${organization._id}/logo`
             });
 
             newLogoKey = uploadResult.key;
+            newLogoThumbnailKey = uploadResult.thumbnailKey;
             updates.logoKey = newLogoKey;
+            updates.logoThumbnailKey = newLogoThumbnailKey;
         }
 
         // Save organization changes
@@ -356,22 +391,20 @@ exports.updateOrganizationProfile = async (req, res) => {
         databaseUpdated = true;
 
         // Delete previous logo after successful database update
-        if (newLogoKey && oldLogoKey) {
-            try {
-                await deleteImage(oldLogoKey);
-            } catch (deleteError) {
-                console.error(
-                    "Old organization logo cleanup failed:",
-                    deleteError
-                );
-            }
+        if (newLogoKey) {
+            await deleteImagesSafely(
+                [oldLogoKey, oldLogoThumbnailKey],
+                "Old organization logo cleanup failed:"
+            );
         }
 
-        // Generate fresh signed URL
-        let logoUrl = null;
-
-        if (organization.logoKey) {
-            logoUrl = await getImageUrl(organization.logoKey);
+        const image = await getImageVariants(
+            organization.logoKey,
+            organization.logoThumbnailKey
+        );
+        if (image.thumbnailKey && !organization.logoThumbnailKey) {
+            organization.logoThumbnailKey = image.thumbnailKey;
+            await organization.save();
         }
 
         return res.status(200).json({
@@ -380,7 +413,8 @@ exports.updateOrganizationProfile = async (req, res) => {
             organization: {
                 organizationId: organization._id,
                 name: organization.name,
-                logoUrl
+                logoUrl: image.originalUrl,
+                logoThumbnailUrl: image.thumbnailUrl
             }
         });
 
@@ -389,14 +423,10 @@ exports.updateOrganizationProfile = async (req, res) => {
 
         // Clean up new logo only if database update failed
         if (newLogoKey && !databaseUpdated) {
-            try {
-                await deleteImage(newLogoKey);
-            } catch (cleanupError) {
-                console.error(
-                    "New organization logo cleanup failed:",
-                    cleanupError
-                );
-            }
+            await deleteImagesSafely(
+                [newLogoKey, newLogoThumbnailKey],
+                "New organization logo cleanup failed:"
+            );
         }
 
         return res.status(500).json({

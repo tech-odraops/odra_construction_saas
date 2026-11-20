@@ -7,6 +7,7 @@ import axiosInstance from "../utils/axiosInstance";
 import ProjectChat from './ProjectChat';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import Button from './atoms/Button/Button';
+import { io } from 'socket.io-client';
 
 const style = {
   position: 'absolute',
@@ -23,6 +24,7 @@ const style = {
 
 export default function ChatModal({
   projectId,
+  participants = [],
   showIcon = false,
   socket,
   buttonLabel = "Chat",
@@ -72,11 +74,18 @@ export default function ChatModal({
   React.useEffect(() => {
     if (!projectId) return;
 
+    setUnreadCount(0);
     fetchUnreadCount();
 
+    // Set up socket to listen for new messages
+    const socket = io(import.meta.env.VITE_API_URL, {
+      transports: ["websocket"],
+      auth: { token: localStorage.getItem("token") }
+    });
     if (!socket) return;
 
-    const handleNewMessage = async () => {
+    const handleNewMessage = async (data) => {
+      if (String(data?.projectId) !== String(projectId)) return;
 
       // Modal is open: mark messages as read
       if (open) {
@@ -149,6 +158,7 @@ export default function ChatModal({
         <Box sx={style}>
           <ProjectChat
             projectId={projectId}
+            participants={participants}
             onMessageSent={markAsRead}
             socket={socket}
           />
