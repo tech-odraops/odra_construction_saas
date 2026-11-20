@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Paper,
-  CircularProgress,
   TextField,
   InputAdornment
 } from "@mui/material";
@@ -17,7 +16,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import FullScreenLoader from "../../Components/FullScreenLoader";
+import PageLoader from "../../Components/PageLoader";
 import pageBackground from "../../assets/background image.png";
 import ToggleSwitch from "../../Components/atoms/ToggleSwitch/ToggleSwitch";
 import { createAuthenticatedSocket } from "../../utils/socket";
@@ -135,7 +134,7 @@ export default function Attendance() {
     }
   };
 
-  if (loading) return <FullScreenLoader />;
+  if (loading) return <PageLoader />;
 
   return (
     <>

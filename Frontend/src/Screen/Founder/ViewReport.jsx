@@ -2,14 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import Footer from "../../Components/Footer";
-import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { toast } from "react-toastify";
 import TextField from "@mui/material/TextField";
 import Button from "../../Components/atoms/Button/Button";
 import Box from "@mui/material/Box";
 import { useTranslation } from "react-i18next";
-import FullScreenLoader from "../../Components/FullScreenLoader";
+import PageLoader from "../../Components/PageLoader";
 
 export default function ViewReport() {
   const { id } = useParams();
@@ -75,7 +74,7 @@ export default function ViewReport() {
     }
   };
 
-  if (loading) return <FullScreenLoader />;
+  if (loading) return <PageLoader />;
   return (
     <Box
       sx={{

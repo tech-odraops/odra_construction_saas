@@ -31,6 +31,11 @@ import Reports from "./Reports";
 import CreateTaskForm from "./CreateTaskForm";
 import TaskProgressDetails from "./TaskProgressDetails";
 import MaterialPage from "./Material";
+import PageLoader from "../../Components/PageLoader";
+import {
+  getLastVisitedProjectTab,
+  saveLastVisitedProjectTab
+} from "../../utils/projectDetailsTabStorage";
 import TaskCategoriesManager from "./TaskCategoriesManager";
 import {
   createTask,
@@ -96,9 +101,10 @@ import {
   MenuItem,
   Popover,
 } from "@mui/material";
-import FullScreenLoader from "../../Components/FullScreenLoader"
 
 export default function ProjectDetails({ isSiteEngineer = false }) {
+  const { id } = useParams();
+  const tabRole = isSiteEngineer ? "site-engineer" : "founder";
   const [openMiscModal, setOpenMiscModal] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [tasks, setTasks] = useState([]);
@@ -122,7 +128,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   });
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("Overview");
+  const [activeTab, setActiveTab] = useState(() => getLastVisitedProjectTab(id, tabRole));
   const [openWageModal, setOpenWageModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -144,7 +150,6 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
   const [categoryAnchor, setCategoryAnchor] = useState(null);
   const [categoryDraft, setCategoryDraft] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState([]);
-  const { id } = useParams();
   const socketRef = useRef(null);
   const [socket, setSocket] = useState(null);
   const navigate = useNavigate();
@@ -162,6 +167,15 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
     { label: "Attendance", icon: CalendarMonthOutlinedIcon },
     { label: "Misc Expenses", icon: MonetizationOnOutlinedIcon },
   ];
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    saveLastVisitedProjectTab(id, tabRole, tab);
+  };
+
+  useEffect(() => {
+    setActiveTab(getLastVisitedProjectTab(id, tabRole));
+  }, [id, tabRole]);
 
   const allTasks = tasks.map((task) => ({
     ...task,
@@ -1040,7 +1054,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
 
   console.log(project)
 
-  if (loading) return <FullScreenLoader />;
+  if (loading) return <PageLoader />;
 
   // Safe checks for when project is not loaded due to error
   if (!project) {
@@ -1076,7 +1090,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
                 component="button"
                 type="button"
                 className={`project-overview-rail-item${activeTab === label ? " active" : ""}`}
-                onClick={() => setActiveTab(label)}
+                onClick={() => handleTabChange(label)}
               >
                 {Icon && <Icon className="project-overview-rail-icon" />}
                 <span>{label}</span>
@@ -1545,7 +1559,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
             <Reports
               projectId={id}
               projectTitle={project.title}
-              onClose={() => setActiveTab("Overview")}
+              onClose={() => handleTabChange("Overview")}
             />
           </Box>
         ) : activeTab === "Material" ? (

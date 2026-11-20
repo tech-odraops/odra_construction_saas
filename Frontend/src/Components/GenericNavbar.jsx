@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
 import axiosInstance from "../utils/axiosInstance";
 import { clearSiteEngineerProfileCache } from "../utils/siteEngineerProfileCache";
+import { clearLastVisitedProjectTabs } from "../utils/projectDetailsTabStorage";
 import { Divider } from "@mui/material"
 import SocialBar from "./SocialBar"
 
@@ -54,6 +55,7 @@ export default function Navbar() {
       } catch (err) {
         console.log(err);
         clearSiteEngineerProfileCache();
+        clearLastVisitedProjectTabs();
         localStorage.removeItem("token");
         localStorage.removeItem("IsLogin");
         localStorage.removeItem("User_id");

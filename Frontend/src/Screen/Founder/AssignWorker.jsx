@@ -11,7 +11,7 @@ import {
 import Button from "../../Components/atoms/Button/Button";
 import { toast } from "react-toastify";
 import { useTranslation } from "react-i18next";
-import FullScreenLoader from "../../Components/FullScreenLoader";
+import PageLoader from "../../Components/PageLoader";
 
 export default function AssignWorkers() {
   const { t } = useTranslation();
@@ -74,7 +74,7 @@ export default function AssignWorkers() {
     }
   };
 
-  if (loading) return <FullScreenLoader />;
+  if (loading) return <PageLoader />;
 
   return (
     <>
