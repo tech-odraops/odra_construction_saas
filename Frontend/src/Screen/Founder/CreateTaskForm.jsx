@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Box, Dialog, IconButton, InputAdornment, MenuItem, Slider, TextField, Typography } from "@mui/material";
+import { Box, Dialog, IconButton, InputAdornment, MenuItem, TextField, Typography } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import AddRoundedIcon from "@mui/icons-material/AddRounded";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
@@ -239,10 +239,6 @@ export default function CreateTaskForm({ siteEngineers = [], categories = [], un
             ),
           }}
         />
-
-        <Box className="create-task-form__progress">
-          <Slider value={0} disabled aria-label="Task progress starts at 0 percent" min={0} max={100} />
-        </Box>
 
         <Box className="create-task-form__quantity-area">
           <button

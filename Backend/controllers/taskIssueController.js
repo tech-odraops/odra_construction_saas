@@ -223,7 +223,7 @@ exports.createTaskIssue = async (req, res) => {
                         }
                     }
                 ],
-                { session }
+                { session, ordered: true }
             );
         });
 
