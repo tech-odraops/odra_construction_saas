@@ -168,7 +168,7 @@ io.on('connection', (socket) => {
     // Join an authorized task room
     socket.on("task:join", async ({ taskId } = {}) => {
         try {
-            const { userId, organizationId } = socket.data.user;
+            const { userId, organizationId, role } = socket.data.user;
 
             if (!mongoose.isValidObjectId(taskId)) {
                 socket.emit("room:error", {

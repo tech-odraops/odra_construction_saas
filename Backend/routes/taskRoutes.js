@@ -5,6 +5,7 @@ const router = express.Router();
 const { authen } = require("../middleware/tokenValidatorsMiddleware");
 const { validateRoles } = require("../middleware/roles");
 const upload = require("../middleware/uploadMiddleware");
+const ensureTaskEditable = require("../middleware/ensureTaskEditable");
 
 const {
     validateCreateTask,
@@ -266,6 +267,7 @@ router.patch(
     "/:id",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateUpdateTask,
     handleTaskValidationErrors,
     updateTask
@@ -359,6 +361,7 @@ router.post(
     "/:id/assignees",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateAddTaskAssignees,
     handleTaskValidationErrors,
     addTaskAssignees
@@ -406,6 +409,7 @@ router.delete(
     "/:id/assignees",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateRemoveTaskAssignee,
     handleTaskValidationErrors,
     removeTaskAssignee
@@ -460,6 +464,7 @@ router.post(
     "/:id/progress",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateCreateTaskProgress,
     handleTaskProgressValidationErrors,
     createTaskProgress
@@ -567,6 +572,7 @@ router.post(
     "/:id/progress/:progressId/attachments",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     upload.array("images", 10),
     uploadTaskProgressAttachments
 );
@@ -613,6 +619,7 @@ router.post(
     "/:id/attachments",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     upload.array("images", 10),
     uploadTaskAttachments
 );
@@ -650,6 +657,7 @@ router.delete(
     "/:id/attachments/:attachmentId",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     removeTaskAttachment
 );
 
@@ -705,6 +713,7 @@ router.post(
     "/:id/issues",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateCreateTaskIssue,
     handleTaskIssueValidationErrors,
     createTaskIssue
@@ -856,6 +865,7 @@ router.patch(
     "/:id/issues/:issueId",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateUpdateTaskIssue,
     handleTaskIssueValidationErrors,
     updateTaskIssue
@@ -908,6 +918,7 @@ router.patch(
     "/:id/issues/:issueId/assign",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateReassignTaskIssue,
     handleTaskIssueValidationErrors,
     reassignTaskIssue
@@ -964,6 +975,7 @@ router.patch(
     "/:id/issues/:issueId/status",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateUpdateTaskIssueStatus,
     handleTaskIssueValidationErrors,
     updateTaskIssueStatus
@@ -1022,6 +1034,7 @@ router.post(
     "/:id/issues/:issueId/attachments",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateTaskIssueParams,
     handleTaskIssueValidationErrors,
     upload.array("images", 10),
@@ -1072,6 +1085,7 @@ router.delete(
     "/:id/issues/:issueId/attachments/:attachmentId",
     authen,
     validateRoles(["Founder", "Site Engineer"]),
+    ensureTaskEditable,
     validateRemoveTaskIssueAttachment,
     handleTaskIssueValidationErrors,
     removeTaskIssueAttachment

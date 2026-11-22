@@ -187,6 +187,12 @@ export default function TaskProgressDetails({
   const totalQuantity = Number(task?.totalQuantity) || 0;
   const currentQuantity = Number(task?.progressQuantity) || 0;
   const progressPercent = totalQuantity > 0 ? Math.min(100, Math.round((currentQuantity / totalQuantity) * 100)) : 0;
+  const taskIsComplete = task?.status === "Completed" || (totalQuantity > 0 && currentQuantity >= totalQuantity);
+  const taskCanEdit = canEdit && !taskIsComplete;
+  const taskCanRemoveAssignees = canRemoveAssignees && !taskIsComplete;
+  useEffect(() => {
+    if (taskIsComplete) setEditNameOpen(false);
+  }, [taskIsComplete]);
   const assignedIds = new Set((task?.assignees || []).map((person) => String(person?._id || person)));
   const availableAssignees = assignees.filter((person) => !assignedIds.has(String(person?._id || person)));
   const assignedProfiles = (task?.assignees || []).map((assignment) => {
@@ -201,6 +207,7 @@ export default function TaskProgressDetails({
 
   async function handleRecordProgress(event) {
     event.preventDefault();
+    if (!taskCanEdit) return;
     const quantity = Number(completedQuantity);
     if (!Number.isFinite(quantity) || quantity <= 0) {
       toast.error("Enter a completed quantity greater than zero.");
@@ -244,7 +251,7 @@ export default function TaskProgressDetails({
   }
 
   async function handleUploadTaskPhotos() {
-    if (!taskPhotos.length) return;
+    if (!taskCanEdit || !taskPhotos.length) return;
     setUploadingTaskPhotos(true);
     try {
       await uploadTaskAttachments(taskId, taskPhotos);
@@ -261,7 +268,7 @@ export default function TaskProgressDetails({
   }
 
   async function handleRemoveTaskPhoto(photo) {
-    if (!canEdit || !photo?._id) return;
+    if (!taskCanEdit || !photo?._id) return;
     const confirmed = window.confirm(`Remove ${photo.originalName || "this photo"} from the task?`);
     if (!confirmed) return;
     setRemovingPhotoId(photo._id);
@@ -278,7 +285,7 @@ export default function TaskProgressDetails({
   }
 
   async function handleAddAssignee() {
-    if (!selectedAssignee) return;
+    if (!taskCanEdit || !selectedAssignee) return;
     setSavingAssignees(true);
     try {
       const updatedTask = await addTaskAssignees(taskId, [selectedAssignee]);
@@ -294,6 +301,7 @@ export default function TaskProgressDetails({
   }
 
   async function handleRemoveAssignee(userId) {
+    if (!taskCanRemoveAssignees) return;
     setSavingAssignees(true);
     try {
       const updatedTask = await removeTaskAssignee(taskId, userId);
@@ -309,6 +317,7 @@ export default function TaskProgressDetails({
 
   async function handleSaveTaskName(event) {
     event.preventDefault();
+    if (!taskCanEdit) return;
     const title = taskForm.title.trim();
     if (!title) return;
     setSavingName(true);
@@ -357,7 +366,7 @@ export default function TaskProgressDetails({
             <button type="button" className="task-progress-back" onClick={onBack} aria-label="Back to tasks"><ArrowBackRoundedIcon /></button>
             <Typography component="h1">Task Progress</Typography>
             <Box className="task-progress-page__tools">
-              {canEdit && <IconButton aria-label="Edit task details" onClick={() => setEditNameOpen(true)}><EditOutlinedIcon /></IconButton>}
+              {taskCanEdit && <IconButton aria-label="Edit task details" onClick={() => setEditNameOpen(true)}><EditOutlinedIcon /></IconButton>}
               {canDelete && <IconButton aria-label="Delete task" onClick={() => setDeleteOpen(true)}><DeleteOutlineOutlinedIcon /></IconButton>}
             </Box>
           </Box>
@@ -376,6 +385,11 @@ export default function TaskProgressDetails({
             <Typography sx={{ mt: 1, fontSize: 13, color: "#667085" }}>
               {currentQuantity} / {totalQuantity} {unitName}
             </Typography>
+            {taskIsComplete && (
+              <Typography role="status" sx={{ mt: 1, fontSize: 13, color: "#667085" }}>
+                This task is 100% complete and locked for editing.
+              </Typography>
+            )}
           </Box>
 
           <Box className="task-progress-info-grid">
@@ -413,7 +427,7 @@ export default function TaskProgressDetails({
                             {getInitials(name)}
                           </Avatar>
                         </Tooltip>
-                        {canRemoveAssignees && person._id && (
+                        {taskCanRemoveAssignees && person._id && (
                           <IconButton
                             size="small"
                             className="task-progress-assignee-remove"
@@ -429,11 +443,11 @@ export default function TaskProgressDetails({
                   })}
                   {!assignedProfiles.length && <span>Unassigned</span>}
                 </Box>
-                <TextField select size="small" value={selectedAssignee} onChange={(event) => setSelectedAssignee(event.target.value)} SelectProps={{ displayEmpty: true }} sx={{ minWidth: 150 }} disabled={!canEdit}>
+                <TextField select size="small" value={selectedAssignee} onChange={(event) => setSelectedAssignee(event.target.value)} SelectProps={{ displayEmpty: true }} sx={{ minWidth: 150 }} disabled={!taskCanEdit}>
                   <MenuItem value="">Add Site Engineer</MenuItem>
                   {availableAssignees.map((person) => <MenuItem key={person._id} value={person._id}>{person.name || person.email}</MenuItem>)}
                 </TextField>
-                <Button size="small" onClick={handleAddAssignee} disabled={!canEdit || !selectedAssignee || savingAssignees}>Add</Button>
+                <Button size="small" onClick={handleAddAssignee} disabled={!taskCanEdit || !selectedAssignee || savingAssignees}>Add</Button>
               </Box>
             </InfoCell>
             <InfoCell icon={CalendarMonthOutlinedIcon} label="Start Date">{task.startDate ? new Date(task.startDate).toLocaleDateString() : "Not set"}</InfoCell>
@@ -447,7 +461,7 @@ export default function TaskProgressDetails({
             <Typography component="p">{task.description || "No task description has been added."}</Typography>
           </Box>
 
-          <TaskIssuesPanel taskId={taskId} assignees={assignees} canEdit={canEdit} socket={socket} />
+          <TaskIssuesPanel taskId={taskId} assignees={assignees} canEdit={taskCanEdit} socket={socket} />
 
           <Box component="form" onSubmit={handleRecordProgress} className="task-progress-attachments">
             <Box className="task-progress-attachments__label"><AttachFileOutlinedIcon /><span>Record Work Progress</span></Box>
@@ -459,14 +473,16 @@ export default function TaskProgressDetails({
                 value={completedQuantity}
                 onChange={(event) => setCompletedQuantity(event.target.value)}
                 inputProps={{ min: 0.01, step: "any" }}
+                disabled={!taskCanEdit}
               />
-              <TextField label="Progress notes" multiline minRows={2} value={progressDescription} onChange={(event) => setProgressDescription(event.target.value)} />
+              <TextField label="Progress notes" multiline minRows={2} value={progressDescription} onChange={(event) => setProgressDescription(event.target.value)} disabled={!taskCanEdit} />
               <input
                 ref={photoInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 hidden
+                disabled={!taskCanEdit}
                 onChange={(event) => {
                   const files = Array.from(event.target.files || []);
                   const validFiles = files.filter((file) => file.size <= 5 * 1024 * 1024);
@@ -475,10 +491,10 @@ export default function TaskProgressDetails({
                   setPhotos(validFiles.slice(0, 10));
                 }}
               />
-              <Button type="button" variant="outlined" onClick={() => photoInputRef.current?.click()} startIcon={<AddRoundedIcon />}>
+              <Button type="button" variant="outlined" onClick={() => photoInputRef.current?.click()} startIcon={<AddRoundedIcon />} disabled={!taskCanEdit}>
                 {photos.length ? `${photos.length} photo(s) selected` : "Add progress photos"}
               </Button>
-              <Button type="submit" variant="contained" disabled={!canEdit || submittingProgress || task.status === "Completed"}>
+              <Button type="submit" variant="contained" disabled={!taskCanEdit || submittingProgress}>
                 {submittingProgress ? "Saving progress…" : "Record progress"}
               </Button>
             </Box>
@@ -506,7 +522,7 @@ export default function TaskProgressDetails({
                     <a href={photo.url} target="_blank" rel="noreferrer">
                       <img src={photo.url} alt={photo.originalName || "Task photo"} style={{ width: "100%", height: 90, objectFit: "cover", borderRadius: 8 }} />
                     </a>
-                    {canEdit && taskAttachmentIds.has(String(photo._id)) && (
+                    {taskCanEdit && taskAttachmentIds.has(String(photo._id)) && (
                       <IconButton
                         size="small"
                         aria-label={`Remove ${photo.originalName || "task photo"}`}
@@ -530,10 +546,10 @@ export default function TaskProgressDetails({
               onChange={handleChooseTaskPhotos}
             />
             <Box sx={{ display: "flex", gap: 1, mt: 1.5 }}>
-              <Button type="button" variant="outlined" onClick={() => taskPhotoInputRef.current?.click()} startIcon={<AddRoundedIcon />} disabled={!canEdit}>
+              <Button type="button" variant="outlined" onClick={() => taskPhotoInputRef.current?.click()} startIcon={<AddRoundedIcon />} disabled={!taskCanEdit}>
                 {taskPhotos.length ? `${taskPhotos.length} selected` : "Add task photos"}
               </Button>
-              {taskPhotos.length > 0 && <Button type="button" variant="contained" onClick={handleUploadTaskPhotos} disabled={uploadingTaskPhotos}>
+              {taskPhotos.length > 0 && <Button type="button" variant="contained" onClick={handleUploadTaskPhotos} disabled={!taskCanEdit || uploadingTaskPhotos}>
                 {uploadingTaskPhotos ? "Uploading…" : "Upload"}
               </Button>}
             </Box>
@@ -567,18 +583,18 @@ export default function TaskProgressDetails({
             <IconButton aria-label="Close" onClick={() => setEditNameOpen(false)}><CloseRoundedIcon /></IconButton>
           </Box>
           <Box className="task-name-dialog__body">
-            <TextField label="Task name" value={taskForm.title} onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} required autoFocus fullWidth />
-            <TextField label="Description" value={taskForm.description} onChange={(event) => setTaskForm((current) => ({ ...current, description: event.target.value }))} multiline minRows={2} fullWidth />
-            <TextField select label="Category" value={taskForm.categoryId} onChange={(event) => setTaskForm((current) => ({ ...current, categoryId: event.target.value }))} fullWidth>
+            <TextField label="Task name" value={taskForm.title} onChange={(event) => setTaskForm((current) => ({ ...current, title: event.target.value }))} required autoFocus fullWidth disabled={!taskCanEdit} />
+            <TextField label="Description" value={taskForm.description} onChange={(event) => setTaskForm((current) => ({ ...current, description: event.target.value }))} multiline minRows={2} fullWidth disabled={!taskCanEdit} />
+            <TextField select label="Category" value={taskForm.categoryId} onChange={(event) => setTaskForm((current) => ({ ...current, categoryId: event.target.value }))} fullWidth disabled={!taskCanEdit}>
               {categories.map((category) => <MenuItem key={category._id} value={category._id}>{category.name}</MenuItem>)}
             </TextField>
-            <TextField select label="Progress unit" value={taskForm.progressUnitId} onChange={(event) => setTaskForm((current) => ({ ...current, progressUnitId: event.target.value }))} fullWidth>
+            <TextField select label="Progress unit" value={taskForm.progressUnitId} onChange={(event) => setTaskForm((current) => ({ ...current, progressUnitId: event.target.value }))} fullWidth disabled={!taskCanEdit}>
               {units.map((unit) => <MenuItem key={unit._id} value={unit._id}>{unit.name} ({unit.abbreviation})</MenuItem>)}
             </TextField>
-            <TextField label="Total quantity" type="number" value={taskForm.totalQuantity} onChange={(event) => setTaskForm((current) => ({ ...current, totalQuantity: event.target.value }))} inputProps={{ min: 0.01, step: "any" }} required fullWidth />
-            <TextField label="Start date" type="date" value={taskForm.startDate} onChange={(event) => setTaskForm((current) => ({ ...current, startDate: event.target.value }))} InputLabelProps={{ shrink: true }} fullWidth />
-            <TextField label="End date" type="date" value={taskForm.endDate} onChange={(event) => setTaskForm((current) => ({ ...current, endDate: event.target.value }))} InputLabelProps={{ shrink: true }} fullWidth />
-            <Button type="submit" variant="contained" disabled={!taskForm.title.trim() || !taskForm.categoryId || !taskForm.progressUnitId || Number(taskForm.totalQuantity) <= 0 || savingName}>{savingName ? "Saving…" : "Save Changes"}</Button>
+            <TextField label="Total quantity" type="number" value={taskForm.totalQuantity} onChange={(event) => setTaskForm((current) => ({ ...current, totalQuantity: event.target.value }))} inputProps={{ min: 0.01, step: "any" }} required fullWidth disabled={!taskCanEdit} />
+            <TextField label="Start date" type="date" value={taskForm.startDate} onChange={(event) => setTaskForm((current) => ({ ...current, startDate: event.target.value }))} InputLabelProps={{ shrink: true }} fullWidth disabled={!taskCanEdit} />
+            <TextField label="End date" type="date" value={taskForm.endDate} onChange={(event) => setTaskForm((current) => ({ ...current, endDate: event.target.value }))} InputLabelProps={{ shrink: true }} fullWidth disabled={!taskCanEdit} />
+            <Button type="submit" variant="contained" disabled={!taskCanEdit || !taskForm.title.trim() || !taskForm.categoryId || !taskForm.progressUnitId || Number(taskForm.totalQuantity) <= 0 || savingName}>{savingName ? "Saving…" : "Save Changes"}</Button>
           </Box>
         </Box>
       </Dialog>
