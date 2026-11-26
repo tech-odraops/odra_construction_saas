@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectRole, selectUserId } from "../../redux/slices/authSlice";
 import {
   CircularProgress,
   Dialog,
@@ -95,8 +97,9 @@ export default function Gallery() {
   const assetRequestRef = useRef(0);
 
   const assetType = tab === 0 ? "image" : "file";
-  const canDeleteAssets = localStorage.getItem("role") === "Founder";
-  const currentUserId = localStorage.getItem("User_id");
+  const role = useSelector(selectRole);
+  const currentUserId = useSelector(selectUserId);
+  const canDeleteAssets = role === "Founder";
   const notify = useCallback((title, message, variant = "error") => {
     showPopup({ title, message, variant });
   }, [showPopup]);
@@ -112,7 +115,6 @@ export default function Gallery() {
     const fetchProjects = async () => {
       setProjectsLoading(true);
       try {
-        const role = localStorage.getItem("role");
         let allProjects = [];
 
         if (role === "Site Engineer") {
@@ -148,7 +150,7 @@ export default function Gallery() {
     return () => {
       active = false;
     };
-  }, [notify]);
+  }, [notify, role]);
 
   useEffect(() => {
     const timeout = window.setTimeout(

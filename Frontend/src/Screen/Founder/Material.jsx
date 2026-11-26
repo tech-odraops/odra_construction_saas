@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { selectUserId } from "../../redux/slices/authSlice";
 import {
   Alert, Avatar, Box, Dialog, DialogActions, DialogContent, DialogTitle,
   IconButton, MenuItem, Paper, Tab, Tabs, TextField, ToggleButton,
@@ -54,6 +56,7 @@ const toIndentRow = (indent) => {
 
 export default function Material({ embedded = false, projectId, projectName, socket }) {
   const { showPopup } = usePopup();
+  const currentUserId = useSelector(selectUserId);
   const [area, setArea] = React.useState("Procurement");
   const [tab, setTab] = React.useState(0);
   const [indents, setIndents] = React.useState([]);
@@ -140,7 +143,7 @@ export default function Material({ embedded = false, projectId, projectName, soc
     if (!socket) return undefined;
     const handleIndentUpdated = (event) => {
       if (String(event.locationId) !== String(selectedLocationId)) return;
-      if (String(event.actorId) !== String(localStorage.getItem("User_id"))) {
+      if (String(event.actorId) !== String(currentUserId)) {
         const messages = {
           created: "A connected team member submitted a new indent.",
           rejected: "A connected team member rejected an indent.",
@@ -162,7 +165,7 @@ export default function Material({ embedded = false, projectId, projectName, soc
     };
     socket.on("inventory:indent-updated", handleIndentUpdated);
     return () => socket.off("inventory:indent-updated", handleIndentUpdated);
-  }, [loadIndents, selectedLocationId, showPopup, socket]);
+  }, [currentUserId, loadIndents, selectedLocationId, showPopup, socket]);
 
   const createIndent = async () => {
     if (!selectedLocationId || !form.materialId || !Number.isFinite(Number(form.quantity)) || Number(form.quantity) <= 0) {

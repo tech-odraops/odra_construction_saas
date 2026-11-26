@@ -12,9 +12,11 @@ import StatusChips from "../Components/atoms/StatusChips/StatusChips";
 import Button from "../Components/atoms/Button/Button";
 import { DashboardStatsSkeleton, RecentProjectsSkeleton } from "../Components/DashboardSkeleton";
 import { createAuthenticatedSocket } from "../utils/socket";
+import { useSelector } from "react-redux";
+import { selectRole } from "../redux/slices/authSlice";
 
 export default function Dashboard() {
-  const [role, setRole] = useState(() => localStorage.getItem("role"));
+  const role = useSelector(selectRole);
   const isSiteEngineer = role === "Site Engineer";
   const [dashboard, setDashboard] = useState({});
   const [loading, setLoading] = useState(true);
@@ -25,15 +27,12 @@ export default function Dashboard() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const storedRole = localStorage.getItem("role");
     const expectedRole = pathname.startsWith("/site-engineer") ? "Site Engineer" : "Founder";
-    if (!token || !["Founder", "Site Engineer"].includes(storedRole) || storedRole !== expectedRole) {
+    if (!token || !["Founder", "Site Engineer"].includes(role) || role !== expectedRole) {
       const requestedPath = `${pathname}${window.location.search}${window.location.hash}`;
       navigate(`/Login?redirect=${encodeURIComponent(requestedPath)}`, { replace: true });
-      return;
     }
-    setRole(storedRole);
-  }, [navigate, pathname, token]);
+  }, [navigate, pathname, role, token]);
 
   const paths = isSiteEngineer
     ? { endpoint: "/projects/site-engineer/dashboard", projects: "/site-engineer/projects" }

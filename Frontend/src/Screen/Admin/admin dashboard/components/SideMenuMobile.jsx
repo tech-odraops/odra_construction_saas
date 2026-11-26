@@ -1,4 +1,5 @@
 import Avatar from '@mui/material/Avatar';
+import { clearAuthSession } from "../../../../utils/authSession";
 import PropTypes from 'prop-types';
 import Divider from '@mui/material/Divider';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
@@ -19,8 +20,11 @@ function SideMenuMobile({ open, toggleDrawer, selectedTab, onTabSelect }) {
   }
 
   const handleLogout = () => {
+    // Keep the existing full clear; reset Redux and write it to storage before the reload.
     localStorage.clear();
-    window.location.href = "/admin/login";
+    clearAuthSession().finally(() => {
+      window.location.href = "/admin/login";
+    });
   };
 
   return (

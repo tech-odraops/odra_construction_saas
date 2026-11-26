@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { clearAuthSession } from "../../../../utils/authSession";
 import { styled } from '@mui/material/styles';
 import Divider, { dividerClasses } from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
@@ -17,9 +18,12 @@ const MenuItem = styled(MuiMenuItem)({
 
 export default function OptionsMenu() {
   const handleLogout = () => {
-        localStorage.clear();
-        window.location.href = "/admin/login";
-    };
+    // Keep the existing full clear; reset Redux and write it to storage before the reload.
+    localStorage.clear();
+    clearAuthSession().finally(() => {
+      window.location.href = "/admin/login";
+    });
+  };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);

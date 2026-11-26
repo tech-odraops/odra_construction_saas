@@ -11,8 +11,7 @@ import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
 import Button from "./atoms/Button/Button";
 import AppNavbar from "./AppNavbar";
 import PageLoader from "./PageLoader";
-import { clearSiteEngineerProfileCache } from "../utils/siteEngineerProfileCache";
-import { clearLastVisitedProjectTabs } from "../utils/projectDetailsTabStorage";
+import { clearAuthSession } from "../utils/authSession";
 
 const contractorMenuItems = [
   { label: "Home", path: "/founder/home", Icon: HomeOutlinedIcon },
@@ -40,14 +39,7 @@ export default function AppLayout() {
     : contractorMenuItems;
 
   const logout = () => {
-    clearSiteEngineerProfileCache();
-    clearLastVisitedProjectTabs();
-    localStorage.removeItem("token");
-    localStorage.removeItem("IsLogin");
-    localStorage.removeItem("User_id");
-    localStorage.removeItem("name");
-    localStorage.removeItem("organizationId");
-    localStorage.removeItem("role");
+    clearAuthSession();
     setMobileSidebarOpen(false);
     navigate("/home");
   };

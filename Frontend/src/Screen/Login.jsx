@@ -5,7 +5,9 @@ import LinkOffOutlinedIcon from "@mui/icons-material/LinkOffOutlined";
 import GoogleLoginButton from "../Components/GoogleLoginButton";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { clearLastVisitedProjectTabs } from "../utils/projectDetailsTabStorage";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../redux/slices/authSlice";
+import { clearAuthSession } from "../utils/authSession";
 import { getFCMToken } from "../services/notificationService";
 import Input from "../Components/atoms/Input/Input";
 import {
@@ -20,6 +22,7 @@ import "./Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const initialResetToken = searchParams.get("token") || "";
@@ -143,12 +146,9 @@ export default function Login() {
 
       if (response.status === 200) {
         console.log("JWT token:", response.data.token);
+        // JWT stays in localStorage; user/session details go to Redux (persisted).
         localStorage.setItem("token", response.data.token);
-        localStorage.setItem("User_id", response.data.User_id);
-        localStorage.setItem("IsLogin", true);
-        localStorage.setItem("name", response.data.name);
-        localStorage.setItem("organizationId",response.data.organizationId);
-        localStorage.setItem("role", response.data.role);
+        dispatch(loginSuccess(response.data));
 
         showPopup({
           variant: "success",
@@ -172,11 +172,7 @@ export default function Login() {
         const destination = roleDestinations[response.data.role];
 
         if (!destination) {
-          clearLastVisitedProjectTabs();
-          localStorage.removeItem("token");
-          localStorage.removeItem("User_id");
-          localStorage.removeItem("IsLogin");
-          localStorage.removeItem("name");
+          clearAuthSession();
 
           showPopup({
             variant: "error",

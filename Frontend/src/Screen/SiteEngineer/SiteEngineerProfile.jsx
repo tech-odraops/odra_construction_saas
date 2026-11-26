@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+import { updateUser } from "../../redux/slices/authSlice";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Box, CircularProgress, Dialog, DialogContent, TextField, Typography } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
@@ -12,6 +14,7 @@ import usePopup from "../../contexts/usePopup";
 import axiosInstance from "../../utils/axiosInstance";
 import { getCachedOrFetchSiteEngineerProfile } from "../../utils/siteEngineerProfileApi";
 import { cacheSiteEngineerProfile } from "../../utils/siteEngineerProfileCache";
+import { getCurrentUserId } from "../../utils/authSession";
 import "../Founder/OrganizationProfile.css";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -19,6 +22,7 @@ const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export default function SiteEngineerProfile() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { showPopup } = usePopup();
   const fileInputRef = useRef(null);
   const [profile, setProfile] = useState({ name: "", email: "", phoneNumber: "", role: "Site Engineer", profilePictureUrl: null });
@@ -77,7 +81,7 @@ export default function SiteEngineerProfile() {
       return;
     }
     const formData = new FormData();
-    const userId = localStorage.getItem("User_id");
+    const userId = getCurrentUserId();
     formData.append("name", profile.name.trim());
     formData.append("email", profile.email.trim());
     formData.append("phoneNumber", profile.phoneNumber.trim());
@@ -86,12 +90,13 @@ export default function SiteEngineerProfile() {
     try {
       const { data } = await axiosInstance.patch("/profile/me", formData);
       const result = data.profile || {};
-      if (userId === localStorage.getItem("User_id")) {
+      // Read the live store value: the user may have changed while the request was pending.
+      if (userId === getCurrentUserId()) {
         cacheSiteEngineerProfile(result);
       }
       setProfile((current) => ({ ...current, ...result, phoneNumber: result.phoneNumber || "" }));
       setSelectedImage(null);
-      localStorage.setItem("name", result.name || profile.name.trim());
+      dispatch(updateUser({ name: result.name || profile.name.trim() }));
       window.dispatchEvent(new CustomEvent("profile:updated", { detail: { name: result.name || profile.name.trim(), avatarUrl: result.profilePictureThumbnailUrl || null } }));
       showPopup({ variant: "success", title: "Changes saved", message: data.message || "Your profile has been updated." });
     } catch (error) {

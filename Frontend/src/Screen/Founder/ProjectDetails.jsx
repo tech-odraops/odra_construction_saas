@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSelector } from "react-redux";
+import { selectUserId } from "../../redux/slices/authSlice";
 import Footer from '../../Components/Footer';
 import WageModal from "../../Components/WageModal";
 import { Link, useParams, useNavigate } from 'react-router-dom';
@@ -104,6 +106,7 @@ import {
 
 export default function ProjectDetails({ isSiteEngineer = false }) {
   const { id } = useParams();
+  const currentUserId = useSelector(selectUserId);
   const tabRole = isSiteEngineer ? "site-engineer" : "founder";
   const [openMiscModal, setOpenMiscModal] = useState(false);
   const [showCreateTask, setShowCreateTask] = useState(false);
@@ -1537,7 +1540,7 @@ export default function ProjectDetails({ isSiteEngineer = false }) {
               units={taskUnits}
               canDelete={!isSiteEngineer}
               canRemoveAssignees={!isSiteEngineer}
-              canEdit={!isSiteEngineer || (selectedTask.assignees || []).some((person) => String(person?._id || person) === String(localStorage.getItem("User_id")))}
+              canEdit={!isSiteEngineer || (selectedTask.assignees || []).some((person) => String(person?._id || person) === String(currentUserId))}
               socket={socket}
               onBack={() => setSelectedTask(null)}
               onTaskUpdated={async (changes) => {

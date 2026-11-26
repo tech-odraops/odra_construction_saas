@@ -2,11 +2,14 @@ import React from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import axiosInstance from "../utils/axiosInstance"
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../redux/slices/authSlice";
 import usePopup from "../contexts/usePopup";
 import { getFCMToken } from "../services/notificationService";
 
 export default function GoogleLoginButton() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { showPopup } = usePopup();
 
   const login = useGoogleLogin({
@@ -22,9 +25,7 @@ export default function GoogleLoginButton() {
         if(res.status === 200 && res.data.success){
           console.log("User logged in successfully");
           localStorage.setItem("token",res.data.token);
-          localStorage.setItem("User_id",res.data.User_id);
-          localStorage.setItem("IsLogin", true);
-          localStorage.setItem("name",res.data.name);
+          dispatch(loginSuccess(res.data));
 
           // generate token
           const fcmToken = await getFCMToken();

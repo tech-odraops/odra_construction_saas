@@ -13,6 +13,9 @@ import { useEffect } from 'react';
 import axiosInstance from "../../../../../utils/axiosInstance";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../../../../../redux/slices/authSlice";
+import { clearAuthSession } from "../../../../../utils/authSession";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -30,6 +33,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
 
 export default function SignInCard() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
@@ -56,8 +60,7 @@ export default function SignInCard() {
         }
 
       } catch (err) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
+        clearAuthSession();
       }
     };
 
@@ -107,7 +110,7 @@ export default function SignInCard() {
 
       if (res.status === 200) {
         localStorage.setItem("token", res.data.token);
-        localStorage.setItem("role", "admin");
+        dispatch(loginSuccess({ role: "admin", name: res.data.name }));
 
         toast.success("Admin logged in");
 

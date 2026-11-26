@@ -1,8 +1,11 @@
+import { store } from "../redux/store";
+import { selectUserId } from "../redux/slices/authSlice";
+
 const PROFILE_CACHE_PREFIX = "siteEngineerProfile:";
 const PROFILE_CACHE_TTL_MS = 10 * 60 * 1000;
 
 function getProfileCacheKey() {
-  const userId = localStorage.getItem("User_id");
+  const userId = selectUserId(store.getState());
   return userId ? `${PROFILE_CACHE_PREFIX}${userId}` : null;
 }
 
