@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from "react";
 import {
   Alert, Avatar, Box, Dialog, DialogActions, DialogContent, DialogTitle,
   IconButton, MenuItem, Paper, Tab, Tabs, TextField, ToggleButton,
-  ToggleButtonGroup, Typography,
+  ToggleButtonGroup, Typography, Radio,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -10,6 +10,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
+import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
 import Button from "../../Components/atoms/Button/Button";
 import { Icon } from "../../Components/atoms/Icon/Icon";
 import CreatePurchaseOrder from "./CreatePurchaseOrder";
@@ -369,6 +371,8 @@ export default function Material({ embedded = false, projectId, projectName, soc
 
 function IndentDetail({ item, projectName, onBack, onCreatePO, onMarkClosed, onDelete, onEdit }) {
   const [actionsOpen, setActionsOpen] = React.useState(false);
+  const [fulfillOpen, setFulfillOpen] = React.useState(false);
+  const [fulfillSource, setFulfillSource] = React.useState("");
   const closed = item.status === "Closed";
   return (
     <Box sx={{ minHeight: "calc(100vh - var(--dashboard-header-height))", p: "var(--dashboard-surface-margin)", bgcolor: "var(--color-dashboard-canvas)" }}>
@@ -420,7 +424,7 @@ function IndentDetail({ item, projectName, onBack, onCreatePO, onMarkClosed, onD
         </Paper>
 
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, flexWrap: "wrap", pt: 0.5 }}>
-          <Button variant="outlined" style={{ width: "auto", minWidth: "10rem", color: "var(--palette-primary-main)" }}>Fulfill From Stock</Button>
+          <Button variant="outlined" onClick={() => { setFulfillSource(""); setFulfillOpen(true); }} style={{ width: "auto", minWidth: "10rem", color: "var(--palette-primary-main)" }}>Fulfill From Stock</Button>
           <Button variant="contained" onClick={onCreatePO} style={{ width: "auto", minWidth: "10rem", backgroundColor: "var(--palette-primary-main)", color: "var(--button-primary-hover-text-color)" }}>Create PO</Button>
         </Box>
       </Paper>
@@ -433,8 +437,30 @@ function IndentDetail({ item, projectName, onBack, onCreatePO, onMarkClosed, onD
         onEdit={() => onEdit(item)}
         onDelete={() => onDelete(item.id)}
       />
+      <Dialog open={fulfillOpen} onClose={() => setFulfillOpen(false)} fullWidth maxWidth="xs" PaperProps={{ sx: { borderRadius: "14px", p: "16px 16px 14px" } }}>
+        <DialogTitle sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", p: 0, mb: 1.5 }}>
+          <Box><Typography sx={{ fontSize: 18, lineHeight: 1.3, fontWeight: 700, color: "#263247" }}>Fulfill From Stock</Typography><Typography sx={{ mt: 0.35, fontSize: 11, lineHeight: 1.4, color: "#748096" }}>Choose where the requested material should be fulfilled from.</Typography></Box>
+          <IconButton aria-label="Close fulfill from stock" size="small" onClick={() => setFulfillOpen(false)} sx={{ mt: -0.3, mr: -0.5, color: "#344054" }}><CloseIcon fontSize="small" /></IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0, display: "grid", gap: 0.8 }}>
+          <FulfillSourceOption value="site" selected={fulfillSource === "site"} onSelect={setFulfillSource} icon={<Inventory2OutlinedIcon />} title="Request from another Site" description="Ask another site to deliver from their available stock" />
+          <FulfillSourceOption value="warehouse" selected={fulfillSource === "warehouse"} onSelect={setFulfillSource} icon={<StorefrontOutlinedIcon />} title="Request to Warehouse" description="Ask the warehouse to deliver from available stock" />
+        </DialogContent>
+        <DialogActions sx={{ p: 0, pt: 1.5, gap: 1, justifyContent: "flex-end" }}>
+          <Button variant="outlined" onClick={() => setFulfillOpen(false)} style={{ width: "auto", minWidth: "6rem", height: 34, color: "#f4511e", borderColor: "#ff7043", fontSize: 11 }}>Cancel</Button>
+          <Button variant="contained" disabled={!fulfillSource} onClick={() => setFulfillOpen(false)} style={{ width: "auto", minWidth: "6rem", height: 34, backgroundColor: "#ff4f12", color: "white", fontSize: 11 }}>Continue</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
+}
+
+function FulfillSourceOption({ value, selected, onSelect, icon, title, description }) {
+  return <Box component="button" type="button" onClick={() => onSelect(value)} sx={{ width: "100%", minHeight: 62, display: "flex", alignItems: "center", gap: 1.5, textAlign: "left", p: "8px 10px", border: `1px solid ${selected ? "#ff7043" : "#e3e9f1"}`, borderRadius: "10px", bgcolor: "#fff", cursor: "pointer", "&:hover": { borderColor: "#ff9a78" } }}>
+    <Box sx={{ width: 52, height: 46, flex: "0 0 52px", borderRadius: "9px", bgcolor: "#fff1ec", color: "#ff4f12", display: "grid", placeItems: "center", "& svg": { fontSize: 27 } }}>{icon}</Box>
+    <Box sx={{ flex: 1, minWidth: 0 }}><Typography sx={{ fontSize: 12, lineHeight: 1.35, fontWeight: 700, color: "#344054" }}>{title}</Typography><Typography sx={{ mt: 0.25, fontSize: 10, lineHeight: 1.35, color: "#748096" }}>{description}</Typography></Box>
+    <Radio checked={selected} size="small" sx={{ p: 0.5, color: "#d5dce6", "&.Mui-checked": { color: "#ff5722" } }} />
+  </Box>;
 }
 
 function DetailValue({ label, value, sub }) {

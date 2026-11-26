@@ -1,6 +1,6 @@
 const express = require('express');
 const chatRouter = express.Router();
-const {getProjectChats, getUnreadCount, markChatRead, getConversations, createConversation} = require('../controllers/getProjectChats');
+const {getProjectChats, getUnreadCount, markChatRead, getConversations, createConversation, leaveConversation} = require('../controllers/getProjectChats');
 const {authen} = require('../middleware/tokenValidatorsMiddleware');
 const {validateRoles} = require('../middleware/roles');
 
@@ -97,5 +97,7 @@ chatRouter.get('/:projectId/unread',authen,validateRoles(["Founder", "Site Engin
  *         $ref: "#/components/responses/InternalServerError"
  */
 chatRouter.post('/:projectId/read',authen,validateRoles(["Founder", "Site Engineer"]),markChatRead);
+
+chatRouter.delete('/:projectId/conversations/:conversationId/leave',authen,validateRoles("Founder", "Site Engineer"),leaveConversation);
 
 module.exports = chatRouter;
