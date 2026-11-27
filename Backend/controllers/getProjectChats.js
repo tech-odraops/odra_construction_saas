@@ -95,6 +95,25 @@ exports.createConversation = async (req, res) => {
     }
 };
 
+exports.leaveConversation = async (req, res) => {
+    try {
+        const { projectId, conversationId } = req.params;
+        if (!await getProjectAccess(projectId, req.user)) {
+            return res.status(403).json({ success: false, message: "Project access denied." });
+        }
+        const result = await ChatConversation.updateOne(
+            { _id: conversationId, projectId, organizationId: req.user.organizationId, participants: req.user.User_id },
+            { $pull: { participants: req.user.User_id } }
+        );
+        if (!result.modifiedCount) {
+            return res.status(404).json({ success: false, message: "Group not found or you have already left." });
+        }
+        return res.json({ success: true, message: "You left the group." });
+    } catch (error) {
+        console.error("Error leaving chat group:", error);
+        return res.status(500).json({ success: false, message: "Unable to leave this group." });
+    }
+};
 exports.getProjectChats = async (req, res) => {
     try {
         const { projectId } = req.params;

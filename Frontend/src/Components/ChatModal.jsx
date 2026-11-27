@@ -14,12 +14,16 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: "90vw",
+  width: "min(92vw, 1100px)",
+  height: "78vh",
+  maxHeight: "720px",
+  minHeight: "420px",
   bgcolor: 'background.paper',
-  border: '2px solid #000',
+  border: 'none',
   boxShadow: 24,
-  borderRadius: "2em",
-  p: 4,
+  borderRadius: "8px",
+  p: 0,
+  overflow: 'hidden',
 };
 
 export default function ChatModal({
