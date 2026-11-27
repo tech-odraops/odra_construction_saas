@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../redux/slices/authSlice";
-import { clearAuthSession } from "../utils/authSession";
+import { logoutUser, SKIP_SESSION_EXPIRED } from "../services/authService";
 import { getFCMToken } from "../services/notificationService";
 import Input from "../Components/atoms/Input/Input";
 import {
@@ -141,13 +141,13 @@ export default function Login() {
       const response = await axiosInstance.post(
         "/auth/signIn",
         { email, password },
-        { headers: { "Content-Type": "application/json" } },
+        // A failed login is not an expired session.
+        { headers: { "Content-Type": "application/json" }, ...SKIP_SESSION_EXPIRED },
       );
 
       if (response.status === 200) {
-        console.log("JWT token:", response.data.token);
-        // JWT stays in localStorage; user/session details go to Redux (persisted).
-        localStorage.setItem("token", response.data.token);
+        // The backend set the JWT as an HTTP-only cookie; the response only
+        // carries user details, which go to Redux (persisted).
         dispatch(loginSuccess(response.data));
 
         showPopup({
@@ -172,7 +172,8 @@ export default function Login() {
         const destination = roleDestinations[response.data.role];
 
         if (!destination) {
-          clearAuthSession();
+          // Also clears the auth cookie the backend just set.
+          await logoutUser();
 
           showPopup({
             variant: "error",

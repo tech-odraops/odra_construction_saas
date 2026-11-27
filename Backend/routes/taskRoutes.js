@@ -71,7 +71,7 @@ const {
  *     description: Creates a task under a project. Founders can select eligible Site Engineers. Site Engineers are automatically assigned to tasks they create.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -142,7 +142,7 @@ router.post(
  *     description: Retrieves tasks belonging to a project after verifying organization membership and project access.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: query
  *         name: projectId
@@ -181,7 +181,7 @@ router.get(
  *     description: Retrieves a single task after verifying organization and project access. Assigned engineers include a temporary profilePictureThumbnailUrl, or null when no profile image is set.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -220,7 +220,7 @@ router.get(
  *     description: Updates permitted task fields. Founders can update tasks in their organization; Site Engineers can update tasks assigned to them.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -282,7 +282,7 @@ router.patch(
  *     description: Permanently deletes a task and its related progress records, issues, activity history and S3 attachments.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -322,7 +322,7 @@ router.delete(
  *     description: Adds active Site Engineers who are already assigned to the task's project. Founders and assigned Site Engineers can add members.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -375,7 +375,7 @@ router.post(
  *     description: Allows the Founder to remove an assigned Site Engineer from a task. The Site Engineer remains assigned to the parent project.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -423,7 +423,7 @@ router.delete(
  *     description: Records additional completed quantity, updates cumulative task progress and automatically completes the task when its total quantity is reached.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -479,7 +479,7 @@ router.post(
  *     description: Retrieves paginated progress updates for a task, newest first. Only users with task access can view the history.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -525,7 +525,7 @@ router.get(
  *     description: Uploads JPG, PNG or WEBP photos to private AWS S3 storage and attaches them to an existing progress record. Maximum 10 images, 5 MB each.
  *     tags: [Task Management]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -584,7 +584,7 @@ router.post(
  *     summary: Upload photos directly to a task
  *     tags: [Tasks]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -631,7 +631,7 @@ router.post(
  *     summary: Remove an individual task photo
  *     tags: [Tasks]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -668,7 +668,7 @@ router.delete(
  *     summary: Create an issue for a task
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -726,7 +726,7 @@ router.post(
  *     summary: Get all issues for a task
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -778,7 +778,7 @@ router.get(
  *     summary: Get a single task issue
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -818,7 +818,7 @@ router.get(
  *     summary: Update task issue details
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -878,7 +878,7 @@ router.patch(
  *     summary: Reassign a task issue to another Site Engineer
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -931,7 +931,7 @@ router.patch(
  *     summary: Update task issue status
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -989,7 +989,7 @@ router.patch(
  *     summary: Upload attachments to a task issue
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -1049,7 +1049,7 @@ router.post(
  *     summary: Remove an issue attachment
  *     tags: [Task Issues]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -1099,7 +1099,7 @@ router.delete(
  *     summary: Get task activity timeline
  *     tags: [Tasks]
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id

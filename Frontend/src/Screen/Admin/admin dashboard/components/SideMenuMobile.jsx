@@ -1,5 +1,5 @@
 import Avatar from '@mui/material/Avatar';
-import { clearAuthSession } from "../../../../utils/authSession";
+import { logoutUser } from "../../../../services/authService";
 import PropTypes from 'prop-types';
 import Divider from '@mui/material/Divider';
 import Drawer, { drawerClasses } from '@mui/material/Drawer';
@@ -7,22 +7,22 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import MenuContent from './MenuContent';
-import { jwtDecode } from "jwt-decode";
+import { useSelector } from "react-redux";
+import { selectUserEmail, selectUserName } from "../../../../redux/slices/authSlice";
 import Button from '../../../../Components/atoms/Button/Button';
 
 function SideMenuMobile({ open, toggleDrawer, selectedTab, onTabSelect }) {
-  const token = localStorage.getItem("token");
-  let decoded = null;
-  try {
-    if (token) decoded = jwtDecode(token);
-  } catch (e) {
-    console.error("Token decode error:", e);
-  }
+  // The JWT is in an HTTP-only cookie, so the admin's details come from Redux.
+  const adminUser = {
+    name: useSelector(selectUserName),
+    email: useSelector(selectUserEmail),
+  };
 
   const handleLogout = () => {
-    // Keep the existing full clear; reset Redux and write it to storage before the reload.
+    // Keep the existing full clear; the backend clears the auth cookie and
+    // the Redux state is reset and written to storage before the reload.
     localStorage.clear();
-    clearAuthSession().finally(() => {
+    logoutUser().finally(() => {
       window.location.href = "/admin/login";
     });
   };
@@ -55,9 +55,9 @@ function SideMenuMobile({ open, toggleDrawer, selectedTab, onTabSelect }) {
               sizes="small"
               alt="name"
               sx={{ width: 24, height: 24 }}
-            >{ decoded?.email?.charAt(0).toUpperCase() || 'A'}</Avatar>
+            >{ adminUser?.email?.charAt(0).toUpperCase() || 'A'}</Avatar>
             <Typography component="p" variant="h6">
-              {decoded?.name || 'Admin'}
+              {adminUser?.name || 'Admin'}
             </Typography>
           </Stack>
         </Stack>

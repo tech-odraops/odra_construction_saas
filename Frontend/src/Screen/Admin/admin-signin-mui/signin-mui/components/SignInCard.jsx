@@ -15,7 +15,8 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../../../../redux/slices/authSlice";
-import { clearAuthSession } from "../../../../../utils/authSession";
+import { clearAuthSession, getIsLogin } from "../../../../../utils/authSession";
+import { SKIP_SESSION_EXPIRED } from "../../../../../services/authService";
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -49,8 +50,7 @@ export default function SignInCard() {
   useEffect(() => {
     const checkValidity = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!getIsLogin()) return;
 
         const res = await axiosInstance.get("/token/me");
 
@@ -106,11 +106,12 @@ export default function SignInCard() {
     if (!validateInputs()) return;
 
     try {
-      const res = await axiosInstance.post("/admin/login", formData);
+      // A failed login is not an expired session.
+      const res = await axiosInstance.post("/admin/login", formData, SKIP_SESSION_EXPIRED);
 
       if (res.status === 200) {
-        localStorage.setItem("token", res.data.token);
-        dispatch(loginSuccess({ role: "admin", name: res.data.name }));
+        // The backend set the JWT as an HTTP-only cookie.
+        dispatch(loginSuccess({ ...res.data, role: "admin" }));
 
         toast.success("Admin logged in");
 

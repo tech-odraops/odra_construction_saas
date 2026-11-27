@@ -6,7 +6,9 @@ info:
     OpenAPI documentation for the HTTP routes mounted by Backend/index.js.
     JSON request bodies are expected unless a route says multipart/form-data.
     IDs are MongoDB ObjectId strings. Authenticated endpoints use the JWT
-    returned by the login/signup endpoints as a Bearer token.
+    that the login endpoints set as an HTTP-only cookie (`odra_auth` by
+    default). Sign in from this page first; the browser then sends the cookie
+    automatically. State-changing requests must come from an allowed origin.
 
     The Socket.IO events implemented by the backend are listed in the
     x-socket-io extension below; they are not HTTP endpoints.
@@ -26,13 +28,13 @@ tags:
   - name: Notifications
   - name: Contact
 security:
-  - bearerAuth: []
+  - cookieAuth: []
 components:
   securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: odra_auth
   parameters:
     id:
       name: id
@@ -306,7 +308,7 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorResponse'
     Unauthorized:
-      description: Missing, invalid, or expired bearer token.
+      description: Missing, invalid, or expired authentication cookie.
       content:
         application/json:
           schema:

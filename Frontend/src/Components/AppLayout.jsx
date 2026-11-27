@@ -11,7 +11,7 @@ import PermMediaOutlinedIcon from "@mui/icons-material/PermMediaOutlined";
 import Button from "./atoms/Button/Button";
 import AppNavbar from "./AppNavbar";
 import PageLoader from "./PageLoader";
-import { clearAuthSession } from "../utils/authSession";
+import { logoutUser } from "../services/authService";
 
 const contractorMenuItems = [
   { label: "Home", path: "/founder/home", Icon: HomeOutlinedIcon },
@@ -38,8 +38,10 @@ export default function AppLayout() {
     ]
     : contractorMenuItems;
 
-  const logout = () => {
-    clearAuthSession();
+  const logout = async () => {
+    // Clears the HTTP-only cookie on the backend, then the local session
+    // (the local session is cleared even if the request fails).
+    await logoutUser();
     setMobileSidebarOpen(false);
     navigate("/home");
   };

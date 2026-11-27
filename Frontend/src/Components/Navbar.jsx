@@ -5,7 +5,7 @@ import i18n from "../i18n";
 import axiosInstance from "../utils/axiosInstance";
 import { useDispatch } from "react-redux";
 import { updateUser } from "../redux/slices/authSlice";
-import { clearAuthSession } from "../utils/authSession";
+import { clearAuthSession, getIsLogin } from "../utils/authSession";
 import { Divider } from "@mui/material"
 import SocialBar from "./SocialBar"
 
@@ -35,8 +35,7 @@ export default function Navbar() {
     const checkValidity = async () => {
 
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!getIsLogin()) return;
 
         const response = await axiosInstance.get("/token/me");
 

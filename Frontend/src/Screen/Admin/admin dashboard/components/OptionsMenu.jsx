@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { clearAuthSession } from "../../../../utils/authSession";
+import { logoutUser } from "../../../../services/authService";
 import { styled } from '@mui/material/styles';
 import Divider, { dividerClasses } from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
@@ -18,9 +18,10 @@ const MenuItem = styled(MuiMenuItem)({
 
 export default function OptionsMenu() {
   const handleLogout = () => {
-    // Keep the existing full clear; reset Redux and write it to storage before the reload.
+    // Keep the existing full clear; the backend clears the auth cookie and
+    // the Redux state is reset and written to storage before the reload.
     localStorage.clear();
-    clearAuthSession().finally(() => {
+    logoutUser().finally(() => {
       window.location.href = "/admin/login";
     });
   };

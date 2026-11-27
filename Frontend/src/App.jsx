@@ -143,12 +143,12 @@ function GlobalPopup() {
 
 function ProtectedRoleLayout() {
   const { pathname, search, hash } = useLocation();
-  const hasToken = Boolean(localStorage.getItem("token"));
+  // SessionGate has already confirmed this session with the backend.
   const isLogin = useSelector(selectIsLogin);
   const role = useSelector(selectRole);
   const expectedRole = pathname.startsWith("/site-engineer") ? "Site Engineer" : "Founder";
 
-  if (!hasToken || !isLogin || role !== expectedRole) {
+  if (!isLogin || role !== expectedRole) {
     const requestedPath = `${pathname}${search}${hash}`;
     return <Navigate to={`/Login?redirect=${encodeURIComponent(requestedPath)}`} replace />;
   }

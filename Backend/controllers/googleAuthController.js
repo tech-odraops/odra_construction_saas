@@ -3,6 +3,7 @@ const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const Organization = require('../models/Organization');
+const { setAuthCookie, AUTH_TOKEN_TTL_SECONDS } = require('../utils/authCookie');
 
 // creating instance of google auth
 const client = new OAuth2Client({
@@ -85,12 +86,14 @@ const googleAuthHandler = async (req, res) => {
             isLoggedIn: true,
             role: existingUser.role,
             organizationId: existingUser.organizationId
-        }, process.env.secret_key, { expiresIn: '1h' });
+        }, process.env.secret_key, { expiresIn: AUTH_TOKEN_TTL_SECONDS });
+
+        // The JWT is delivered only as an HTTP-only cookie.
+        setAuthCookie(res, token);
 
         if (existingUser.role === "Founder") {
             return res.status(200).json({
                 success: true,
-                token,
                 User_id: existingUser._id,
                 role: existingUser.role,
                 organizationId: existingUser.organizationId,
@@ -100,7 +103,6 @@ const googleAuthHandler = async (req, res) => {
         } else if (existingUser.role === "Site Engineer") {
             return res.status(200).json({
                 success: true,
-                token,
                 User_id: existingUser._id,
                 role: existingUser.role,
                 organizationId: existingUser.organizationId,
@@ -110,7 +112,6 @@ const googleAuthHandler = async (req, res) => {
         } else {
             return res.status(200).json({
                 success: true,
-                token,
                 User_id: existingUser._id,
                 role: existingUser.role,
                 organizationId: existingUser.organizationId,

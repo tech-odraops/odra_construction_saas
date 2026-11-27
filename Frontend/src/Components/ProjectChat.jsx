@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axiosInstance from "../utils/axiosInstance"
-import { jwtDecode } from "jwt-decode";
+import { useSelector } from "react-redux";
+import { selectUserId } from "../redux/slices/authSlice";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
@@ -27,9 +28,9 @@ export default function ProjectChat({ projectId, participants = [], onMessageSen
     const messagesEndRef = useRef(null);
     const navigate = useNavigate();
 
-    // 🔐 get current user id from JWT
-    const token = localStorage.getItem("token");
-    const currentUserId = token ? String(jwtDecode(token).User_id || "") : "";
+    // 🔐 current user id from Redux (the JWT is in an HTTP-only cookie)
+    const authUserId = useSelector(selectUserId);
+    const currentUserId = authUserId ? String(authUserId) : "";
 
     /* -------------------------
        1️⃣ Load old chat messages

@@ -24,7 +24,7 @@ const {
  *     summary: Create a task unit
  *     description: Creates a measurement unit for the authenticated user's organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -77,7 +77,7 @@ router.post(
  *     summary: Get all task units
  *     description: Returns measurement units belonging to the authenticated user's organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       "200":
  *         description: Task units fetched successfully.
@@ -105,7 +105,7 @@ router.get(
  *     summary: Update a task unit
  *     description: Updates a measurement unit belonging to the authenticated user's organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -162,7 +162,7 @@ router.patch(
  *     summary: Delete a task unit
  *     description: Permanently deletes a unit if it is not being used by any task in the organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id

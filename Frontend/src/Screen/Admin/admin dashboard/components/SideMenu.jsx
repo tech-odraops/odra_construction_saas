@@ -9,7 +9,8 @@ import SiteLogo from './SiteLogo';
 import MenuContent from './MenuContent';
 
 import OptionsMenu from './OptionsMenu';
-import { jwtDecode } from "jwt-decode";
+import { useSelector } from "react-redux";
+import { selectUserEmail, selectUserName } from "../../../../redux/slices/authSlice";
 
 const drawerWidth = 'var(--dashboard-sidebar-width)';
 
@@ -28,13 +29,11 @@ const Drawer = styled(MuiDrawer)({
 });
 
 export default function SideMenu({ selectedTab, onTabSelect }) {
-  const token = localStorage.getItem("token");
-  let decoded = null;
-  try {
-    if (token) decoded = jwtDecode(token);
-  } catch (e) {
-    console.error("Token decode error:", e);
-  }
+  // The JWT is in an HTTP-only cookie, so the admin's details come from Redux.
+  const adminUser = {
+    name: useSelector(selectUserName),
+    email: useSelector(selectUserEmail),
+  };
 
   return (
     <Drawer
@@ -84,13 +83,13 @@ export default function SideMenu({ selectedTab, onTabSelect }) {
           sizes="small"
           alt="Name"
           sx={{ width: 36, height: 36 }}
-        >{ decoded?.email?.charAt(0).toUpperCase() || 'A'}</Avatar>
+        >{ adminUser?.email?.charAt(0).toUpperCase() || 'A'}</Avatar>
         <Box sx={{ mr: 'auto' }}>
           <Typography variant="body2" sx={{ fontWeight: 500, lineHeight: '16px' }}>
-            {decoded?.name || 'Admin'}
+            {adminUser?.name || 'Admin'}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            {decoded?.email || 'admin@odraops.com'}
+            {adminUser?.email || 'admin@odraops.com'}
           </Typography>
         </Box>
         <OptionsMenu />

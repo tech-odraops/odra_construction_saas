@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const { setAuthCookie, AUTH_TOKEN_TTL_SECONDS } = require("../utils/authCookie");
 require("dotenv").config();
 
 exports.adminLogin = async (req,res)=>{
@@ -32,14 +33,18 @@ exports.adminLogin = async (req,res)=>{
             email
         },
             process.env.secret_key,
-            { expiresIn: "1h" }
+            { expiresIn: AUTH_TOKEN_TTL_SECONDS }
         );
+
+        // The JWT is delivered only as an HTTP-only cookie.
+        setAuthCookie(res, token);
 
         return res.status(200).json({
             success: true,
-            token,
+            User_id: admin._id,
             role: admin.role,
-            name: admin.name
+            name: admin.name,
+            email: admin.email
         });
     }catch (error) {
 

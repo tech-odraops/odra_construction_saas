@@ -6,6 +6,7 @@ const user = require('../../models/user');
 const User = require('../../models/user');
 const env = require('dotenv').config();
 const Organization = require("../../models/Organization");
+const { setAuthCookie, AUTH_TOKEN_TTL_SECONDS } = require("../../utils/authCookie");
 
 // signin
 const signin = express.Router()
@@ -29,15 +30,20 @@ const signin = express.Router()
  *               password: { type: string }
  *     responses:
  *       '200':
- *         description: Signed in. The JWT expires after one hour.
+ *         description: >
+ *           Signed in. The JWT is set as an HTTP-only cookie and is not
+ *           returned in the body. It expires after one hour.
+ *         headers:
+ *           Set-Cookie:
+ *             description: HTTP-only authentication cookie containing the JWT.
+ *             schema: { type: string }
  *         content:
  *           application/json:
  *             schema:
  *               type: object
- *               required: [success, token, User_id, role, name, organizationId]
+ *               required: [success, User_id, role, name, organizationId]
  *               properties:
  *                 success: { type: boolean, example: true }
- *                 token: { type: string }
  *                 User_id: { type: string }
  *                 role: { type: string }
  *                 name: { type: string }
@@ -156,12 +162,14 @@ signin.post(
                     organizationId: organization._id
                 },
                 process.env.secret_key,
-                { expiresIn: "1h" }
+                { expiresIn: AUTH_TOKEN_TTL_SECONDS }
             );
+
+            // The JWT is delivered only as an HTTP-only cookie.
+            setAuthCookie(res, token);
 
             return res.status(200).json({
                 success: true,
-                token,
                 User_id: response._id,
                 role: response.role,
                 name: response.name,

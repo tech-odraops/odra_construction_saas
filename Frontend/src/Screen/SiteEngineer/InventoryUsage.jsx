@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../utils/axiosInstance";
-import { jwtDecode } from "jwt-decode";
+import { useSelector } from "react-redux";
+import { selectUserId } from "../../redux/slices/authSlice";
 import Footer from "../../Components/Footer";
 import {
   Box,
@@ -20,9 +21,7 @@ export default function InventoryUsage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const token = localStorage.getItem("token");
-  const decoded = jwtDecode(token);
-  const currentUserId = decoded.User_id;
+  const currentUserId = useSelector(selectUserId);
 
   const [items, setItems] = useState([]);
   const [inventoryItemId, setInventoryItemId] = useState("");

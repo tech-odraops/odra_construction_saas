@@ -4,11 +4,21 @@ const mongoose = require("mongoose");
 
 const User = require("../models/user");
 const Organization = require("../models/Organization");
+const { getAuthTokenFromCookieHeader } = require("../utils/authCookie");
+const { isAllowedOrigin } = require("../utils/allowedOrigins");
 
 const socketAuth = async (socket, next) => {
     try {
-        // Get JWT from Socket.IO handshake
-        const token = socket.handshake.auth?.token;
+        // Cookie auth is sent automatically by the browser, so only accept
+        // handshakes from allowed frontend origins (prevents cross-site
+        // WebSocket hijacking). Non-browser clients send no Origin header.
+        const origin = socket.handshake.headers?.origin;
+        if (origin && !isAllowedOrigin(origin)) {
+            return next(new Error("Origin not allowed."));
+        }
+
+        // Get JWT from the HTTP-only auth cookie sent with the handshake
+        const token = getAuthTokenFromCookieHeader(socket.handshake.headers?.cookie);
 
         if (!token) {
             return next(new Error("Authentication required."));
