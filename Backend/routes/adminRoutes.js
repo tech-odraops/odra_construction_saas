@@ -28,7 +28,11 @@ const { adminLogin } = require("../controllers//adminController");
  *                 type: string
  *     responses:
  *       "200":
- *         description: Admin signed in.
+ *         description: Admin signed in. The JWT is set as an HTTP-only cookie.
+ *         headers:
+ *           Set-Cookie:
+ *             description: HTTP-only authentication cookie containing the JWT.
+ *             schema: { type: string }
  *         content:
  *           application/json:
  *             schema:
@@ -37,12 +41,14 @@ const { adminLogin } = require("../controllers//adminController");
  *                 success:
  *                   type: boolean
  *                   example: true
- *                 token:
+ *                 User_id:
  *                   type: string
  *                 role:
  *                   type: string
  *                   example: admin
  *                 name:
+ *                   type: string
+ *                 email:
  *                   type: string
  *       "401":
  *         description: Invalid admin credentials.

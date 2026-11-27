@@ -16,6 +16,8 @@ import Button from "../../Components/atoms/Button/Button";
 import { Icon } from "../../Components/atoms/Icon/Icon";
 import StatusChips from "../../Components/atoms/StatusChips/StatusChips";
 import { createAuthenticatedSocket } from "../../utils/socket";
+import { useSelector } from "react-redux";
+import { selectIsLogin } from "../../redux/slices/authSlice";
 
 function ProjectBuildingIcon() {
   return (
@@ -34,10 +36,10 @@ export default function MyProjects() {
   const socketRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const isLogin = useSelector(selectIsLogin);
   const { t } = useTranslation();
 
-  if (!token) return;
+  if (!isLogin) return;
   useEffect(() => {
     const fetchData = async () => {
       try {

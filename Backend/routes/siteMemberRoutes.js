@@ -18,7 +18,7 @@ const { validateRoles } = require("../middleware/roles");
  *       Returns active Site Engineers and Site Supervisors belonging
  *       to the requester's organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: query
  *         name: search
@@ -58,7 +58,7 @@ router.get(
  *       the requester's organization. The invited member must activate
  *       their account before they can be assigned to a project.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -117,7 +117,7 @@ router.post(
  *       already assigned to that project. The selected member must be an
  *       active Site Engineer in the same organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: projectId

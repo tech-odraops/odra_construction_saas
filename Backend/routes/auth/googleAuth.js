@@ -29,7 +29,11 @@ const { googleAuthHandler } = require("../../controllers/googleAuthController");
  *     responses:
  *       "200":
  *         description: Authentication result; a missing local user returns success false
- *           and redirect /Signup.
+ *           and redirect /Signup. On success the JWT is set as an HTTP-only cookie.
+ *         headers:
+ *           Set-Cookie:
+ *             description: HTTP-only authentication cookie containing the JWT.
+ *             schema: { type: string }
  *         content:
  *           application/json:
  *             schema:
@@ -38,8 +42,6 @@ const { googleAuthHandler } = require("../../controllers/googleAuthController");
  *               properties:
  *                 success:
  *                   type: boolean
- *                 token:
- *                   type: string
  *                 User_id:
  *                   type: string
  *                 role:

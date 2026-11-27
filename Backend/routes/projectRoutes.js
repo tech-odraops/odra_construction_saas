@@ -18,7 +18,7 @@ const {authen} = require("../middleware/tokenValidatorsMiddleware");
  *       When a Site Engineer creates a project, that Site Engineer
  *       is automatically assigned to it.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -72,7 +72,7 @@ router.post(
  *     summary: List and search projects for the founder's organization
  *     description: Manager only. Supports filtering by search text, status, page, and limit.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: query
  *         name: search
@@ -259,7 +259,7 @@ router.get('/:id',authen,validateRoles(["Founder","Site Engineer"]),projectContr
  *       Available to the Founder who owns the project and Site Engineers
  *       assigned to the project. Request body is not required.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -350,7 +350,7 @@ router.get( "/:projectId/wages", authen,validateRoles(["Founder"]), projectContr
  *       Available to the Founder who owns the project and Site Engineers
  *       assigned to the project.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -512,7 +512,7 @@ router.patch(
  *       Available to the Founder who owns the project and Site Engineers
  *       assigned to the project.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: projectId
@@ -563,7 +563,7 @@ router.patch(
  *       Returns project counts and the five most recent projects
  *       assigned to the authenticated Site Engineer.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       "200":
  *         description: Site Engineer dashboard data.

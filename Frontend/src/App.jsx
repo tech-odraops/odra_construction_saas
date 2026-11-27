@@ -4,7 +4,9 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { useSelector } from "react-redux";
 import AdminRoute from "./utils/AdminRoute";
+import { selectIsLogin, selectRole } from "./redux/slices/authSlice";
 import { onForegroundMessage, resolveNotificationUrl } from "./services/notificationService";
 import PopupProvider from "./contexts/PopupProvider";
 import Popup from "./Components/atoms/Popup/Popup";
@@ -141,11 +143,12 @@ function GlobalPopup() {
 
 function ProtectedRoleLayout() {
   const { pathname, search, hash } = useLocation();
-  const hasToken = Boolean(localStorage.getItem("token"));
-  const role = localStorage.getItem("role");
+  // SessionGate has already confirmed this session with the backend.
+  const isLogin = useSelector(selectIsLogin);
+  const role = useSelector(selectRole);
   const expectedRole = pathname.startsWith("/site-engineer") ? "Site Engineer" : "Founder";
 
-  if (!hasToken || role !== expectedRole) {
+  if (!isLogin || role !== expectedRole) {
     const requestedPath = `${pathname}${search}${hash}`;
     return <Navigate to={`/Login?redirect=${encodeURIComponent(requestedPath)}`} replace />;
   }

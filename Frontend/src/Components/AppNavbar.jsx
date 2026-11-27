@@ -27,9 +27,11 @@ import GroupsOutlinedIcon from "@mui/icons-material/GroupsOutlined";
 import PersonAddAltOutlinedIcon from "@mui/icons-material/PersonAddAltOutlined";
 import axiosInstance from "../utils/axiosInstance";
 import { getCachedOrFetchSiteEngineerProfile } from "../utils/siteEngineerProfileApi";
+import { useSelector } from "react-redux";
+import { selectOrganizationName, selectUserName } from "../redux/slices/authSlice";
 
-function getOwnerInitials() {
-  const ownerName = (localStorage.getItem("organizationName") || localStorage.getItem("name"))?.trim();
+function getOwnerInitials(organizationName, userName) {
+  const ownerName = (organizationName || userName)?.trim();
   if (!ownerName) return "P";
   return ownerName
     .split(/\s+/)
@@ -74,7 +76,9 @@ export default function AppNavbar({
   const [openDrawer, setOpenDrawer] = React.useState(false);
   const [avatarUrl, setAvatarUrl] = React.useState(null);
   const [avatarRequestLoading, setAvatarRequestLoading] = React.useState(true);
-  const [avatarName, setAvatarName] = React.useState(() => localStorage.getItem("name") || "");
+  const userName = useSelector(selectUserName);
+  const organizationName = useSelector(selectOrganizationName);
+  const [avatarName, setAvatarName] = React.useState(() => userName || "");
 
   React.useEffect(() => {
     const handleProfileUpdate = (event) => {
@@ -107,7 +111,7 @@ export default function AppNavbar({
     return () => { active = false; };
   }, [siteEngineer]);
 
-  const avatarInitials = avatarName.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toUpperCase() || (siteEngineer ? "S" : getOwnerInitials());
+  const avatarInitials = avatarName.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toUpperCase() || (siteEngineer ? "S" : getOwnerInitials(organizationName, userName));
 
   const menuItems = siteEngineer
     ? [{ label: t("navbar.all_projects"), path: "/site-engineer/projects", icon: FolderOpenOutlinedIcon }]

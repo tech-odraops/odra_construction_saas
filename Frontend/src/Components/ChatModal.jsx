@@ -8,6 +8,8 @@ import ProjectChat from './ProjectChat';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import Button from './atoms/Button/Button';
 import { io } from 'socket.io-client';
+import { useSelector } from 'react-redux';
+import { selectIsLogin } from '../redux/slices/authSlice';
 
 const style = {
   position: 'absolute',
@@ -37,14 +39,14 @@ export default function ChatModal({
   buttonStyle = {},
 }) {
 
+  const isLogin = useSelector(selectIsLogin);
   const [open, setOpen] = React.useState(false);
   const [unreadCount, setUnreadCount] = React.useState(0);
 
   // Fetch unread message count
   const fetchUnreadCount = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!isLogin) return;
 
       const res = await axiosInstance.get(
         `/chat/${projectId}/unread`
@@ -60,8 +62,7 @@ export default function ChatModal({
   // Mark messages as read
   const markAsRead = async () => {
     try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!isLogin) return;
 
       await axiosInstance.post(
         `/chat/${projectId}/read`,
@@ -84,7 +85,8 @@ export default function ChatModal({
     // Set up socket to listen for new messages
     const socket = io(import.meta.env.VITE_API_URL, {
       transports: ["websocket"],
-      auth: { token: localStorage.getItem("token") }
+      // The browser sends the HTTP-only auth cookie with the handshake.
+      withCredentials: true
     });
     if (!socket) return;
 

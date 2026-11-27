@@ -3,8 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n";
 import axiosInstance from "../utils/axiosInstance";
-import { clearSiteEngineerProfileCache } from "../utils/siteEngineerProfileCache";
-import { clearLastVisitedProjectTabs } from "../utils/projectDetailsTabStorage";
+import { useDispatch } from "react-redux";
+import { updateUser } from "../redux/slices/authSlice";
+import { clearAuthSession, getIsLogin } from "../utils/authSession";
 import { Divider } from "@mui/material"
 import SocialBar from "./SocialBar"
 
@@ -27,25 +28,25 @@ import MenuIcon from "@mui/icons-material/Menu";
 export default function Navbar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [openDrawer, setOpenDrawer] = React.useState(false);
 
   React.useEffect(() => {
     const checkValidity = async () => {
 
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!getIsLogin()) return;
 
         const response = await axiosInstance.get("/token/me");
 
         if (response.status === 200) {
           // console.log(response.data)
           const backendRole = response.data.role;
-          localStorage.setItem("role", backendRole);
+          dispatch(updateUser({ role: backendRole }));
 
-          if (backendRole === "manager") {
+          if (backendRole === "Founder") {
             navigate("/founder/home");
-          } else if (backendRole === "site engineer") {
+          } else if (backendRole === "Site Engineer") {
             navigate("/site-engineer/home");
           } else {
             navigate("/");
@@ -54,16 +55,12 @@ export default function Navbar() {
 
       } catch (err) {
         console.log(err);
-        clearSiteEngineerProfileCache();
-        clearLastVisitedProjectTabs();
-        localStorage.removeItem("token");
-        localStorage.removeItem("IsLogin");
-        localStorage.removeItem("User_id");
+        clearAuthSession();
       }
     };
 
     checkValidity();
-  }, [navigate]);
+  }, [navigate, dispatch]);
 
   const menuItems = [
     { label: t("navbar.home"), path: "/home" },
