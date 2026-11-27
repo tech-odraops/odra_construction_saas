@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import Footer from "../../Components/Footer";
 import Typography from "@mui/material/Typography";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import TextField from "@mui/material/TextField";
 import Button from "../../Components/atoms/Button/Button";
 import Box from "@mui/material/Box";

@@ -1,8 +1,6 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 import AdminRoute from "./utils/AdminRoute";
 import { onForegroundMessage, resolveNotificationUrl } from "./services/notificationService";
@@ -53,6 +51,7 @@ import AppLayout from "./Components/AppLayout";
 
 function NotificationHandler() {
   const navigate = useNavigate();
+  const { showPopup } = usePopup();
 
   useEffect(() => {
     // 1. Listen for background notification clicks sent via postMessage from Service Worker
@@ -84,19 +83,13 @@ function NotificationHandler() {
       const body = payload.notification?.body || payload.data?.body || "";
       const targetUrl = resolveNotificationUrl(payload.data);
 
-      toast.info(
-        <div style={{ cursor: "pointer" }}>
-          <strong style={{ display: "block", marginBottom: 4 }}>{title}</strong>
-          <div>{body}</div>
-        </div>,
-        {
-          onClick: () => {
-            if (targetUrl) {
-              navigate(targetUrl);
-            }
-          }
-        }
-      );
+      showPopup({
+        variant: "success",
+        title,
+        message: body,
+        duration: 0,
+        onClick: () => targetUrl && navigate(targetUrl),
+      });
     });
 
     return () => {
@@ -105,7 +98,7 @@ function NotificationHandler() {
       }
       if (unsubscribe) unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, showPopup]);
 
   return null;
 }
@@ -161,18 +154,6 @@ function App() {
       <RouteBackground />
       {/* Handles notification click events and foreground messages */}
       <NotificationHandler />
-
-      {/* ✅ ToastContainer should be here, once, globally */}
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="colored"
-      />
 
       {/* ✅ Your routes below */}
       <ErrorBoundary>

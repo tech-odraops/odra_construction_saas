@@ -1,5 +1,5 @@
 import axios from "axios";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "./popupToast.js";
 import { clearSiteEngineerProfileCache } from "./siteEngineerProfileCache";
 import { clearLastVisitedProjectTabs } from "./projectDetailsTabStorage";
 

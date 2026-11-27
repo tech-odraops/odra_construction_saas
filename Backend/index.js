@@ -331,7 +331,8 @@ io.on('connection', (socket) => {
                 senderId: userId,
                 message: message.trim(),
                 organizationId,
-                conversationId: conversation?._id || null
+                conversationId: conversation?._id || null,
+                readBy: [userId]
             });
             const chat = await ChatMessage.findById(savedChat._id).populate("senderId", "name email").lean();
 

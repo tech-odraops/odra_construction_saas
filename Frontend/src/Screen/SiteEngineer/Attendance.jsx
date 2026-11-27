@@ -11,7 +11,7 @@ import {
 import Button from "../../Components/atoms/Button/Button";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import AssignmentTurnedInOutlinedIcon from "@mui/icons-material/AssignmentTurnedInOutlined";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import { useRef } from "react";

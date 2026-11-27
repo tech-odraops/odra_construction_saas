@@ -13,7 +13,7 @@ import Input from "./atoms/Input/Input";
 import Button from "./atoms/Button/Button";
 import axiosInstance from "../utils/axiosInstance";
 import { requiredValidator } from "../utils/validation";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../utils/popupToast.js";
 
 export default function AddMiscExpenseModal({
   open,

@@ -17,7 +17,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import ChatModal from "../../Components/ChatModal";
 import TaskIssuesPanel from "./TaskIssuesPanel";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import {
   addTaskAssignees,
   getTaskActivity,
@@ -288,8 +288,8 @@ export default function TaskProgressDetails({
     if (!taskCanEdit || !selectedAssignee) return;
     setSavingAssignees(true);
     try {
-      const updatedTask = await addTaskAssignees(taskId, [selectedAssignee]);
-      onTaskUpdated?.(updatedTask);
+      await addTaskAssignees(taskId, [selectedAssignee]);
+      onTaskUpdated?.();
       getTaskActivity(taskId).then(setActivities).catch(() => {});
       setSelectedAssignee("");
       toast.success("Site Engineer assigned to task.");
@@ -304,8 +304,8 @@ export default function TaskProgressDetails({
     if (!taskCanRemoveAssignees) return;
     setSavingAssignees(true);
     try {
-      const updatedTask = await removeTaskAssignee(taskId, userId);
-      onTaskUpdated?.(updatedTask);
+      await removeTaskAssignee(taskId, userId);
+      onTaskUpdated?.();
       getTaskActivity(taskId).then(setActivities).catch(() => {});
       toast.success("Site Engineer removed from task.");
     } catch (error) {

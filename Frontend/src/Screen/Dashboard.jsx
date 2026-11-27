@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Box, Typography } from "@mui/material";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../utils/popupToast.js";
 import { useTranslation } from "react-i18next";
 import BusinessRoundedIcon from "@mui/icons-material/BusinessRounded";
 import HandymanRoundedIcon from "@mui/icons-material/HandymanRounded";

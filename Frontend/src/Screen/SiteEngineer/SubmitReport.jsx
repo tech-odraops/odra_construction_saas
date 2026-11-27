@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import { useEffect } from "react";
 import Button from "../../Components/atoms/Button/Button";
 import { createAuthenticatedSocket } from "../../utils/socket";

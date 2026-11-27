@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from "react";
 import {
   Alert, Avatar, Box, Dialog, DialogActions, DialogContent, DialogTitle,
   IconButton, MenuItem, Paper, Tab, Tabs, TextField, ToggleButton,
-  ToggleButtonGroup, Typography, Radio,
+  ToggleButtonGroup, Typography, Radio, Skeleton,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -59,6 +59,7 @@ export default function Material({ embedded = false, projectId, projectName, soc
   const [area, setArea] = React.useState("Procurement");
   const [tab, setTab] = React.useState(0);
   const [indents, setIndents] = React.useState([]);
+  const [indentsLoading, setIndentsLoading] = React.useState(true);
   const [locations, setLocations] = React.useState([]);
   const [selectedLocationId, setSelectedLocationId] = React.useState("");
   const [materials, setMaterials] = React.useState([]);
@@ -114,8 +115,11 @@ export default function Material({ embedded = false, projectId, projectName, soc
   const loadIndents = useCallback(async (locationId = selectedLocationId) => {
     if (!locationId) {
       setIndents([]);
+      setIndentsLoading(false);
       return;
     }
+    setIndents([]);
+    setIndentsLoading(true);
     try {
       const response = await axios.get(
         `/inventory/indents?locationId=${encodeURIComponent(locationId)}`
@@ -127,6 +131,8 @@ export default function Material({ embedded = false, projectId, projectName, soc
         title: "Indents could not be loaded",
         message: error.response?.data?.message || error.message || "Please try again."
       });
+    } finally {
+      setIndentsLoading(false);
     }
   }, [selectedLocationId, showPopup]);
 
@@ -295,8 +301,8 @@ export default function Material({ embedded = false, projectId, projectName, soc
             <Tab label="Indent" /><Tab label="Deliveries" /><Tab label="Site GRN" />
           </Tabs>
           {tab === 0 ? <Box sx={{ display: "grid", gap: 1 }}>
-            {loading && <Typography sx={{ py: 3, textAlign: "center", color: "var(--color-dashboard-muted-text)" }}>Loading indents...</Typography>}
-            {indents.map((item) => <Paper key={item.id} sx={{ ...surfaceSx, display: "grid", gridTemplateColumns: { xs: "1fr auto", md: "minmax(190px, 1.35fr) repeat(3, minmax(125px, .8fr)) auto" }, alignItems: "center", gap: { xs: 1.25, md: 2 }, px: { xs: 1.25, sm: 1.75 }, py: 1.25 }}>
+            {indentsLoading && Array.from({ length: 4 }, (_, index) => <IndentRowSkeleton key={`indent-skeleton-${index}`} />)}
+            {indents.map((item) => <Paper key={item.id} component="div" role="button" tabIndex={0} onClick={() => setSelectedIndent(item)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelectedIndent(item); } }} sx={{ ...surfaceSx, display: "grid", gridTemplateColumns: { xs: "1fr auto", md: "minmax(190px, 1.35fr) repeat(3, minmax(125px, .8fr)) auto" }, alignItems: "center", gap: { xs: 1.25, md: 2 }, px: { xs: 1.25, sm: 1.75 }, py: 1.25, cursor: "pointer", transition: "background-color 120ms ease, border-color 120ms ease", "&:hover": { bgcolor: "var(--color-dashboard-canvas)", borderColor: "var(--color-dashboard-nav-active-border)" }, "&:focus-visible": { outline: "2px solid var(--palette-primary-main)", outlineOffset: 2 } }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
                 <Avatar variant="rounded" sx={{ width: 40, height: 40, flexShrink: 0, bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)" }}><Icon variant="universal-material" size="lg" gradient="primary" /></Avatar>
                 <Box sx={{ minWidth: 0 }}><Typography component="button" onClick={() => setSelectedIndent(item)} sx={{ p: 0, border: 0, bgcolor: "transparent", cursor: "pointer", textAlign: "left", font: "inherit", fontWeight: "var(--font-weight-bold)", color: "var(--color-organization-profile-text)", "&:hover": { color: "var(--palette-primary-main)" } }}>{item.id}</Typography><Box sx={{ display: "flex", gap: 0.75, flexWrap: "wrap", mt: 0.5 }}><Status label={item.status} /><Status label={item.delivery} /></Box></Box>
@@ -304,9 +310,8 @@ export default function Material({ embedded = false, projectId, projectName, soc
               <Info label="Created By" value={item.createdBy} sub={item.created} />
               <Info label="Expected Delivery" value={item.expected} />
               <Info label="Material" value={item.material} />
-              <IconButton aria-label={`More actions for ${item.id}`} onClick={() => setActionsIndent(item)} sx={{ justifySelf: "end", border: "1px solid var(--color-dashboard-border)", borderRadius: "var(--input-border-radius)", width: 36, height: 36, color: "var(--color-organization-profile-text)" }}><MoreHorizIcon /></IconButton>
+              <IconButton aria-label={`More actions for ${item.id}`} onClick={(event) => { event.stopPropagation(); setActionsIndent(item); }} onKeyDown={(event) => event.stopPropagation()} sx={{ justifySelf: "end", border: "1px solid var(--color-dashboard-border)", borderRadius: "var(--input-border-radius)", width: 36, height: 36, color: "var(--color-organization-profile-text)" }}><MoreHorizIcon /></IconButton>
             </Paper>)}
-            {!loading && !indents.length && <Typography sx={{ py: 5, textAlign: "center", color: "var(--color-dashboard-muted-text)" }}>No indents yet. Create an indent to get started.</Typography>}
           </Box> : <Paper sx={{ ...surfaceSx, p: 4, textAlign: "center", color: "var(--color-dashboard-muted-text)" }}>{tab === 1 ? "Delivery records will appear here." : "Site goods receipt notes will appear here."}</Paper>}
         </> : <Paper sx={{ ...surfaceSx, p: 4, textAlign: "center", color: "var(--color-dashboard-muted-text)" }}>Inventory for your projects will appear here.</Paper>}
       </Paper>
@@ -465,6 +470,27 @@ function FulfillSourceOption({ value, selected, onSelect, icon, title, descripti
 
 function DetailValue({ label, value, sub }) {
   return <Box sx={{ minWidth: 0 }}><Typography sx={{ fontSize: "var(--font-caption-font-size)", color: "var(--color-dashboard-muted-text)", mb: 0.4 }}>{label}</Typography><Typography sx={{ fontSize: "var(--font-body-font-size)", fontWeight: "var(--font-weight-semibold)", overflowWrap: "anywhere" }}>{value}</Typography>{sub && <Typography sx={{ fontSize: "var(--font-caption-font-size)", color: "var(--color-dashboard-muted-text)" }}>{sub}</Typography>}</Box>;
+}
+
+function IndentRowSkeleton() {
+  return <Paper aria-hidden="true" sx={{ ...surfaceSx, display: "grid", gridTemplateColumns: { xs: "1fr auto", md: "minmax(190px, 1.35fr) repeat(3, minmax(125px, .8fr)) auto" }, alignItems: "center", gap: { xs: 1.25, md: 2 }, px: { xs: 1.25, sm: 1.75 }, py: 1.25 }}>
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+      <Avatar variant="rounded" sx={{ width: 40, height: 40, flexShrink: 0, bgcolor: "var(--color-organization-profile-avatar-surface)", color: "var(--palette-primary-main)" }}><Icon variant="universal-material" size="lg" gradient="primary" /></Avatar>
+      <Box sx={{ flex: 1 }}><Skeleton animation="wave" width="45%" height={17} /><Box sx={{ display: "flex", gap: 0.7, mt: 0.35 }}><Skeleton animation="wave" variant="rounded" width={52} height={18} /><Skeleton animation="wave" variant="rounded" width={76} height={18} /></Box></Box>
+    </Box>
+    <IndentInfoSkeleton label="Created By" lines={2} />
+    <IndentInfoSkeleton label="Expected Delivery" />
+    <IndentInfoSkeleton label="Material" />
+    <Box sx={{ justifySelf: "end", border: "1px solid var(--color-dashboard-border)", borderRadius: "var(--input-border-radius)", width: 36, height: 36, display: "grid", placeItems: "center", color: "var(--color-organization-profile-text)" }}><MoreHorizIcon /></Box>
+  </Paper>;
+}
+
+function IndentInfoSkeleton({ label, lines = 1 }) {
+  return <Box sx={{ display: { xs: "none", md: "block" }, minWidth: 0, borderLeft: "1px solid var(--color-dashboard-border)", pl: 2 }}>
+    <Typography sx={{ fontSize: "var(--font-caption-font-size)", color: "var(--color-dashboard-muted-text)", mb: 0.5 }}>{label}</Typography>
+    <Skeleton animation="wave" width="72%" height={18} />
+    {lines > 1 && <Skeleton animation="wave" width="48%" height={15} />}
+  </Box>;
 }
 
 function Info({ label, value, sub }) {

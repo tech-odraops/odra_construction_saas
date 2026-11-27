@@ -9,7 +9,7 @@ import {
   CircularProgress
 } from "@mui/material";
 import Button from "../../Components/atoms/Button/Button";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import { useTranslation } from "react-i18next";
 import PageLoader from "../../Components/PageLoader";
 

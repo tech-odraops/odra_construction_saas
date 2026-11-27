@@ -13,7 +13,7 @@ import {
 import Button from "./atoms/Button/Button";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../utils/popupToast.js";
 // import { useNavigate } from "react-router-dom";
 
 export default function MiscExpenseModal({

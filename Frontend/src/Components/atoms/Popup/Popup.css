@@ -82,7 +82,12 @@
   font-size: var(--popup-message-font-size);
   font-weight: var(--popup-message-font-weight);
   line-height: var(--popup-message-line-height);
-  white-space: nowrap;
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .popup__divider {

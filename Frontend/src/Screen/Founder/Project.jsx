@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Box, CircularProgress, Typography, Tabs, Tab, Tooltip } from "@mui/material";
 import Button from "../../Components/atoms/Button/Button";
 import { Icon } from "../../Components/atoms/Icon/Icon";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverRoundedIcon from "@mui/icons-material/DeleteForeverRounded";
 import { useTranslation } from "react-i18next";

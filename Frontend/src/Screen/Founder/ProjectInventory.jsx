@@ -8,7 +8,7 @@ import {
   Typography,
   Paper
 } from "@mui/material";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import InventoryBreakdownModal from "../../Components/InventoryBreakdownModal";
 import InventoryWorkflowPanel from "./InventoryWorkflowPanel";
 import Button from "../../Components/atoms/Button/Button";

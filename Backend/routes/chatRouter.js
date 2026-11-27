@@ -3,6 +3,8 @@ const chatRouter = express.Router();
 const {getProjectChats, getUnreadCount, markChatRead, getConversations, createConversation, leaveConversation} = require('../controllers/getProjectChats');
 const {authen} = require('../middleware/tokenValidatorsMiddleware');
 const {validateRoles} = require('../middleware/roles');
+const parseChatAttachment = require('../middleware/chatAttachmentUpload');
+const {uploadChatAttachment} = require('../controllers/getProjectChats');
 
 /**
  * @openapi
@@ -97,6 +99,8 @@ chatRouter.get('/:projectId/unread',authen,validateRoles(["Founder", "Site Engin
  *         $ref: "#/components/responses/InternalServerError"
  */
 chatRouter.post('/:projectId/read',authen,validateRoles(["Founder", "Site Engineer"]),markChatRead);
+
+chatRouter.post('/:projectId/attachments',authen,validateRoles(["Founder", "Site Engineer"]),parseChatAttachment.single('file'),uploadChatAttachment);
 
 chatRouter.delete('/:projectId/conversations/:conversationId/leave',authen,validateRoles("Founder", "Site Engineer"),leaveConversation);
 
