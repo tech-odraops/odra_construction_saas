@@ -29,7 +29,7 @@ const uploadDocument = handleUpload(fileUpload.single("file"));
  *     summary: Upload a project image asset
  *     description: Uploads a JPG, PNG, or WEBP image (up to 10 MB) to private S3 storage and records it for the project.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -76,7 +76,7 @@ router.post(
  *     summary: Upload a project document
  *     description: Uploads PDF, XLSX, DOCX, TXT or MD files to private S3 storage. Maximum file size is 10 MB.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -121,7 +121,7 @@ router.post(
  *     summary: List assets across accessible projects
  *     description: Supports project/task filtering, search, pagination, and filtering for the Images or Files tab.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: query
  *         name: projectId
@@ -177,7 +177,7 @@ router.get(
  *     summary: Delete an image asset
  *     description: The project Founder or the uploading Site Engineer may delete an asset.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: assetId

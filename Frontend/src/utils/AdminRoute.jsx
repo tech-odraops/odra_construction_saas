@@ -1,13 +1,15 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectIsLogin, selectRole } from "../redux/slices/authSlice";
 
 export default function AdminRoute({ children }) {
 
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const isLogin = useSelector(selectIsLogin);
+  const role = useSelector(selectRole);
 
   // If not logged in
-  if (!token) {
+  if (!isLogin) {
     return <Navigate to="/admin/login" />;
   }
 

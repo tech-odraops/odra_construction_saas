@@ -2,11 +2,15 @@ import React from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import axiosInstance from "../utils/axiosInstance"
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { loginSuccess } from "../redux/slices/authSlice";
+import { SKIP_SESSION_EXPIRED } from "../services/authService";
 import usePopup from "../contexts/usePopup";
 import { getFCMToken } from "../services/notificationService";
 
 export default function GoogleLoginButton() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { showPopup } = usePopup();
 
   const login = useGoogleLogin({
@@ -16,15 +20,13 @@ export default function GoogleLoginButton() {
     onSuccess: async ({ code }) => {
       try {
         // Send the code to your backend for verification & token exchange
-        const res = await axiosInstance.post("/auth/google", { code , origin: window.location.origin});
+        const res = await axiosInstance.post("/auth/google", { code , origin: window.location.origin}, SKIP_SESSION_EXPIRED);
 
         // if the response is 200
         if(res.status === 200 && res.data.success){
           console.log("User logged in successfully");
-          localStorage.setItem("token",res.data.token);
-          localStorage.setItem("User_id",res.data.User_id);
-          localStorage.setItem("IsLogin", true);
-          localStorage.setItem("name",res.data.name);
+          // The backend set the JWT as an HTTP-only cookie.
+          dispatch(loginSuccess(res.data));
 
           // generate token
           const fcmToken = await getFCMToken();

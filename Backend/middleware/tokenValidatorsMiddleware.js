@@ -4,20 +4,12 @@ require("dotenv").config();
 
 const User = require("../models/user");
 const Organization = require("../models/Organization");
+const { AUTH_COOKIE_NAME } = require("../utils/authCookie");
 
 exports.authen = async (req, res, next) => {
     try {
-        const authorization = req.headers.authorization;
-
-        if (!authorization || !authorization.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                error: "Valid Bearer token required"
-            });
-        }
-
-        const token = authorization.slice(7).trim();
-        // console.log("Token = ",token);
+        // The JWT is read only from the HTTP-only auth cookie.
+        const token = req.cookies?.[AUTH_COOKIE_NAME];
 
         if (!token) {
             return res.status(401).json({

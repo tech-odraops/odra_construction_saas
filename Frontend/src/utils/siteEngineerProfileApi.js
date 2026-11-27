@@ -1,4 +1,6 @@
 import axiosInstance from "./axiosInstance";
+import { store } from "../redux/store";
+import { selectUserId } from "../redux/slices/authSlice";
 import {
   cacheSiteEngineerProfile,
   getCachedSiteEngineerProfile,
@@ -10,14 +12,14 @@ export function getCachedOrFetchSiteEngineerProfile() {
   const cachedProfile = getCachedSiteEngineerProfile();
   if (cachedProfile) return Promise.resolve(cachedProfile);
 
-  const userId = localStorage.getItem("User_id");
+  const userId = selectUserId(store.getState());
   if (userId && pendingRequests.has(userId)) {
     return pendingRequests.get(userId);
   }
 
   const request = axiosInstance.get("/profile/me")
     .then(({ data }) => {
-      if (userId !== localStorage.getItem("User_id")) {
+      if (userId !== selectUserId(store.getState())) {
         throw new Error("Authenticated user changed while loading the profile");
       }
       cacheSiteEngineerProfile(data.profile);

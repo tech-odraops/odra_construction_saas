@@ -22,7 +22,7 @@ const {
  *     summary: Get authenticated user's profile
  *     description: Returns the personal profile, original picture URL, and a 128px thumbnail URL for the authenticated Site Engineer.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       "200":
  *         description: User profile fetched successfully.
@@ -52,7 +52,7 @@ router.get(
  *     summary: Update Site Engineer personal profile
  *     description: Updates the authenticated Site Engineer's name, email, phone number and profile picture; returns original and thumbnail URLs.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: false
  *       content:
@@ -104,7 +104,7 @@ router.patch(
  *     summary: Get organization profile
  *     description: Returns the organization name, original logo URL, and a 128px thumbnail URL for its authenticated Founder.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       "200":
  *         description: Organization profile fetched successfully.
@@ -133,7 +133,7 @@ router.get(
  *     summary: Update organization profile
  *     description: Allows the authenticated Founder to update the organization name and logo; returns original and thumbnail URLs.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: false
  *       content:

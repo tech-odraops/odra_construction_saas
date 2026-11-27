@@ -1,19 +1,17 @@
 
 import { io } from "socket.io-client";
+import { getIsLogin } from "./authSession";
 
 export const createAuthenticatedSocket = () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-        console.error("Cannot connect Socket.IO: JWT token not found.");
+    if (!getIsLogin()) {
+        console.error("Cannot connect Socket.IO: user is not logged in.");
         return null;
     }
 
     const socket = io(import.meta.env.VITE_API_URL, {
         transports: ["websocket"],
-        auth: {
-            token
-        }
+        // The browser sends the HTTP-only auth cookie with the handshake.
+        withCredentials: true
     });
 
     socket.on("connect_error", (error) => {

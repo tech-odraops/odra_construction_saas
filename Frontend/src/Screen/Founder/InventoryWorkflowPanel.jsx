@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import { selectRole, selectUserId } from "../../redux/slices/authSlice";
 import {
   Alert,
   Box,
@@ -61,7 +63,8 @@ const pendingReceiptItems = (purchaseOrder) => (purchaseOrder?.items || [])
   .filter((item) => item.remainingQuantity > 0);
 
 export default function InventoryWorkflowPanel({ projectId, api }) {
-  const isFounder = localStorage.getItem("role") === "Founder";
+  const isFounder = useSelector(selectRole) === "Founder";
+  const currentUserId = useSelector(selectUserId);
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -713,7 +716,7 @@ export default function InventoryWorkflowPanel({ projectId, api }) {
               const canFulfill = remaining.length > 0 && !["fulfilled", "rejected", "cancelled"].includes(indent.status);
               const canCancel = !["fulfilled", "rejected", "cancelled"].includes(indent.status) &&
                 indent.items.every((item) => item.allocatedQuantity === 0 && item.fulfilledQuantity === 0) &&
-                (isFounder || String(getId(indent.requestedBy)) === localStorage.getItem("User_id"));
+                (isFounder || String(getId(indent.requestedBy)) === currentUserId);
               return (
                 <TableRow key={indent._id}>
                   <TableCell>

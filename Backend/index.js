@@ -10,7 +10,7 @@ const helmet = require('helmet')
 const { Server } = require('socket.io')
 const { createServer } = require('http');
 const http = require('http');
-const jwt = require("jsonwebtoken");
+const cookieParser = require('cookie-parser');
 const reportRoute = require('./routes/reportsRoute');
 const projectRoute = require('./routes/projectRoutes');
 const siteMemberRoutes = require("./routes/siteMemberRoutes");
@@ -39,20 +39,13 @@ const mongoose = require("mongoose");
 const Task = require("./models/Task");
 const Organization = require("./models/Organization");
 const socketAuth = require("./middleware/socketAuth");
+const csrfProtection = require("./middleware/csrfProtection");
+const { allowedOrigins } = require("./utils/allowedOrigins");
 const {
     userRoom,
     projectRoom,
     taskRoom
 } = require("./utils/socketRooms");
-
-const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
-    ? process.env.CORS_ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
-    : [
-        "http://localhost:5173",
-        "https://odraopssaass.netlify.app",
-        "https://odraops.com",
-        "https://www.odraops.com"
-    ];
 
 // creating http server and mounting socket.io to it
 const httpServer = http.createServer(app);
@@ -71,13 +64,6 @@ io.use(socketAuth);
 // listening for socket coonection & client
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
-    try {
-        const token = socket.handshake.auth?.token;
-        const decoded = token && jwt.verify(token, process.env.secret_key, { algorithms: ["HS256"] });
-        if (decoded?.isLoggedIn === true && decoded.User_id) socket.data.authUser = decoded;
-    } catch (_) {
-        socket.data.authUser = null;
-    }
 
     try {
         const joined = socket.join(userRoom(socket.data.user.userId));
@@ -407,12 +393,18 @@ io.on('connection', (socket) => {
 const { signin } = require('./routes/auth/createUser')
 const { googleAuth } = require('./routes/auth/googleAuth');
 const { messagePost } = require("./routes/message");
+const { logout } = require("./routes/auth/logout");
 
+// Credentialed CORS with an explicit origin list (no wildcard). cors() also
+// answers OPTIONS preflight requests.
 app.use(cors({
     origin: allowedOrigins,
     credentials: true
 }))
 app.use(express.json())
+app.use(cookieParser())
+// Reject state-changing requests from origins other than the allowed frontends.
+app.use(csrfProtection)
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
@@ -441,6 +433,7 @@ app.get("/health", (req, res) => {
 // requiring singup and signin
 // app.use('/auth', signup);
 app.use('/auth', signin);
+app.use('/auth', logout);
 
 // founder activation link 
 const { activation } = require("./routes/auth/activation");

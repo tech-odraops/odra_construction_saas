@@ -1,5 +1,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useDispatch } from "react-redux";
+import { updateUser } from "../../redux/slices/authSlice";
 import { useNavigate } from "react-router-dom";
 import { Avatar, Box, CircularProgress, Typography } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
@@ -21,6 +23,7 @@ const ACCEPTED_IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export default function OrganizationProfile() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { showPopup } = usePopup();
   const fileInputRef = useRef(null);
   const [organization, setOrganization] = useState({ name: "", logoUrl: null });
@@ -37,7 +40,7 @@ export default function OrganizationProfile() {
         const profile = data.organization || {};
         setOrganization(profile);
         setName(profile.name || "");
-        localStorage.setItem("organizationName", profile.name || "");
+        dispatch(updateUser({ organizationName: profile.name || "" }));
       })
       .catch((error) => {
         if (!active) return;
@@ -45,7 +48,7 @@ export default function OrganizationProfile() {
       })
       .finally(() => active && setLoading(false));
     return () => { active = false; };
-  }, [showPopup]);
+  }, [dispatch, showPopup]);
   const [logoDialogOpen, setLogoDialogOpen] = useState(false);
   const [cameraCaptureOpen, setCameraCaptureOpen] = useState(false);
 
@@ -94,7 +97,7 @@ export default function OrganizationProfile() {
       setOrganization(profile);
       setName(profile.name || name.trim());
       setSelectedLogo(null);
-      localStorage.setItem("organizationName", profile.name || name.trim());
+      dispatch(updateUser({ organizationName: profile.name || name.trim() }));
       window.dispatchEvent(new CustomEvent("profile:updated", { detail: { name: profile.name || name.trim(), avatarUrl: profile.logoThumbnailUrl || null } }));
       showPopup({ variant: "success", title: "Changes saved", message: data.message || "Your organization profile has been updated." });
     } catch (error) {

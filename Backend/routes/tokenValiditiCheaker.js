@@ -10,7 +10,7 @@ const {tokenHandler} = require('../controllers/tokenValidatorHandler');
  *   get:
  *     tags:
  *       - Authentication
- *     summary: Validate the current bearer token
+ *     summary: Validate the current session cookie and return the signed-in user
  *     responses:
  *       "200":
  *         description: Token is valid.
@@ -28,6 +28,12 @@ const {tokenHandler} = require('../controllers/tokenValidatorHandler');
  *                 role:
  *                   type: string
  *                 User_id:
+ *                   type: string
+ *                 organizationId:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
  *                   type: string
  *       "401":
  *         $ref: "#/components/responses/Unauthorized"

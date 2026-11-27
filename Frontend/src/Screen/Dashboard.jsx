@@ -12,9 +12,11 @@ import StatusChips from "../Components/atoms/StatusChips/StatusChips";
 import Button from "../Components/atoms/Button/Button";
 import { DashboardStatsSkeleton, RecentProjectsSkeleton } from "../Components/DashboardSkeleton";
 import { createAuthenticatedSocket } from "../utils/socket";
+import { useSelector } from "react-redux";
+import { selectIsLogin, selectRole } from "../redux/slices/authSlice";
 
 export default function Dashboard() {
-  const [role, setRole] = useState(() => localStorage.getItem("role"));
+  const role = useSelector(selectRole);
   const isSiteEngineer = role === "Site Engineer";
   const [dashboard, setDashboard] = useState({});
   const [loading, setLoading] = useState(true);
@@ -22,25 +24,22 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { t } = useTranslation();
-  const token = localStorage.getItem("token");
+  const isLogin = useSelector(selectIsLogin);
 
   useEffect(() => {
-    const storedRole = localStorage.getItem("role");
     const expectedRole = pathname.startsWith("/site-engineer") ? "Site Engineer" : "Founder";
-    if (!token || !["Founder", "Site Engineer"].includes(storedRole) || storedRole !== expectedRole) {
+    if (!isLogin || !["Founder", "Site Engineer"].includes(role) || role !== expectedRole) {
       const requestedPath = `${pathname}${window.location.search}${window.location.hash}`;
       navigate(`/Login?redirect=${encodeURIComponent(requestedPath)}`, { replace: true });
-      return;
     }
-    setRole(storedRole);
-  }, [navigate, pathname, token]);
+  }, [isLogin, navigate, pathname, role]);
 
   const paths = isSiteEngineer
     ? { endpoint: "/projects/site-engineer/dashboard", projects: "/site-engineer/projects" }
     : { endpoint: "/projects/dashboard", projects: "/founder/project" };
 
   useEffect(() => {
-    if (!token || !["Founder", "Site Engineer"].includes(role)) return undefined;
+    if (!isLogin || !["Founder", "Site Engineer"].includes(role)) return undefined;
     axiosInstance.get(paths.endpoint)
       .then(({ data }) => setDashboard(data))
       .catch((error) => console.error("Unable to load dashboard:", error))
@@ -77,9 +76,9 @@ export default function Dashboard() {
         socketRef.current = null;
       };
     }
-  }, [isSiteEngineer, navigate, paths.endpoint, role, token]);
+  }, [isLogin, isSiteEngineer, navigate, paths.endpoint, role]);
 
-  if (!token || !["Founder", "Site Engineer"].includes(role)) return null;
+  if (!isLogin || !["Founder", "Site Engineer"].includes(role)) return null;
 
   const translate = (key) => t(`dashboard.${isSiteEngineer ? "engineer" : "contractor"}.${key}`);
   const stats = [

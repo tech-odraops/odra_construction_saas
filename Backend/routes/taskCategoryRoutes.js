@@ -24,7 +24,7 @@ const {
  *     summary: Create a task category
  *     description: Creates a category for the authenticated user's organization. Available to Founders and Site Engineers.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -76,7 +76,7 @@ router.post(
  *     summary: Get all task categories
  *     description: Returns categories belonging to the authenticated user's organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       "200":
  *         description: Categories fetched successfully.
@@ -104,7 +104,7 @@ router.get(
  *     summary: Update a task category
  *     description: Updates a category belonging to the authenticated user's organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -161,7 +161,7 @@ router.patch(
  *     summary: Delete a task category
  *     description: Permanently deletes a category if it is not being used by any task in the organization.
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     parameters:
  *       - in: path
  *         name: id

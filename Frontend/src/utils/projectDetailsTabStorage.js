@@ -1,3 +1,6 @@
+import { store } from "../redux/store";
+import { selectUserId } from "../redux/slices/authSlice";
+
 const STORAGE_KEY_PREFIX = "project-details-last-tab:";
 const VALID_TABS = new Set([
   "Overview",
@@ -9,7 +12,7 @@ const VALID_TABS = new Set([
 ]);
 
 const getStorageKey = (projectId, role) => {
-  const userId = localStorage.getItem("User_id");
+  const userId = selectUserId(store.getState());
   if (!projectId || !userId) return null;
   return `${STORAGE_KEY_PREFIX}${userId}:${role}:${projectId}`;
 };
