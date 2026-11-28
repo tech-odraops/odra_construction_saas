@@ -44,7 +44,8 @@ const inventoryUsageSchema = new mongoose.Schema(
     date: {
       type: String,
       required: true
-    }
+    },
+    comment: { type: String, trim: true, maxlength: 1000, default: "" }
   },
   { timestamps: true }
 );

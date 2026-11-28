@@ -67,6 +67,13 @@ const inventoryPurchaseSchema = new mongoose.Schema(
       required: true
     },
 
+    comment: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+      default: ""
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

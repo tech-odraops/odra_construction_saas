@@ -127,7 +127,8 @@ exports.addInventoryItem = async (req, res) => {
       pricePerUnit,
       supplierName,
       companyName,
-      purchaseDate
+      purchaseDate,
+      comment = ""
     } = req.body;
     const qty = Number(quantity);
     const price = Number(pricePerUnit);
@@ -147,7 +148,9 @@ exports.addInventoryItem = async (req, res) => {
       pricePerUnit == null ||
       !Number.isFinite(price) ||
       price < 0 ||
-      !isValidDateOnly(purchaseDate)
+      !isValidDateOnly(purchaseDate) ||
+      typeof comment !== "string" ||
+      comment.length > 1000
     ) {
       return res.status(400).json({
         success: false,
@@ -235,6 +238,7 @@ exports.addInventoryItem = async (req, res) => {
         pricePerUnit: price,
         supplierName: supplierName.trim(),
         companyName: companyName.trim(),
+        comment: comment.trim(),
         createdBy: req.user.User_id
       });
     } catch (error) {
@@ -308,14 +312,16 @@ exports.getProjectInventory = async (req, res) => {
 --------------------------------- */
 exports.logInventoryUsage = async (req, res) => {
   try {
-    const { projectId, inventoryItemId, usedQty, date } = req.body;
+    const { projectId, inventoryItemId, usedQty, date, comment = "" } = req.body;
     const quantity = Number(usedQty);
     if (
       !mongoose.isValidObjectId(projectId) ||
       !mongoose.isValidObjectId(inventoryItemId) ||
       !Number.isFinite(quantity) ||
       quantity <= 0 ||
-      !isValidDateOnly(date)
+      !isValidDateOnly(date) ||
+      typeof comment !== "string" ||
+      comment.length > 1000
     ) {
       return res.status(400).json({
         success: false,
@@ -373,7 +379,8 @@ exports.logInventoryUsage = async (req, res) => {
         usedQty: quantity,
         costAtThatTime: quantity * item.pricePerUnit,
         usedBy: req.user.User_id,
-        date
+        date,
+        comment: comment.trim()
       });
     } catch (error) {
       await InventoryItem.updateOne(
