@@ -28,7 +28,6 @@ import { getAssets } from "../services/assetService";
 const getPinKey = (conversation) => String(conversation?._id || "project-chat");
 const CHAT_PAGE_SIZE = 10;
 
-const getPinKey = (conversation) => String(conversation?._id || "project-chat");
 const dedupeConversations = (items = []) => {
     const seen = new Set();
     return items.filter((conversation) => {
