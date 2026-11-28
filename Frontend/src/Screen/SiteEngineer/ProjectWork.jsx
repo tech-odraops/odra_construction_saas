@@ -9,7 +9,7 @@ import Divider from '@mui/material/Divider';
 import Paper from '@mui/material/Paper';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import ChatModal from '../../Components/ChatModal';
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";

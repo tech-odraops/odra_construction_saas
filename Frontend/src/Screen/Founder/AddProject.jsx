@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import { Typography } from "@mui/material";
 import Input from "../../Components/atoms/Input/Input";
 import axiosInstance from "../../utils/axiosInstance";

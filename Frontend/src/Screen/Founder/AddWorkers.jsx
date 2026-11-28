@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Paper, CircularProgress } from "@mui/material";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import axiosInstance from "../../utils/axiosInstance";
 import addWorkerArtwork from "../../assets/Add Worker.png";
 import { useTranslation } from "react-i18next";

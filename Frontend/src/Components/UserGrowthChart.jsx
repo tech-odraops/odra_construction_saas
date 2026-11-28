@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { Card, CardContent, Typography } from "@mui/material";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../utils/popupToast.js";
 
 import {
     LineChart,

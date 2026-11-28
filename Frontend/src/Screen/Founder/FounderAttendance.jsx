@@ -8,7 +8,7 @@ import {
     TextField,
     CircularProgress
 } from "@mui/material";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import axiosInstance from "../../utils/axiosInstance";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";

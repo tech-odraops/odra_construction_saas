@@ -11,7 +11,7 @@ import Button from '../../../../../Components/atoms/Button/Button';
 
 import { useEffect } from 'react';
 import axiosInstance from "../../../../../utils/axiosInstance";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../../../../utils/popupToast.js";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../../../../redux/slices/authSlice";

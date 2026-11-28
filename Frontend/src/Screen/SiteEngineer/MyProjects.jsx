@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import { useRef } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import { useTranslation } from "react-i18next";

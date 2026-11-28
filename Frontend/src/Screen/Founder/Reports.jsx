@@ -11,7 +11,7 @@ import AddIcon from "@mui/icons-material/Add";
 import StopOutlinedIcon from "@mui/icons-material/StopOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { Dialog, DialogActions, DialogContent } from "@mui/material";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import Button from "../../Components/atoms/Button/Button";
 import RadioButton from "../../Components/atoms/RadioButton/RadioButton";
 import axiosInstance from "../../utils/axiosInstance";

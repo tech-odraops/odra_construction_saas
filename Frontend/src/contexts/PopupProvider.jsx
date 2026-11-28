@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import PopupContext from "./PopupContext";
+import { subscribeToPopups } from "../utils/popupToast";
 
 export default function PopupProvider({ children }) {
   const [popup, setPopup] = useState(null);
@@ -22,6 +23,10 @@ export default function PopupProvider({ children }) {
   }, []);
 
   useEffect(() => () => window.clearTimeout(timeoutRef.current), []);
+
+  useEffect(() => {
+    return subscribeToPopups(showPopup);
+  }, [showPopup]);
 
   return (
     <PopupContext.Provider value={{ popup, showPopup, dismissPopup }}>

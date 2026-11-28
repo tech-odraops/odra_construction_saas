@@ -24,8 +24,11 @@ const ALLOWED_MIME_TYPES = [
 
 const ALLOWED_FILE_TYPES = {
     ".pdf": ["application/pdf"],
+    ".doc": ["application/msword"],
     ".xlsx": ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+    ".xls": ["application/vnd.ms-excel"],
     ".docx": ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    ".csv": ["text/csv"],
     ".txt": ["text/plain"],
     ".md": ["text/markdown", "text/plain"]
 };
@@ -68,7 +71,7 @@ const uploadImage = async ({ file, folder, maxFileSize = MAX_FILE_SIZE }) => {
     };
 };
 
-const uploadFile = async ({ file, folder }) => {
+const uploadFile = async ({ file, folder, maxFileSize = 10 * 1024 * 1024 }) => {
     if (!file || !Buffer.isBuffer(file.buffer)) {
         throw new Error("A valid file is required");
     }
@@ -83,8 +86,8 @@ const uploadFile = async ({ file, folder }) => {
         throw new Error("Only PDF, XLSX, DOCX, TXT and MD files are allowed");
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-        throw new Error("File size cannot exceed 10 MB");
+    if (file.size > maxFileSize) {
+        throw new Error("File size cannot exceed " + (maxFileSize / (1024 * 1024)) + " MB");
     }
 
     const safeFolder = folder.replace(/^\/+|\/+$/g, "");

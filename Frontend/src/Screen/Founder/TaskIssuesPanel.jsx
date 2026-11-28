@@ -5,7 +5,7 @@ import AttachFileOutlinedIcon from "@mui/icons-material/AttachFileOutlined";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import DeleteOutlineRoundedIcon from "@mui/icons-material/DeleteOutlineRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import { toast } from "react-toastify";
+import { popupToast as toast } from "../../utils/popupToast.js";
 import {
   createTaskIssue,
   getTaskIssue,

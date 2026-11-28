@@ -6,7 +6,7 @@ import WageModal from "../../Components/WageModal";
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import Button from '../../Components/atoms/Button/Button';
-import { toast } from 'react-toastify';
+import { popupToast as toast } from "../../utils/popupToast.js";
 import ChatModal from '../../Components/ChatModal';
 import axiosInstance from '../../utils/axiosInstance';
 import { useTranslation } from "react-i18next";
@@ -92,7 +92,7 @@ function SiteEngineerIcon() {
 function InventoryCubeIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.5 9 4.7v9.6l-9 4.7-9-4.7V7.2l9-4.7Z" fill="currentColor" /><path d="m3.5 7.4 8.5 4.5 8.5-4.5M12 12v9" fill="none" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" /></svg>;
 }
-// import { toast } from 'react-toastify';
+// import { popupToast as toast } from "../../utils/popupToast.js";
 import {
   Checkbox,
   Dialog,
