@@ -18,6 +18,7 @@ import Button from "../../Components/atoms/Button/Button";
 import { Icon } from "../../Components/atoms/Icon/Icon";
 import CreatePurchaseOrder from "./CreatePurchaseOrder";
 import IndentActionsModal from "./IndentActionsModal";
+import InventoryList from "./InventoryList";
 import axios from "../../utils/axiosInstance";
 import usePopup from "../../contexts/usePopup";
 
@@ -283,7 +284,7 @@ export default function Material({ embedded = false, projectId, projectName, soc
           {area === "Procurement" && <Button variant="contained" startIcon={<AddIcon />} onClick={() => setDialogOpen(true)} style={{ backgroundColor: "var(--palette-primary-main)", borderColor: "var(--palette-primary-main)", borderRadius: "var(--dashboard-button-radius)", paddingInline: "var(--button-padding-inline)", height: "var(--button-height)", color: "var(--palette-primary-contrast-text)", fontWeight: "var(--font-weight-bold)", opacity: "var(--effect-visible-opacity)", whiteSpace: "nowrap" }}>Create Indent</Button>}
         </Box>
 
-        {!projectId && (
+        {!projectId && area === "Procurement" && (
           <TextField
             select
             fullWidth
@@ -316,7 +317,12 @@ export default function Material({ embedded = false, projectId, projectName, soc
               <IconButton aria-label={`More actions for ${item.id}`} onClick={(event) => { event.stopPropagation(); setActionsIndent(item); }} onKeyDown={(event) => event.stopPropagation()} sx={{ justifySelf: "end", border: "1px solid var(--color-dashboard-border)", borderRadius: "var(--input-border-radius)", width: 36, height: 36, color: "var(--color-organization-profile-text)" }}><MoreHorizIcon /></IconButton>
             </Paper>)}
           </Box> : <Paper sx={{ ...surfaceSx, p: 4, textAlign: "center", color: "var(--color-dashboard-muted-text)" }}>{tab === 1 ? "Delivery records will appear here." : "Site goods receipt notes will appear here."}</Paper>}
-        </> : <Paper sx={{ ...surfaceSx, p: 4, textAlign: "center", color: "var(--color-dashboard-muted-text)" }}>Inventory for your projects will appear here.</Paper>}
+        </> : <InventoryList
+          locations={locations}
+          selectedLocationId={selectedLocationId}
+          onLocationChange={setSelectedLocationId}
+          locationsLoading={loading}
+        />}
       </Paper>
       <IndentActionsModal
         open={Boolean(actionsIndent)}

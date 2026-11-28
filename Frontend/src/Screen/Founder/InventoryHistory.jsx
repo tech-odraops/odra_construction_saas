@@ -108,6 +108,7 @@ export default function InventoryHistory() {
         <div className="inventory-material-main">
           <Typography component="h2">{item.name || t("inventory.material_name")}</Typography>
           <p>Quantity : <span>{quantity} {item.unit || inventoryItem.unit || ""}</span></p>
+          {entry.comment && <p>Comment : <span>{entry.comment}</span></p>}
           {price != null && <p>Price Per Unit : ₹{price}</p>}
           {supplier && <p>Supplier : {supplier}</p>}
         </div>

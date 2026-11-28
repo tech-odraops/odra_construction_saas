@@ -8,6 +8,7 @@ const InventoryMaterial = require("../models/InventoryMaterial");
 const InventoryPurchase = require("../models/InventoryPurchase");
 const InventoryPurchaseOrder = require("../models/InventoryPurchaseOrder");
 const InventoryTransfer = require("../models/InventoryTransfer");
+const InventoryUsage = require("../models/InventoryUsage");
 const Project = require("../models/project");
 const controller = require("../controllers/inventoryWorkflowController");
 const inventoryController = require("../controllers/inventoryController");
@@ -220,6 +221,55 @@ test("existing usage API rejects zero quantity before accessing project data", a
 
   assert.equal(res.statusCode, 400);
   assert.equal(res.body.success, false);
+});
+
+test("founders can record stock usage with a comment", async (t) => {
+  const project = {
+    _id: ids.source,
+    organizationId: ids.organization,
+    contractor: ids.user,
+    siteEngineers: [],
+    status: "Active"
+  };
+  const item = {
+    _id: ids.stock,
+    locationId: ids.destination,
+    materialId: ids.material,
+    availableQuantity: 4,
+    totalQuantity: 10,
+    pricePerUnit: 25
+  };
+  let usagePayload;
+
+  t.mock.method(Project, "findOne", async () => project);
+  t.mock.method(InventoryItem, "findOneAndUpdate", async () => item);
+  t.mock.method(InventoryUsage, "create", async (payload) => {
+    usagePayload = payload;
+    return payload;
+  });
+
+  const req = {
+    body: {
+      projectId: ids.source,
+      inventoryItemId: ids.stock,
+      usedQty: 2,
+      date: "2025-01-01",
+      comment: "Used for foundation"
+    },
+    user: {
+      User_id: ids.user,
+      organizationId: ids.organization,
+      role: "Founder"
+    },
+    app: { get: () => null }
+  };
+  const res = response();
+
+  await inventoryController.logInventoryUsage(req, res);
+
+  assert.equal(res.statusCode, 201);
+  assert.equal(usagePayload.comment, "Used for foundation");
+  assert.equal(usagePayload.usedQty, 2);
 });
 
 test("creating an indent broadcasts an update to its project room", async (t) => {

@@ -188,6 +188,7 @@ components:
         usedQty: { type: number }
         costAtThatTime: { type: number }
         date: { type: string }
+        comment: { type: string, maxLength: 1000 }
     InventoryPurchase:
       type: object
       additionalProperties: true
@@ -203,6 +204,7 @@ components:
         pricePerUnit: { type: number }
         supplierName: { type: string }
         companyName: { type: string }
+        comment: { type: string, maxLength: 1000 }
     InventoryMaterial:
       type: object
       properties:

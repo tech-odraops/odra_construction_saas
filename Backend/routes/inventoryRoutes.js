@@ -76,7 +76,7 @@ router.get(
   inventoryController.getInventoryUsageHistory
 );
 
-// Log inventory usage (Site Engineer)
+// Log inventory usage
 /**
  * @openapi
  * /inventory/usage:
@@ -84,7 +84,7 @@ router.get(
  *     tags:
  *       - Inventory
  *     summary: Record inventory material usage
- *     description: Assigned Site Engineer only.
+ *     description: Founder who owns the project or an assigned Site Engineer.
  *     requestBody:
  *       required: true
  *       content:
@@ -107,6 +107,9 @@ router.get(
  *               date:
  *                 type: string
  *                 format: date
+ *               comment:
+ *                 type: string
+ *                 maxLength: 1000
  *     responses:
  *       "201":
  *         description: Usage recorded and stock deducted.
@@ -133,7 +136,7 @@ router.get(
 router.post(
   "/usage",
   authen,
-  validateRoles(["Site Engineer"]),
+  validateRoles(["Founder", "Site Engineer"]),
   inventoryController.logInventoryUsage
 );
 
@@ -212,6 +215,9 @@ router.get(
  *               purchaseDate:
  *                 type: string
  *                 format: date
+ *               comment:
+ *                 type: string
+ *                 maxLength: 1000
  *     responses:
  *       "200":
  *         description: Inventory item added or replenished.
